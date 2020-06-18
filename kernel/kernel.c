@@ -14,22 +14,25 @@
 #include <stdint.h>
 
 #include "tty/tty.h"
-#include "io/io.h"
+#include "drivers/serial.h"
 
 //#include "../libc/string.h"
 
 void kmain(void){
 	tty_init();
+	tty_print("[*] Kernel loaded\n");
+	tty_print("[@] Initializing serial port : COM1\n");
+	serial_init(SERIAL_COM1);
+	tty_print("[*] Initialized !\n");
+	tty_print("[@] Sending some data to COM1\n");
+	serial_write(SERIAL_COM1, '*');
+	
 	tty_print("Welcome to ");
 	tty_use_color(VGA_GREEN, VGA_BLACK);
-	tty_print("YuunOS !");
-	//tty_scroll();
-	for(char i = 'a'; i<'a'+24; i++){
-		tty_putchar(i);
-		tty_print("\n");
-	}
-	tty_use_color(VGA_MAGENTA, VGA_BLACK);
-	tty_print("testing\nscroll\n");
-	tty_print("Yatta~ ^^");
+	tty_print("YuunOS !\n");
+	tty_use_color(VGA_WHITE, VGA_BLACK);
+	tty_print(">");
+
 }
+
 
