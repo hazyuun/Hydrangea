@@ -15,20 +15,32 @@
 
 #include "tty/tty.h"
 #include "drivers/serial.h"
-
+#include "cpu/gdt.h"
 //#include "../libc/string.h"
+
+#define OK() \
+	tty_use_color(VGA_GREEN, VGA_BLACK); \
+	tty_print(" -- OK -- \n"); \
+	tty_use_color(VGA_WHITE, VGA_BLACK);
 
 void kmain(void){
 	tty_init();
-	tty_print("[*] Kernel loaded\n");
-	tty_print("[@] Initializing serial port : COM1\n");
-	serial_init(SERIAL_COM1);
-	tty_print("[*] Initialized !\n");
-	tty_print("[@] Sending some data to COM1\n");
-	serial_write(SERIAL_COM1, '*');
+	tty_print("[*] Kernel loaded !\n");
 	
+	tty_print("[@] Setting up GDT ");
+	gdt_init();	
+	OK();
+
+	tty_print("[@] Initializing serial port : COM1 ");
+	serial_init(SERIAL_COM1);
+	OK();
+
+	tty_print("[@] Sending some data to COM1");
+	serial_write(SERIAL_COM1, '*');
+	OK();
+
 	tty_print("Welcome to ");
-	tty_use_color(VGA_GREEN, VGA_BLACK);
+	tty_use_color(VGA_MAGENTA, VGA_BLACK);
 	tty_print("YuunOS !\n");
 	tty_use_color(VGA_WHITE, VGA_BLACK);
 	tty_print(">");
