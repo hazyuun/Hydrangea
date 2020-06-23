@@ -92,3 +92,18 @@ void tty_print(const char* string){
 		tty_putchar(c);
 }
 
+void tty_print_hex(uint32_t x){
+    char n[16] = {
+    '0','1','2','3','4','5','6','7','8','9',
+    'A','B','C','D','E','F'
+    };
+    tty_print("0x");
+    tty_putchar(n[(x & 0xF000)>>12]);
+    tty_putchar(n[(x & 0x0F00)>>8]);
+    tty_putchar(n[(x & 0x00F0)>>4]);
+    tty_putchar(n[(x & 0x000F)>>0]);
+
+    /*TODO : Avoid repetition */
+}
+
+

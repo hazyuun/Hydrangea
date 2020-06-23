@@ -29,5 +29,5 @@ void	 tty_scroll();
 void 	 tty_putchar(unsigned char c);
 void 	 tty_putat(unsigned char c, size_t x, size_t y);
 void 	 tty_print(const char* string);
-
+void     tty_print_hex(uint32_t x);
 #endif

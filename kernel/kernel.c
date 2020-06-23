@@ -16,6 +16,7 @@
 #include "tty/tty.h"
 #include "drivers/serial.h"
 #include "cpu/gdt.h"
+#include "cpu/idt.h"
 //#include "../libc/string.h"
 
 #define OK() \
@@ -31,7 +32,15 @@ void kmain(void){
 	gdt_init();	
 	OK();
 
-	tty_print("[@] Initializing serial port : COM1 ");
+    tty_print("[@] Setting up IDT ");
+    idt_init();
+    OK();
+    
+    tty_print("[@] Trying int $0x3 \n");
+    asm volatile ("int $0x3");	
+    OK();
+
+    tty_print("[@] Initializing serial port : COM1 ");
 	serial_init(SERIAL_COM1);
 	OK();
 
@@ -43,8 +52,8 @@ void kmain(void){
 	tty_use_color(VGA_MAGENTA, VGA_BLACK);
 	tty_print("YuunOS !\n");
 	tty_use_color(VGA_WHITE, VGA_BLACK);
-	tty_print(">");
-
+    tty_print(">");
+    
 }
 
 
