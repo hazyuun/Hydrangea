@@ -36,9 +36,9 @@ void kmain(void){
     idt_init();
     OK();
     
-    tty_print("[@] Trying int $0x3 \n");
-    asm volatile ("int $0x3");	
-    OK();
+    //tty_print("[@] Trying int $0x3 \n");
+    //asm volatile ("int $0x3");	
+    //OK();
 
     tty_print("[@] Initializing serial port : COM1 ");
 	serial_init(SERIAL_COM1);
@@ -53,7 +53,7 @@ void kmain(void){
 	tty_print("YuunOS !\n");
 	tty_use_color(VGA_WHITE, VGA_BLACK);
     tty_print(">");
-    
+    while(1);    
 }
 
 

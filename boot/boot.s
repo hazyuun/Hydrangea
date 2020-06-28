@@ -21,7 +21,7 @@ stt:
 _start:
 	mov $stt, %esp
 	call kmain
-	cli
+    cli
 loop:	hlt
 	jmp loop
 

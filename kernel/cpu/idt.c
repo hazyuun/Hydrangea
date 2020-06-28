@@ -1,5 +1,5 @@
 /*
- *	File : idt;c
+ *	File : idt.c
  *	Description : TODO 
  *
  * */
@@ -7,7 +7,7 @@
 #include "idt.h"
 #include <stddef.h>
 #include <stdint.h>
-
+#include "../io/io.h"
 
 static IDT_ptr		idt;
 static IDT_entry	idt_entries[256];
@@ -66,7 +66,47 @@ void idt_init(){
     /* Finally ! */
     /* TODO: find a better way and clean that mess */
 
+    /* Remapping the pic */
+    io_outb(PIC_1, 0x11);
+    io_outb(PIC_2, 0x11);
+    
+    io_outb(PIC_1_DATA, 0x20);
+    io_outb(PIC_2_DATA, 0x28);
+    
+    io_outb(PIC_1_DATA, 0x04);
+    io_outb(PIC_2_DATA, 0x02);
+    
+    io_outb(PIC_1_DATA, 0x01);
+    io_outb(PIC_2_DATA, 0x01);
+    
+  //  io_outb(PIC_1_DATA, 0x01);
+//    io_outb(PIC_2_DATA, 0x01);
+    
+    /* Code duplication time 2.0 */
+    idt_set_entry(32, (uint32_t)irq0, 0x08, 0x8E);
+    idt_set_entry(33, (uint32_t)irq1, 0x08, 0x8E);
+    idt_set_entry(34, (uint32_t)irq2, 0x08, 0x8E);
+    idt_set_entry(35, (uint32_t)irq3, 0x08, 0x8E);
+    idt_set_entry(36, (uint32_t)irq4, 0x08, 0x8E);
+    idt_set_entry(37, (uint32_t)irq5, 0x08, 0x8E);
+    idt_set_entry(38, (uint32_t)irq6, 0x08, 0x8E);
+    idt_set_entry(39, (uint32_t)irq7, 0x08, 0x8E);
+    /* One more chunk ! */
+    idt_set_entry(40, (uint32_t)irq8, 0x08, 0x8E);
+    idt_set_entry(41, (uint32_t)irq9, 0x08, 0x8E);
+    idt_set_entry(42, (uint32_t)irq10, 0x08, 0x8E);
+    idt_set_entry(43, (uint32_t)irq11, 0x08, 0x8E);
+    idt_set_entry(44, (uint32_t)irq12, 0x08, 0x8E);
+    idt_set_entry(45, (uint32_t)irq13, 0x08, 0x8E);
+    idt_set_entry(46, (uint32_t)irq14, 0x08, 0x8E);
+    idt_set_entry(47, (uint32_t)irq15, 0x08, 0x8E);
+    /* Finally ! */
+
+    io_outb(PIC_1_DATA, 0x01);
+    io_outb(PIC_2_DATA, 0x01);
+
     __asm__  __volatile__("lidt %0"::"m"(idt));
+    __asm__  __volatile__("sti");
 }
 
 void idt_set_entry(uint8_t index, uint32_t base, uint16_t segsel, uint8_t flags){
