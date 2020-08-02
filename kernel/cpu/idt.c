@@ -23,6 +23,20 @@ void memset(void* dest, char value, int n){
 }
 
 void idt_init(){
+    io_outb(PIC_1, 0x11);
+    io_outb(PIC_2, 0x11);
+    
+    io_outb(PIC_1_DATA, 0x20);
+    io_outb(PIC_2_DATA, 0x28);
+    
+    io_outb(PIC_1_DATA, 0x04);
+    io_outb(PIC_2_DATA, 0x02);
+ 
+    io_outb(PIC_1_DATA, 0x01);
+    io_outb(PIC_2_DATA, 0x01);
+
+
+
 	idt.base = (uint32_t) &idt_entries;
 	idt.size = (256 * sizeof(IDT_entry)) - 1;
     memset((uint8_t*)&idt_entries,0,sizeof(idt_entries));
@@ -66,22 +80,6 @@ void idt_init(){
     /* Finally ! */
     /* TODO: find a better way and clean that mess */
 
-    /* Remapping the pic */
-    io_outb(PIC_1, 0x11);
-    io_outb(PIC_2, 0x11);
-    
-    io_outb(PIC_1_DATA, 0x20);
-    io_outb(PIC_2_DATA, 0x28);
-    
-    io_outb(PIC_1_DATA, 0x04);
-    io_outb(PIC_2_DATA, 0x02);
-    
-    io_outb(PIC_1_DATA, 0x01);
-    io_outb(PIC_2_DATA, 0x01);
-    
-  //  io_outb(PIC_1_DATA, 0x01);
-//    io_outb(PIC_2_DATA, 0x01);
-    
     /* Code duplication time 2.0 */
     idt_set_entry(32, (uint32_t)irq0, 0x08, 0x8E);
     idt_set_entry(33, (uint32_t)irq1, 0x08, 0x8E);
@@ -100,10 +98,7 @@ void idt_init(){
     idt_set_entry(45, (uint32_t)irq13, 0x08, 0x8E);
     idt_set_entry(46, (uint32_t)irq14, 0x08, 0x8E);
     idt_set_entry(47, (uint32_t)irq15, 0x08, 0x8E);
-    /* Finally ! */
-
-    io_outb(PIC_1_DATA, 0x01);
-    io_outb(PIC_2_DATA, 0x01);
+    /* Finally ! 2.0 */
 
     __asm__  __volatile__("lidt %0"::"m"(idt));
     __asm__  __volatile__("sti");
@@ -117,8 +112,3 @@ void idt_set_entry(uint8_t index, uint32_t base, uint16_t segsel, uint8_t flags)
 	idt_entries[index].zero = 0;
 	idt_entries[index].flags = flags;
 }
-
-
-
-
-

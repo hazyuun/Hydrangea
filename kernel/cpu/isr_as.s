@@ -44,8 +44,12 @@ isr_gen_handlers 0,8,0
 isr_werr 8
 isr 9
 isr_gen_handlers 10,5,1
-isr_gen_handlers 15,17,0
-
+isr 15
+isr 16
+isr_werr 17
+isr_gen_handlers 18,12,0
+isr_werr 30
+isr 31
 /* Now it's the IRQs' turn */
 
 .macro irq num, mapped_to
