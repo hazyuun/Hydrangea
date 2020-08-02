@@ -43,7 +43,7 @@ typedef struct {
 
 void gdt_init();
 void gdt_set_entry(GDT_entry* entries, int index, uint32_t base, uint32_t limit, uint8_t rights, uint8_t flags);
-
+extern void gdt_load(GDT_ptr* gdt_ptr);
 
 #endif
 

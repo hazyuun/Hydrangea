@@ -29,7 +29,7 @@ void kbd_event(uint8_t scancode){
     }
     /* Pressed */
     else{
-        //tty_putchar(kbd_layout_us[scancode]);
+        tty_putchar(kbd_layout_us[scancode]);
     }
 }
 

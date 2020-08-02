@@ -1,0 +1,4 @@
+ata0-master: type=cdrom, path=yuunos.iso, status=inserted
+boot: cdrom
+floppy_bootsig_check: disabled=1
+# display_library: x, options="gui_debug"

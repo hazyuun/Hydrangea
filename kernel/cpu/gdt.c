@@ -29,7 +29,7 @@ void gdt_init(){
 	/* User data */		
 	gdt_set_entry(gdt_entries, 4, 0x0, 0xFFFFFFFF, (GDT_RW | (1 << 4) | GDT_RG(3) | GDT_PR), 0xC0);
 
-	__asm__ __volatile__("lgdt %0":: "m"(gdt));	
+	gdt_load(&gdt);
 }
 
 void gdt_set_entry(GDT_entry* entries, int index, uint32_t base, uint32_t limit, uint8_t rights, uint8_t flags){
