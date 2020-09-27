@@ -17,17 +17,19 @@ struct tty_state{
 	size_t		column;
 };
 
-void 	 tty_init();
-void 	 tty_use_color(vga_color fg, vga_color bg);
+void 	tty_init();
+void 	tty_use_color(vga_color fg, vga_color bg);
 
-void 	 tty_cur_mov(size_t x, size_t y);
-uint16_t tty_cur_pos();
-void 	 tty_cur_stp();
+void 	tty_cur_mov(size_t x, size_t y);
+uint16_t	tty_cur_pos();
+void		tty_cur_stp();
 
-void	 tty_scroll();
+void		tty_scroll();
+void		tty_clear();
+void		tty_fill(vga_color color);
 
-void 	 tty_putchar(unsigned char c);
-void 	 tty_putat(unsigned char c, size_t x, size_t y);
-void 	 tty_print(const char* string);
-void     tty_print_hex(uint32_t x);
+void 	tty_putchar(unsigned char c);
+void 	tty_putat(unsigned char c, size_t x, size_t y);
+void 	tty_print(const char* string);
+void		tty_print_hex(uint32_t x);
 #endif

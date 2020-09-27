@@ -25,6 +25,6 @@ SECTIONS{
 		*(COMMON)
 		*(.bss)
 	}
-
+	end_of_bin_addr=.;
 }
 

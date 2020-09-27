@@ -57,6 +57,21 @@ void tty_scroll(){
 	}
 }
 
+void tty_clear(){
+	for(size_t i = 0; i < VGA_HEIGHT ;i++)
+		tty_scroll();
+}
+
+void tty_fill(vga_color color){
+	tty_use_color(color, color);
+	for(size_t i = 0; i < VGA_HEIGHT ;i++){
+		for(size_t j = 0; j < VGA_WIDTH; j++){
+			tty_putat(' ', j, i);
+		}
+	}
+	tty_use_color(VGA_WHITE, VGA_BLACK);
+}
+
 void tty_putat(unsigned char c, size_t x, size_t y){
 	tty_frame_buffer[x+y*(size_t)(VGA_WIDTH)] = vga_char(c, c_tty_state.color);
 	tty_cur_stp();
@@ -98,10 +113,14 @@ void tty_print_hex(uint32_t x){
     'A','B','C','D','E','F'
     };
     tty_print("0x");
-    tty_putchar(n[(x & 0xF000)>>12]);
-    tty_putchar(n[(x & 0x0F00)>>8]);
-    tty_putchar(n[(x & 0x00F0)>>4]);
-    tty_putchar(n[(x & 0x000F)>>0]);
+    tty_putchar(n[(x & 0xF0000000)>>28]);
+    tty_putchar(n[(x & 0x0F000000)>>24]);
+    tty_putchar(n[(x & 0x00F00000)>>20]);
+    tty_putchar(n[(x & 0x000F0000)>>16]);
+    tty_putchar(n[(x & 0x0000F000)>>12]);
+    tty_putchar(n[(x & 0x00000F00)>>8]);
+    tty_putchar(n[(x & 0x000000F0)>>4]);
+    tty_putchar(n[(x & 0x0000000F)>>0]);
 
     /*TODO : Avoid repetition */
 }

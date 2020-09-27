@@ -20,6 +20,8 @@ stt:
 .global _start
 _start:
 	mov $stt, %esp
+	push %ebx
+	push %eax
 	call kmain
     cli
 loop:	hlt
