@@ -4,10 +4,11 @@
  *
  * */
 
-#include "idt.h"
+#include <cpu/idt.h>
+#include <io/io.h>
 #include <stddef.h>
 #include <stdint.h>
-#include "../io/io.h"
+
 
 static IDT_ptr		idt;
 static IDT_entry	idt_entries[256];

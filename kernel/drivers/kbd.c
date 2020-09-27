@@ -4,7 +4,7 @@
  * */
 
 #include "kbd.h"
-#include "../tty/tty.h"
+#include <tty/tty.h>
 
 
 /* TODO: Make a complete keyboard layout*/

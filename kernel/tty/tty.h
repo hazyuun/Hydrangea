@@ -7,7 +7,7 @@
 #ifndef _TTY_H_
 #define _TTY_H_
 
-#include "../vga/vga.h"
+#include <vga/vga.h>
 #include <stdint.h>
 #include <stddef.h>
 

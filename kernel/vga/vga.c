@@ -3,7 +3,7 @@
  *	Description : TODO
  * */
 
-#include "vga.h"
+#include <vga/vga.h>
 
 uint8_t vga_color_byte(vga_color fg, vga_color bg){
 	return (bg << 4) | fg;

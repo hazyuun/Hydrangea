@@ -10,7 +10,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#include "../io/io.h"
+#include <io/io.h>
 
 /* Serial ports */
 #define SERIAL_COM1 	0x3F8

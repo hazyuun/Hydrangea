@@ -4,12 +4,14 @@
  * */
 
 
-#include "gdt.h"
+#include <cpu/gdt.h>
+#include <tty/tty.h> 
 
 static GDT_ptr		gdt;
 static GDT_entry	gdt_entries[5];
 
-#include "../tty/tty.h" 
+
+
 void gdt_init(){
 	gdt.base = (uint32_t) &gdt_entries;
 	gdt.size = sizeof(gdt_entries) - 1;

@@ -3,8 +3,8 @@
  *	Description : TODO 
  * */
 
-#include "tty.h"
-#include "../io/io.h"
+#include <tty/tty.h>
+#include <io/io.h>
 
 #include <stddef.h>
 #include <stdint.h>

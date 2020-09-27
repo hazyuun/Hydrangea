@@ -6,9 +6,9 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include "../tty/tty.h"
-#include "../drivers/serial.h"
-#include "../drivers/kbd.h"
+#include <tty/tty.h>
+#include <drivers/serial.h>
+#include <drivers/kbd.h>
 
 typedef struct {
 	uint32_t gs, fs, es, ds;

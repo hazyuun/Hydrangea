@@ -13,12 +13,12 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "../boot/multiboot.h"
+#include <boot/multiboot.h>
 
-#include "tty/tty.h"
-#include "drivers/serial.h"
-#include "cpu/gdt.h"
-#include "cpu/idt.h"
+#include <tty/tty.h>
+#include <drivers/serial.h>
+#include <cpu/gdt.h>
+#include <cpu/idt.h>
 //#include "../libc/string.h"
 
 multiboot_info_t* 	global_mb_header;
