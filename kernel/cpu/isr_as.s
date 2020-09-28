@@ -79,7 +79,7 @@ isr_common_handler_wrapper:
     push %es
     push %fs
     push %gs
-
+    
     mov $0x10, %ax
     mov %ax, %ds
     mov %ax, %es

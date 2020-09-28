@@ -8,20 +8,10 @@
 #include <io/io.h>
 #include <stddef.h>
 #include <stdint.h>
-
+#include <string.h>
 
 static IDT_ptr		idt;
 static IDT_entry	idt_entries[256];
-
-/* TODO: move this to libc */
-/* I know this is messy and all but I need this function now so.. */
-void memset(void* dest, char value, int n){
-    char* temp = (char *)dest;
-    for (; n>0; n--){
-         *temp = value;
-         temp+=sizeof(char);
-    }
-}
 
 void idt_init(){
     io_outb(PIC_1, 0x11);

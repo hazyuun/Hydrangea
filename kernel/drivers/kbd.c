@@ -3,7 +3,7 @@
  *  Description: TODO
  * */
 
-#include "kbd.h"
+#include <drivers/kbd.h>
 #include <tty/tty.h>
 
 
