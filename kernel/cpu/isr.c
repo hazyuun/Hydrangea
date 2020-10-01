@@ -71,8 +71,6 @@ void isr_common_handler(registers* r){
     }
 } 
 
-//extern kbd_keys
-
 void irq_common_handler(registers* r){
     if (r->int_num >= 40){
         io_outb(0xA0, 0x20);
@@ -83,15 +81,6 @@ void irq_common_handler(registers* r){
         uint8_t scancode = io_inb(0x60); 
         kbd_event(scancode);
     }
-
-    //tty_print("aaaaaaaaaaaaa ");
-    
-    //uint8_t code = io_inb(0x60);
-    //tty_print("IRQ ");
-    //tty_print_hex(r->int_num);
-    //tty_print(" \n int :  ");
-    //tty_print_hex(r->int_num);
-    //tty_putchar(kbd_US[code]);
 }
  
 

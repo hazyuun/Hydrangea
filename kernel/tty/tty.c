@@ -32,6 +32,8 @@ void tty_cur_mov(size_t x, size_t y){
 	io_outb(0x3D5, (uint8_t) (index & 0xFF));
 	io_outb(0x3D4, 0x0E);
 	io_outb(0x3D5, (uint8_t) ((index >> 8) & 0xFF));
+	c_tty_state.row 	= y;
+	c_tty_state.column 	= x; 
 }
 
 uint16_t tty_cur_pos(){
@@ -60,6 +62,7 @@ void tty_scroll(){
 void tty_clear(){
 	for(size_t i = 0; i < VGA_HEIGHT ;i++)
 		tty_scroll();
+	tty_cur_mov(0,0);
 }
 
 void tty_fill(vga_color color){
@@ -86,6 +89,17 @@ void tty_putchar(unsigned char c){
 			tty_scroll();	
 		}
 		tty_cur_stp();
+	}else if(c == '\b'){
+		c_tty_state.column--;
+		tty_cur_stp();
+		tty_putat(' ', c_tty_state.column, c_tty_state.row);
+
+	}else if(c == '\t'){
+		size_t i = 0;
+		while(c_tty_state.column + 1 > i) i += 4;
+		c_tty_state.column = i;
+		tty_cur_stp();
+		
 	}else{
 		if(c_tty_state.column+1 == VGA_WIDTH){
 			c_tty_state.column = 0;

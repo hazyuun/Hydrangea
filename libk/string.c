@@ -54,3 +54,43 @@ int strlen(const char* str){
     while(*str++) len++;
     return len;
 }
+
+
+
+char* itoa(int value, char* result, int base) {
+    unsigned long tmp = value;
+    
+    int i = 0;
+    do {
+        tmp = value % base;
+        result[i++] = (tmp < 10) ? (tmp + '0') : (tmp + 'a' - 10);
+    } while (value /= base);
+    result[i--] = 0;
+
+    for (int j = 0; j < i; j++, i--) {
+        tmp = result[j];
+        result[j] = result[i];
+        result[i] = tmp;
+    }
+
+	return result;
+}
+
+int atoi(char* str) {
+    int result = 0;
+    int negative = 0;
+
+    while (*str == ' ') str++;
+    if (*str == '-') {
+        negative = 1;
+        str++;
+    } else if (*str == '+') str++;
+
+    while(1) {
+        unsigned short n = *str++ - '0';
+        if (n > 9) break;
+        result = (10 * result) + n;
+    }
+
+    return negative? -result : result;
+}

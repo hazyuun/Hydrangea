@@ -17,21 +17,25 @@
 #include <kernel.h>
 #include <tty/tty.h>
 #include <drivers/serial.h>
+#include <drivers/kbd.h>
+
 #include <cpu/gdt.h>
 #include <cpu/idt.h>
 
 #include <mem/paging.h>
 #include <mem/pmm.h>
-//#include "../libc/string.h"
+#include <string.h>
+
+#include <stdio.h>
 
 multiboot_info_t* 	global_mb_header;
 uint32_t 			mb_begin_addr;
 uint32_t 			mb_end_addr;
-uint32_t			memory_size;
+uint64_t			memory_size;
 
 #define OK() \
 	tty_use_color(VGA_GREEN, VGA_BLACK); \
-	tty_print(" -- OK -- \n"); \
+	tty_print(" < OK > "); \
 	tty_use_color(VGA_WHITE, VGA_BLACK);
 
 void panic(char* err_msg){
@@ -41,11 +45,12 @@ void panic(char* err_msg){
 	while(1);
 }
 
+
+
 void kmain(uint32_t mb_magic, multiboot_info_t* mb_header){
 	tty_init();
-	tty_print("[*] Kernel loaded !\n");
-	tty_print("\n");
-	
+
+	printk("[*] Kernel loaded !\n");
 
 
 	if(mb_magic != MULTIBOOT_BOOTLOADER_MAGIC)
@@ -57,51 +62,83 @@ void kmain(uint32_t mb_magic, multiboot_info_t* mb_header){
 	global_mb_header 	= mb_header;
 	mb_begin_addr 		= (uint32_t)mb_header;
 	mb_end_addr 		= (uint32_t)(mb_header + sizeof(multiboot_info_t));
-	memory_size		= global_mb_header->mem_upper - global_mb_header->mem_lower;
+	memory_size		= 0;
 
-	tty_print("[*] Available memory : ");
-	tty_print_hex(memory_size);
-	tty_print("\n");
+	multiboot_memory_map_t *mmap;
 	
-	tty_print("[@] Setting up GDT ");
+	for (mmap = (multiboot_memory_map_t *) global_mb_header->mmap_addr;
+		(unsigned long) mmap < global_mb_header->mmap_addr + global_mb_header->mmap_length;
+		mmap = (multiboot_memory_map_t *) ((unsigned long) mmap + mmap->size + sizeof (mmap->size)))
+	{
+		if(mmap->type & MULTIBOOT_MEMORY_AVAILABLE) memory_size += (((uint64_t)(mmap->len_hi) << 8)|(mmap->len_lo));
+	}
+	
+	
+
+	printk("[*] Available memory : %d KiB\n", (memory_size/1024));
+
 	gdt_init();	
-	OK();
+	OK(); printk("GDT set up \n");
+	
+	idt_init();
+	OK(); printk("IDT set up \n");
 
-    tty_print("[@] Setting up IDT ");
-    idt_init();
-    OK();
-    
-    //tty_print("[@] Trying int $0x3 \n");
-    //asm volatile ("int $0x3");	
-    //OK();
-
-    tty_print("[@] Initializing serial port : COM1 ");
 	serial_init(SERIAL_COM1);
-	OK();
+	OK(); printk("Serial port COM1 initialized \n");
 
-	tty_print("[@] Sending some data to COM1");
-	serial_write(SERIAL_COM1, '*');
-	OK();
-
-	tty_print("[@] Setting up paging ..");
+	serial_init(SERIAL_COM1);
+	OK(); printk("Initializing serial port : COM1 \n");
+	
 	pg_init();
-	OK();
+	OK(); printk("Paging set up \n");
+	
 	
 #if 0 // I was testing page faults
 	uint32_t* ptr = (uint32_t*) 0x00000001;//pmalloc(sizeof(uint32_t));
 	*ptr = 0x56111;
 	uint32_t* ooo = (uint32_t*) 0x007FFFFF;//pmalloc(sizeof(uint32_t));
 	//uint32_t* ooo = (uint32_t*) 0x00400001;//pmalloc(sizeof(uint32_t));
+	*ooo = 4;
 	tty_print_hex(*ooo);
 	//uint32_t pf = *ptr;
 #endif
-	tty_print("Welcome to ");
+	printk("Welcome to ");
 	tty_use_color(VGA_MAGENTA, VGA_BLACK);
-	tty_print("YuunOS !\n");
+	printk("YuunOS !\n");
 	tty_use_color(VGA_WHITE, VGA_BLACK);
-	tty_print(">\n");
-	
-    while(1)	__asm__("hlt\n\t");    
+
+	/* This is a quick and dirty and temporary cli */
+	char cmd[100];
+	while(1){
+		tty_use_color(VGA_LIGHT_BLUE, VGA_BLACK);
+		printk("\nKernel>");
+		tty_use_color(VGA_WHITE, VGA_BLACK);
+		scank("%s", cmd);
+		if(!strcmp("info", cmd)){
+			tty_print("YuunOS v0.0.1\n");
+		}
+		else if(!strcmp("clear", cmd)){
+			tty_clear();
+		}
+		else if(!strcmp("reboot", cmd)){
+			uint8_t TW = 0x02;
+			while(TW & 0x02)
+				TW = io_inb(0x64);
+			io_outb(0x64, 0xFE);
+			while(1);
+		}
+		else if(!strcmp("kbd fr", cmd)){
+			kbd_switch_layout("fr");
+			printk("Keyboard layout changed to : FR\nEnjoy your baguette !\n");
+		}
+		else if(!strcmp("kbd en", cmd)){
+			kbd_switch_layout("en");
+			printk("Keyboard layout changed to : EN\n");
+		}
+		else if(!strcmp("", cmd)){}
+		else printk("Unknown command\n");
+	}
+	while(1)	__asm__("hlt\n\t");    
 }
 
 
