@@ -18,8 +18,18 @@
 #define PG_READ_WRITE     (1 << 1)
 #define PG_PRESENT        (1 << 0)
 
+#define PG_SIZE           0x1000
+
+#define VIRT_TO_PG_DIR(addr)  (addr & 0xFFF)
+#define VIRT_TO_PG_TBL(addr)  ((addr & 0x3FF000) >> 12)
+#define VIRT_TO_PG_OFF(addr)  ((addr & 0xFFC00000) >> 22)
+
+
+
+
 void pg_init();
 void pg_switch_page_dir(uint32_t*);
+void* pg_get_page(uint32_t addr, uint8_t make);
 void pg_page_fault(uint8_t code);
 
 #endif

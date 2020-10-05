@@ -5,13 +5,14 @@
 
 #include <mem/pmm.h>
 #include <mem/paging.h>
+#include <mem/heap.h>
 #include <kernel.h>
 #include <tty/tty.h>
 
 extern uint32_t end_of_bin_addr;
 extern uint32_t memory_size;
 volatile size_t placement_addr = (size_t) &end_of_bin_addr;
-
+extern heap_t* kheap;
 uint32_t* frames_bmp;
 
 /* Placement malloc */
@@ -19,6 +20,7 @@ void* pmalloc(size_t size){
      placement_addr += size;
      return (void*) (placement_addr - size);
 }
+
 
 /* Placement malloc with alignment */
 void* pmalloc_a(size_t size, size_t align){

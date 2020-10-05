@@ -13,9 +13,11 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include <boot/multiboot.h>
 #include <kernel.h>
+
+#include <boot/multiboot.h>
 #include <tty/tty.h>
+
 #include <drivers/serial.h>
 #include <drivers/kbd.h>
 
@@ -24,8 +26,9 @@
 
 #include <mem/paging.h>
 #include <mem/pmm.h>
-#include <string.h>
+#include <mem/heap.h>
 
+#include <string.h>
 #include <stdio.h>
 
 multiboot_info_t* 	global_mb_header;
@@ -44,8 +47,6 @@ void panic(char* err_msg){
 	tty_print(err_msg);
 	while(1);
 }
-
-
 
 void kmain(uint32_t mb_magic, multiboot_info_t* mb_header){
 	tty_init();
@@ -73,8 +74,6 @@ void kmain(uint32_t mb_magic, multiboot_info_t* mb_header){
 		if(mmap->type & MULTIBOOT_MEMORY_AVAILABLE) memory_size += (((uint64_t)(mmap->len_hi) << 8)|(mmap->len_lo));
 	}
 	
-	
-
 	printk("[*] Available memory : %d KiB\n", (memory_size/1024));
 
 	gdt_init();	
@@ -92,16 +91,6 @@ void kmain(uint32_t mb_magic, multiboot_info_t* mb_header){
 	pg_init();
 	OK(); printk("Paging set up \n");
 	
-	
-#if 0 // I was testing page faults
-	uint32_t* ptr = (uint32_t*) 0x00000001;//pmalloc(sizeof(uint32_t));
-	*ptr = 0x56111;
-	uint32_t* ooo = (uint32_t*) 0x007FFFFF;//pmalloc(sizeof(uint32_t));
-	//uint32_t* ooo = (uint32_t*) 0x00400001;//pmalloc(sizeof(uint32_t));
-	*ooo = 4;
-	tty_print_hex(*ooo);
-	//uint32_t pf = *ptr;
-#endif
 	printk("Welcome to ");
 	tty_use_color(VGA_MAGENTA, VGA_BLACK);
 	printk("YuunOS !\n");

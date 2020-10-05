@@ -2,7 +2,7 @@
 CC = i686-elf-gcc  
 AS = i686-elf-as
 
-KERNEL_SRC_C = $(wildcard kernel/*.c) $(wildcard kernel/vga/*.c) $(wildcard kernel/tty/*.c) $(wildcard kernel/io/*.c) $(wildcard kernel/drivers/*.c) $(wildcard kernel/cpu/*.c) $(wildcard kernel/mem/*.c)
+KERNEL_SRC_C = $(wildcard kernel/*.c) $(wildcard kernel/vga/*.c) $(wildcard kernel/tty/*.c) $(wildcard kernel/io/*.c) $(wildcard kernel/drivers/*.c) $(wildcard kernel/cpu/*.c) $(wildcard kernel/mem/*.c) $(wildcard kernel/ds/*.c)
 LIBK_SRC = $(wildcard libk/*.c)
 KERNEL_SRC_S = $(wildcard kernel/*.s) $(wildcard kernel/vga/*.s) $(wildcard kernel/tty/*.s) $(wildcard kernel/io/*.s) $(wildcard kernel/drivers/*.s) $(wildcard kernel/cpu/*.s)
 
