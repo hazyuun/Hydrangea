@@ -23,6 +23,7 @@
 
 #include <cpu/gdt.h>
 #include <cpu/idt.h>
+#include <cpu/pit.h>
 
 #include <mem/paging.h>
 #include <mem/pmm.h>
@@ -82,6 +83,7 @@ void kmain(uint32_t mb_magic, multiboot_info_t* mb_header){
 	idt_init();
 	OK(); printk("IDT set up \n");
 
+	
 	serial_init(SERIAL_COM1);
 	OK(); printk("Serial port COM1 initialized \n");
 
@@ -90,13 +92,18 @@ void kmain(uint32_t mb_magic, multiboot_info_t* mb_header){
 	
 	pg_init();
 	OK(); printk("Paging set up \n");
-	
+
+	pit_init(100);
+	OK(); printk("PIT set up \n");
+
 	printk("Welcome to ");
 	tty_use_color(VGA_MAGENTA, VGA_BLACK);
 	printk("YuunOS !\n");
 	tty_use_color(VGA_WHITE, VGA_BLACK);
 
+	
 	/* This is a quick and dirty and temporary cli */
+	/* just for the sake of testing ! */
 	char cmd[100];
 	while(1){
 		tty_use_color(VGA_LIGHT_BLUE, VGA_BLACK);
@@ -123,6 +130,9 @@ void kmain(uint32_t mb_magic, multiboot_info_t* mb_header){
 		else if(!strcmp("kbd en", cmd)){
 			kbd_switch_layout("en");
 			printk("Keyboard layout changed to : EN\n");
+		}
+		else if(!strcmp("sleep", cmd)){ /*Will sleep 10 secs */ 
+			pit_sleep(10* 100);
 		}
 		else if(!strcmp("", cmd)){}
 		else printk("Unknown command\n");

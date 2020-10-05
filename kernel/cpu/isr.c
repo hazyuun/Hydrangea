@@ -9,6 +9,7 @@
 #include <tty/tty.h>
 #include <drivers/serial.h>
 #include <drivers/kbd.h>
+#include <cpu/pit.h>
 #include <mem/paging.h>
 #include <kernel.h>
 
@@ -77,10 +78,18 @@ void irq_common_handler(registers* r){
     }
     io_outb(0x20, 0x20);
     
-    if(r->int_num == 0x21){ /* Keyboard */
-        uint8_t scancode = io_inb(0x60); 
-        kbd_event(scancode);
+    switch(r->int_num){
+        case 32: 
+            pit_event();
+            break;
+        case 0x21:
+        {
+            uint8_t scancode = io_inb(0x60); 
+            kbd_event(scancode);
+            break;
+        }
     }
+    
 }
  
 
