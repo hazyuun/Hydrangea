@@ -20,6 +20,7 @@
 
 #include <drivers/serial.h>
 #include <drivers/kbd.h>
+#include <drivers/rtc.h>
 
 #include <cpu/gdt.h>
 #include <cpu/idt.h>
@@ -131,8 +132,11 @@ void kmain(uint32_t mb_magic, multiboot_info_t* mb_header){
 			kbd_switch_layout("en");
 			printk("Keyboard layout changed to : EN\n");
 		}
-		else if(!strcmp("sleep", cmd)){ /*Will sleep 10 secs */ 
+		else if(!strcmp("sleep", cmd)){ /* Will sleep 10 secs */ 
 			pit_sleep(10* 100);
+		}
+		else if(!strcmp("datetime", cmd)){ 
+			rtc_print_now();
 		}
 		else if(!strcmp("", cmd)){}
 		else printk("Unknown command\n");
