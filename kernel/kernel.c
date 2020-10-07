@@ -21,6 +21,7 @@
 #include <drivers/serial.h>
 #include <drivers/kbd.h>
 #include <drivers/rtc.h>
+#include <drivers/pci.h>
 
 #include <cpu/gdt.h>
 #include <cpu/idt.h>
@@ -97,6 +98,9 @@ void kmain(uint32_t mb_magic, multiboot_info_t* mb_header){
 	pit_init(100);
 	OK(); printk("PIT set up \n");
 
+	PCI_detect();
+	OK(); printk("Detecting PCI devices\n");
+
 	printk("Welcome to ");
 	tty_use_color(VGA_MAGENTA, VGA_BLACK);
 	printk("YuunOS !\n");
@@ -137,6 +141,9 @@ void kmain(uint32_t mb_magic, multiboot_info_t* mb_header){
 		}
 		else if(!strcmp("datetime", cmd)){ 
 			rtc_print_now();
+		}
+		else if(!strcmp("lspci", cmd)){ 
+			PCI_detect();
 		}
 		else if(!strcmp("", cmd)){}
 		else printk("Unknown command\n");
