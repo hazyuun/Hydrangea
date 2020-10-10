@@ -25,8 +25,8 @@ uint32_t frame_bmp_test(uint32_t addr);
 uint32_t frame_bmp_get_first();
 
 /* Frame allocator */
-void frame_alloc(uint32_t* page, uint8_t usr, uint8_t rw);
-void frame_free(uint32_t* page);
+void* frame_alloc();
+void frame_free(void* addr);
 
 
 #endif

@@ -22,55 +22,83 @@ void pg_init(){
      ker_page_table = (uint32_t*) pmalloc_a(1024 *sizeof(uint32_t),1);
      ker_hp_page_table = (uint32_t*) pmalloc_a(1024 *sizeof(uint32_t),1);
      
-     uint32_t i = 0;
-     
-     
      for(int i = 0; i < 1024; i++){
           ker_page_dir[i] = PG_READ_WRITE;
           ker_page_table[i] = (i*0x1000) | PG_PRESENT | PG_READ_WRITE;
      }
+     /*
      for (i = HEAP_START; i < HEAP_START+HEAP_INITIAL_SIZE; i += PG_SIZE)
           pg_get_page(i, 1);
 
      for (i = HEAP_START; i < HEAP_START+HEAP_INITIAL_SIZE; i += PG_SIZE)
           frame_alloc(pg_get_page(i, 1), 0, 0);
-
+     */
      ker_page_dir[0] = ((uint32_t) ker_page_table) | PG_PRESENT | PG_READ_WRITE;
 
-     for(int i = 0; i < 1024; i++){
+     /*for(int i = 0; i < 1024; i++){
           ker_hp_page_table[i] = (0xC0000000 + i*0x1000) | PG_PRESENT | PG_READ_WRITE;
      }
      ker_page_dir[0x300] = ((uint32_t) ker_hp_page_table) | PG_PRESENT | PG_READ_WRITE;
-
+     */
      pg_switch_page_dir(ker_page_dir);
-     kheap = heap_create((void*)HEAP_START, HEAP_INITIAL_SIZE, HEAP_MAX_SIZE, 0);
+     //kheap = heap_create((void*)HEAP_START, HEAP_INITIAL_SIZE, HEAP_MAX_SIZE, 0);
      
      uint32_t cr0;
      __asm__  __volatile__("mov %%cr0, %0": "=r"(cr0));
      cr0 |= 0x80000000;
      __asm__  __volatile__("mov %0, %%cr0":: "r"(cr0));
 }
+
+void pg_map_page(void* addr, uint32_t flags){
+     uint32_t* pgtbl = (uint32_t*) pmalloc_a(1024 *sizeof(uint32_t), 1);
+     for(int i = 0; i < 1024; i++){
+          pgtbl[i] = ((uint32_t)addr + i*0x1000) | PG_PRESENT | flags;
+     }
+     ker_page_dir[(uint32_t)addr/(1024 * 1024 * 4)] = ((uint32_t) pgtbl) | PG_PRESENT | flags;
+
+     pg_invalidate((uint32_t)addr);
+}
+
+void pg_unmap_page(void* virt){
+     uint32_t* pgtbl = (uint32_t*)VIRT_TO_PG_TBL(((uint32_t)virt));
+     for(int i = 0; i < 1024; i++){
+          pgtbl[i] = ((uint32_t)virt + i*0x1000) & ~(PG_PRESENT|PG_READ_WRITE);
+     }
+     ker_page_dir[(uint32_t)virt/(1024 * 1024 * 4)] = ((uint32_t) pgtbl) & ~(PG_PRESENT|PG_READ_WRITE);
+
+     frame_free((void*)((uint32_t)virt & PG_FRAME));    
+}
+
 void pg_switch_page_dir(uint32_t* page_dir){
      __asm__  __volatile__("mov %0, %%cr3":: "r"(page_dir));
 }
-void* pg_get_page(uint32_t addr, uint8_t make){
-     addr /= PG_SIZE;
-     uint32_t table_index = addr / 1024;
 
-     if (ker_page_dir[table_index]){
-          return (void*)((uint32_t*)(*((uint32_t*)ker_page_dir[table_index])))[addr % 1024];
-     }
-     else if(make){
-          uint32_t* new_page_table = (uint32_t*) pmalloc_a(1024 *sizeof(uint32_t),1);
-          
-          for(int i = 0; i < 1024; i++){
-               new_page_table[i] = 0;
-          }
-          ker_page_dir[table_index] = ((uint32_t) new_page_table)  | PG_PRESENT | PG_READ_WRITE | PG_SUPERVISOR;
-          
-          return (void*)((uint32_t*)(*((uint32_t*)ker_page_dir[table_index])))[addr % 1024];
-     } else return NULL;
+void* pg_get_page(uint32_t addr, uint8_t make){
+     if(addr % 0x1000) panic("Attempt to get a page with non aligned address");
+     
+     uint32_t dir_index       = PG_DIR_INDEX(addr);
+	uint32_t table_index     = PG_TBL_INDEX(addr);
+
+	uint32_t* dir = (uint32_t*) 0xFFFFF000;
+	uint32_t* table = (uint32_t*) (0xFFC00000 + (dir_index << 12));
+
+	if (!(dir[dir_index] & PG_PRESENT) && make) {
+		uint32_t* new_table = (uint32_t*) frame_alloc();
+		dir[dir_index] = (uint32_t) new_table | PG_PRESENT | PG_READ_WRITE;
+		memset((void*) table, 0, 4096);
+	}
+
+	if (dir[dir_index] & PG_PRESENT) {
+		return &table[table_index];
+	}
+
+	return NULL;
 }
+
+void pg_invalidate(uintptr_t virt) {
+	asm volatile ("invlpg (%0)" :: "b"(virt) : "memory");
+}
+
 void pg_page_fault(uint8_t code){
      tty_use_color(VGA_LIGHT_RED, VGA_BLACK);
      printk("\n PAGE FAULT !\n");

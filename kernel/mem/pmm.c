@@ -67,19 +67,12 @@ uint32_t frame_bmp_get_first(){
      return -1;
 }
 
-void frame_alloc(uint32_t* page, uint8_t usr, uint8_t rw){
-     if(!(*page & 0xFFF00000)) return;
+void* frame_alloc(){
      uint32_t ff = frame_bmp_get_first();
-     frame_bmp_set(ff * 4096);
-     *page |= 0x1;
-     if(rw) *page |= 0x2;
-     if(usr) *page |= 0x4;
-     *page |= (ff << 12);
+     frame_bmp_set(ff);
+     return (void*)ff;
 }
 
-void frame_free(uint32_t* page){
-     uint32_t frame = *page & 0xFFF00000;
-     if(!frame) return;
-     frame_bmp_reset(frame);
-     *page &= 0x000FFFFF;
+void frame_free(void* addr){
+     frame_bmp_reset((uint32_t)addr);
 }

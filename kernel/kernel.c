@@ -98,14 +98,17 @@ void kmain(uint32_t mb_magic, multiboot_info_t* mb_header){
 	pit_init(100);
 	OK(); printk("PIT set up \n");
 
-	PCI_detect();
-	OK(); printk("Detecting PCI devices\n");
+	//PCI_detect();
+	//OK(); printk("Detecting PCI devices\n");
 
 	printk("Welcome to ");
 	tty_use_color(VGA_MAGENTA, VGA_BLACK);
 	printk("YuunOS !\n");
 	tty_use_color(VGA_WHITE, VGA_BLACK);
 
+	pg_map_page(0xC0000000, PG_READ_WRITE);
+	pg_unmap_page(0xC0000000);
+	
 	
 	/* This is a quick and dirty and temporary cli */
 	/* just for the sake of testing ! */

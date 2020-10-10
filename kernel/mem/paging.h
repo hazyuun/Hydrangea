@@ -20,16 +20,26 @@
 
 #define PG_SIZE           0x1000
 
+#define PG_FRAME   0xFFFFF000
+#define PG_FLAGS   0x00000FFF
+
+
 #define VIRT_TO_PG_DIR(addr)  (addr & 0xFFF)
+
 #define VIRT_TO_PG_TBL(addr)  ((addr & 0x3FF000) >> 12)
 #define VIRT_TO_PG_OFF(addr)  ((addr & 0xFFC00000) >> 22)
 
 
+#define PG_DIR_INDEX(addr) ((addr) >> 22)
+#define PG_TBL_INDEX(addr) (((addr) >> 12) & 0x3FF)
 
 
 void pg_init();
 void pg_switch_page_dir(uint32_t*);
 void* pg_get_page(uint32_t addr, uint8_t make);
+void pg_map_page(void* addr, uint32_t flags);
+void pg_unmap_page(void* addr);
+void pg_invalidate(uintptr_t virt);
 void pg_page_fault(uint8_t code);
 
 #endif
