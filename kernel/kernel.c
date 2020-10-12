@@ -38,7 +38,7 @@ multiboot_info_t* 	global_mb_header;
 uint32_t 			mb_begin_addr;
 uint32_t 			mb_end_addr;
 uint64_t			memory_size;
-
+extern uint32_t* ker_page_dir;
 #define OK() \
 	tty_use_color(VGA_GREEN, VGA_BLACK); \
 	tty_print(" < OK > "); \
@@ -105,10 +105,6 @@ void kmain(uint32_t mb_magic, multiboot_info_t* mb_header){
 	tty_use_color(VGA_MAGENTA, VGA_BLACK);
 	printk("YuunOS !\n");
 	tty_use_color(VGA_WHITE, VGA_BLACK);
-
-	pg_map_page(0xC0000000, PG_READ_WRITE);
-	pg_unmap_page(0xC0000000);
-	
 	
 	/* This is a quick and dirty and temporary cli */
 	/* just for the sake of testing ! */
