@@ -22,7 +22,7 @@ typedef struct free_ll{
      size_t size;
      struct free_ll* prev;
      struct free_ll* next;
-} free_ll_t; /* Linked list of free blocks */
+} free_ll_t; // Linked list of free blocks
 
 typedef struct free_ll alloc_ll_t;
 
@@ -34,7 +34,7 @@ typedef struct heap{
      free_ll_t* free_ll;
      alloc_ll_t* alloc_ll;
 } heap_t;
-
+/*
 heap_t* heap_create(void* start, size_t size, size_t max_size, uint8_t usr);
 
 void heap_save_allocated_block(heap_t* heap, void* addr, size_t size);
@@ -50,5 +50,5 @@ void heap_free(heap_t* heap, void* ptr);
 
 void* kmalloc(size_t size);
 void kfree(void* ptr);
-
+*/
 #endif

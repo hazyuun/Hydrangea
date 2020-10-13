@@ -49,19 +49,11 @@ void pg_init(){
      __asm__  __volatile__("mov %0, %%cr0":: "r"(cr0));
 }
 
-void pg_map_page(void* addr, uint32_t flags){
-     //uint32_t* pgtbl = (uint32_t*) pmalloc_a(1024 *sizeof(uint32_t), 1);
-     //frame_alloc();
-     uint32_t* p = pg_get_page((uint32_t) addr, 1, ker_page_dir);
-     // for(int i = 0; i < 1024; i++){
-     //      pgtbl[i] = ((uint32_t)addr + i*0x1000) | PG_PRESENT | flags;
-     // }
-     // ker_page_dir[(uint32_t)addr/(1024 * 1024 * 4)] = ((uint32_t) pgtbl) | PG_PRESENT | flags;
-     *p = (uint32_t)addr | PG_PRESENT | flags;
-     pg_invalidate((uint32_t)addr);
+void pg_imap_page(void* addr, uint32_t flags){
+     pg_map_page(addr, addr, flags);
 }
-void pg_map_page_ni(void* addr, void* phy, uint32_t flags){
-     uint32_t* pgtbl = (uint32_t*) pmalloc_a(1024 *sizeof(uint32_t), 1);
+void pg_map_page(void* addr, void* phy, uint32_t flags){
+     uint32_t* pgtbl = (uint32_t*) pmalloc_a(1024 * sizeof(uint32_t), 1);
      for(int i = 0; i < 1024; i++){
           pgtbl[i] = ((uint32_t)phy + i*0x1000) | PG_PRESENT | flags;
      }
@@ -91,12 +83,13 @@ void* pg_get_page(uint32_t addr, uint8_t make, uint32_t* dir){
      uint32_t ti = PG_TBL_INDEX(addr);
      
      if(dir[di] & PG_PRESENT) 
-          return (void*)((uint32_t*)(dir[di]) + ti);
+          return (void*)(   (uint32_t*)(*((uint32_t*)dir + di)) + ti   );
      if(make){
           uint32_t* new_table = (uint32_t*) frame_alloc();
 		dir[di] = (uint32_t)new_table | PG_PRESENT | PG_READ_WRITE; 
 		memset( new_table, 0, 4096);
-          return (void*)((uint32_t*)(dir[di]) + ti);
+          return (void*)(   (uint32_t*)(*((uint32_t*)dir + di)) + ti   );
+
      }
 
 	return NULL;

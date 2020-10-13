@@ -37,8 +37,8 @@
 void pg_init();
 void pg_switch_page_dir(uint32_t*);
 void* pg_get_page(uint32_t addr, uint8_t make, uint32_t* dir);
-void pg_map_page(void* addr, uint32_t flags);
-void pg_map_page_ni(void* addr, void* phy, uint32_t flags);
+void pg_imap_page(void* addr, uint32_t flags);
+void pg_map_page(void* addr, void* phy, uint32_t flags);
 
 void pg_unmap_page(void* addr);
 void pg_invalidate(uintptr_t virt);
