@@ -3,7 +3,6 @@
  *	Description : TODO
  * */
 
-
 #ifndef _IDT_H_
 #define _IDT_H_
 
@@ -11,17 +10,17 @@
 #include <stdint.h>
 
 /* Interrupt Descriptor Table */
-typedef struct{
-	uint16_t size;
-	uint32_t base;
+typedef struct {
+  uint16_t size;
+  uint32_t base;
 } __attribute__((packed)) IDT_ptr;
 
-typedef struct{
-	uint16_t base_lo;
-	uint16_t segsel;
-	uint8_t	zero; /* pimples ? zero ! this byte ? ZERO ! */
-	uint8_t flags;
-	uint16_t base_hi;
+typedef struct {
+  uint16_t base_lo;
+  uint16_t segsel;
+  uint8_t zero; /* pimples ? zero ! this byte ? ZERO ! */
+  uint8_t flags;
+  uint16_t base_hi;
 } __attribute__((packed)) IDT_entry;
 
 /* ISR Handlers */
@@ -60,10 +59,10 @@ extern void isr28();
 extern void isr29();
 extern void isr30();
 extern void isr31();
-/* 
+/*
  * Me           : Sigh.. Finally !
  * IRQ handlers : Allow us to introduce ourselves
- * Me           : *Surprised Pikachu* 
+ * Me           : *Surprised Pikachu*
  */
 
 extern void irq0();
@@ -85,17 +84,12 @@ extern void irq14();
 extern void irq15();
 /* .. and lonely.. */
 
-
-
-
-#define PIC_1       0x20
-#define PIC_2       0xA0
-#define PIC_1_DATA  0x21
-#define PIC_2_DATA  0xA1
-
+#define PIC_1 0x20
+#define PIC_2 0xA0
+#define PIC_1_DATA 0x21
+#define PIC_2_DATA 0xA1
 
 void idt_init();
 void idt_set_entry(uint8_t, uint32_t, uint16_t, uint8_t);
 
 #endif
-

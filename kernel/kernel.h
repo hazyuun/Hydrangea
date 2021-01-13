@@ -3,6 +3,6 @@
 
 #include <tty/tty.h>
 
-void panic(char* err_msg);
+void panic(char *err_msg);
 
 #endif

@@ -3,6 +3,11 @@
 
 #include <tty/tty.h>
 
-#define assert(e) if(!(e)) { tty_print("Assertion failed !"); while(1); }
+#define assert(e)                                                              \
+  if (!(e)) {                                                                  \
+    tty_print("Assertion failed !");                                           \
+    while (1)                                                                  \
+      ;                                                                        \
+  }
 
 #endif
