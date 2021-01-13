@@ -38,6 +38,7 @@ uint32_t mb_begin_addr;
 uint32_t mb_end_addr;
 uint64_t memory_size;
 extern uint32_t *ker_page_dir;
+
 #define OK()                                                                   \
   tty_use_color(VGA_GREEN, VGA_BLACK);                                         \
   tty_print(" < OK > ");                                                       \
@@ -100,10 +101,7 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mb_header) {
   pit_init(100);
   OK();
   printk("PIT set up \n");
-
-  // PCI_detect();
-  // OK(); printk("Detecting PCI devices\n");
-
+	
   printk("Welcome to ");
   tty_use_color(VGA_MAGENTA, VGA_BLACK);
   printk("YuunOS !\n");
