@@ -24,6 +24,7 @@ void pg_init();
 uint32_t *pg_get_ker_dir();
 uint32_t *pg_get_current_dir();
 
+uint8_t pg_is_mapped(uint32_t *dir, uint32_t *virt);
 void pg_map_pages(uint32_t *dir, uint32_t *phys, uint32_t *virt, uint32_t num,
                   uint32_t flags);
 void pg_unmap_pages(uint32_t *dir, uint32_t *virt, uint32_t num);

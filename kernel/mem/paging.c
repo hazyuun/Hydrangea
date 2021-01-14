@@ -39,7 +39,7 @@ static uint8_t pg_tbl_exists(uint32_t *dir, uint32_t *virt) {
   return ((dir[dir_index] & PG_PRESENT));
 }
 
-static uint8_t pg_is_mapped(uint32_t *dir, uint32_t *virt) {
+uint8_t pg_is_mapped(uint32_t *dir, uint32_t *virt) {
   if (!IS_ALIGNED((uint32_t)virt))
     panic("pg_is_mapped: Unaligned page address");
 
@@ -93,7 +93,9 @@ void pg_init() {
   }
 
   pg_map_pages(ker_page_dir, (uint32_t *)0x00000000, 0x00000000, 1024, PG_RW);
+  pg_map_pages(ker_page_dir, (uint32_t *)HEAP_START, (uint32_t *)HEAP_START, 1024, PG_RW);
 
+  kheap = heap_create(HEAP_START, HEAP_INITIAL_SIZE, HEAP_MAX_SIZE, 0);
   pg_switch_page_dir(ker_page_dir);
 
   uint32_t cr0;

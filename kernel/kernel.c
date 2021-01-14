@@ -106,7 +106,7 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mb_header) {
   tty_use_color(VGA_MAGENTA, VGA_BLACK);
   printk("YuunOS !\n");
   tty_use_color(VGA_WHITE, VGA_BLACK);
-  
+
   /* This is a quick and dirty and temporary cli */
   /* just for the sake of testing ! */
   char cmd[100];
