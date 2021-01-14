@@ -4,8 +4,8 @@
 #include <stdint.h>
 
 typedef struct {
-     uint64_t timer_value;
-     uint32_t freq;
+  uint64_t timer_value;
+  uint32_t freq;
 } pit_infos_t;
 
 void pit_init(uint32_t freq);

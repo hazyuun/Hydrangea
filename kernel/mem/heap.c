@@ -3,15 +3,16 @@
  *	Description : TODO
  *   Note : My heap implementation is bad, very bad,
  *        and I am aware of that, so if you are trying
- *        to learn from this code, it is a bad idea. 
+ *        to learn from this code, it is a bad idea.
+ *  TODO : implement a better heap.
  * */
 
-#include <stdio.h>
 #include <assert.h>
+#include <stdio.h>
 
 #include <mem/heap.h>
-#include <mem/pmm.h>
 #include <mem/paging.h>
+#include <mem/pmm.h>
 
 extern heap_t* kheap;
 
@@ -33,11 +34,8 @@ heap_t* heap_create(void* start, size_t size, size_t max_size, uint8_t usr){
 }
 /*
 uint8_t heap_expand(heap_t* heap, size_t size){
-
 }
-
 uint8_t heap_contract(heap_t* heap, size_t size){
-
 }
 */
 
