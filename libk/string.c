@@ -43,6 +43,13 @@ void memset(void *dest, char value, int n) {
   }
 }
 
+char *strcpy(char *dest, const char *src) {
+  char *save = dest;
+  while ((*dest++ = *src++))
+    ;
+  return save;
+}
+
 int strcmp(const char *dest, char *src) {
   int i = 0;
   while (dest[i] == src[i]) {
@@ -57,6 +64,48 @@ int strlen(const char *str) {
   while (*str++)
     len++;
   return len;
+}
+
+char *strcat(char *dest, const char *src) {
+  strcpy(dest + strlen(dest), src);
+  return dest;
+}
+/**/
+char *strchr(const char *str, char c) {
+  while (*str != c)
+    if (!*str++)
+      return 0;
+  return (char *)str;
+}
+size_t strspn(const char *str1, const char *str2) {
+  size_t ret = 0;
+  while (*str1 && strchr(str2, *str1++))
+    ret++;
+  return ret;
+}
+size_t strcspn(const char *str1, const char *str2) {
+  size_t ret = 0;
+  while (*str1)
+    if (strchr(str2, *str1))
+      return ret;
+    else
+      str1++, ret++;
+  return ret;
+}
+
+char *strtok(char *str, const char *delim) {
+  static char *i = 0;
+  if (str)
+    i = str;
+  else if (!i)
+    return 0;
+
+  str = i + strspn(i, delim);
+  i = str + strcspn(str, delim);
+  if (i == str)
+    return i = 0;
+  i = *i ? *i = 0, i + 1 : 0;
+  return str;
 }
 
 char *itoa(int value, char *result, int base) {
