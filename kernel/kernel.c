@@ -30,6 +30,8 @@
 #include <mem/paging.h>
 #include <mem/pmm.h>
 
+#include <fs/initrd/initrd.h>
+
 #include <stdio.h>
 #include <string.h>
 
@@ -96,12 +98,15 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mb_header) {
   pmm_init();
   pg_init();
   OK();
-	printk("Paging set up \n");
+  printk("Paging enabled \n");
 
   pit_init(100);
   OK();
   printk("PIT set up \n");
-	
+
+  vfs_dummy();
+  initrd_init((multiboot_module_t *)mb_header->mods_addr);
+
   printk("Welcome to ");
   tty_use_color(VGA_MAGENTA, VGA_BLACK);
   printk("YuunOS !\n");
@@ -109,11 +114,18 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mb_header) {
 
   /* This is a quick and dirty and temporary cli */
   /* just for the sake of testing ! */
+  /* Edit : it is getting messy lol */
+
+  vfs_node_t *cwd = vfs_get_root();
   char cmd[100];
   while (1) {
     tty_use_color(VGA_LIGHT_BLUE, VGA_BLACK);
-    printk("\nKernel>");
+    printk("\nKernel ");
+    tty_use_color(VGA_CYAN, VGA_BLACK);
+    printk("%s", vfs_abs_path_to(cwd));
     tty_use_color(VGA_WHITE, VGA_BLACK);
+    printk("> ");
+
     scank("%s", cmd);
     if (!strcmp("info", cmd)) {
       tty_print("YuunOS v0.0.1\n");
@@ -126,21 +138,47 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mb_header) {
       io_outb(0x64, 0xFE);
       while (1)
         ;
-    } else if (!strcmp("kbd fr", cmd)) {
-      kbd_switch_layout("fr");
-      printk("Keyboard layout changed to : FR\nEnjoy your baguette !\n");
-    } else if (!strcmp("kbd en", cmd)) {
-      kbd_switch_layout("en");
-      printk("Keyboard layout changed to : EN\n");
     } else if (!strcmp("sleep", cmd)) { /* Will sleep 10 secs */
       pit_sleep(10 * 100);
     } else if (!strcmp("datetime", cmd)) {
       rtc_print_now();
     } else if (!strcmp("lspci", cmd)) {
       PCI_detect();
-    } else if (!strcmp("", cmd)) {
-    } else
-      printk("Unknown command\n");
+    } else if (!strcmp(cmd, "ls")) {
+      vfs_node_t *node = cwd->childs;
+      while (node) {
+        printk("%s\n", node->name);
+        node = node->next;
+      }
+    } else if (!strcmp(cmd, "ki")) {
+      vfs_show_tree(cwd, 0);
+    } else if (strcmp(cmd, "")) {
+      char *token = strtok(cmd, " ");
+      if (!strcmp(token, "cd")) {
+        token = strtok(NULL, " ");
+        vfs_node_t *n;
+        if (!strcmp(token, ".."))
+          cwd = cwd->parent;
+        else {
+          if ((n = vfs_abspath_to_node(cwd, token))) {
+            cwd = n;
+          } else {
+            printk("Not found");
+          }
+        }
+      } else if (!strcmp("kbd", cmd)) {
+        token = strtok(NULL, " ");
+        if (!strcmp(token, "fr") || !strcmp(token, "en")) {
+          kbd_switch_layout(token);
+
+          printk("Keyboard layout changed to : %s%s", token,
+                 !strcmp(token, "fr") ? "\nEnjoy your baguette !\n" : "\n");
+        } else
+          printk("Invalid keyboard layout\n");
+
+      } else
+        printk("Unknown command\n");
+    }
   }
   while (1)
     __asm__("hlt\n\t");

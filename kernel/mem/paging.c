@@ -93,6 +93,8 @@ void pg_init() {
   }
 
   pg_map_pages(ker_page_dir, (uint32_t *)0x00000000, 0x00000000, 1024, PG_RW);
+  pg_map_pages(ker_page_dir, (uint32_t *)  0x400000, (uint32_t *)0x400000, 1024, PG_RW);
+
   pg_map_pages(ker_page_dir, (uint32_t *)HEAP_START, (uint32_t *)HEAP_START, 1024, PG_RW);
 
   kheap = heap_create(HEAP_START, HEAP_INITIAL_SIZE, HEAP_MAX_SIZE, 0);

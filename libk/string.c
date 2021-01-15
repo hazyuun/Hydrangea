@@ -70,7 +70,7 @@ char *strcat(char *dest, const char *src) {
   strcpy(dest + strlen(dest), src);
   return dest;
 }
-/**/
+
 char *strchr(const char *str, char c) {
   while (*str != c)
     if (!*str++)
