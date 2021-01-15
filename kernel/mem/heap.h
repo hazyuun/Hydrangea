@@ -12,7 +12,7 @@
 #include <ds/ordered_list.h>
 #include <stdint.h>
 
-#define HEAP_START 0x400000
+#define HEAP_START (void*) 0x400000
 #define HEAP_MAX_SIZE 0x100000
 #define HEAP_INDEX_SIZE 0x20000
 #define HEAP_INITIAL_SIZE 0x10000
@@ -45,25 +45,5 @@ void* heap_alloc(heap_t* heap, size_t size);
 void heap_free(heap_t* heap, void* ptr);
 void* kmalloc(size_t size);
 void kfree(void* ptr);
-int *test();
-/*
-typedef struct free_ll {
-  void *addr;
-  size_t size;
-  struct free_ll *prev;
-  struct free_ll *next;
-} free_ll_t;
 
-typedef struct heap {
-  uint32_t start;
-  uint32_t size;
-  uint32_t max_size;
-  uint8_t  usr;
-  free_ll_t *free_blocks;
-} heap_t;
-
-heap_t *heap_create(uint32_t start, uint32_t size, uint32_t max_size, uint8_t usr);
-void *heap_alloc(heap_t *heap, size_t size);
-void heap_free(heap_t *heap, void *ptr);
-*/
 #endif
