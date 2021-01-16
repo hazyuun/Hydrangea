@@ -5,7 +5,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <tty/tty.h>
+#include <boot/multiboot.h>
 
+extern multiboot_info_t *global_mb_header;
 extern uint32_t memory_size;
 extern size_t placement_addr;
 
@@ -87,6 +89,7 @@ void pg_unmap_pages(uint32_t *dir, uint32_t *virt, uint32_t num) {
     }
   }
 }
+
 void pg_init() {
   for (int i = 0; i < 1024; i++) {
     ker_page_dir[i] = PG_RW;
@@ -94,7 +97,11 @@ void pg_init() {
 
   pg_map_pages(ker_page_dir, (uint32_t *)0x00000000, 0x00000000, 1024, PG_RW);
   pg_map_pages(ker_page_dir, (uint32_t *)  0x400000, (uint32_t *)0x400000, 1024, PG_RW);
-
+  
+  /* Map the page of the VESA framebuffer */
+  uint32_t page = global_mb_header->framebuffer_addr & 0xFFF00000;
+  pg_map_pages(pg_get_ker_dir(), (uint32_t *)  page, (uint32_t *)page, 1024, PG_RW);
+  
   pg_map_pages(ker_page_dir, (uint32_t *)HEAP_START, (uint32_t *)HEAP_START, 1024, PG_RW);
 
   kheap = heap_create(HEAP_START, HEAP_INITIAL_SIZE, HEAP_MAX_SIZE, 0);

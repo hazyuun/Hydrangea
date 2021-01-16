@@ -32,6 +32,9 @@
 
 #include <fs/initrd/initrd.h>
 
+#include <vesa/vesa.h>
+#include <tty/vesa/vesa_term.h>
+
 #include <stdio.h>
 #include <string.h>
 
@@ -42,20 +45,22 @@ uint64_t memory_size;
 extern uint32_t *ker_page_dir;
 
 #define OK()                                                                   \
-  tty_use_color(VGA_GREEN, VGA_BLACK);                                         \
-  tty_print(" < OK > ");                                                       \
-  tty_use_color(VGA_WHITE, VGA_BLACK);
+  vesa_term_use_color(NICE_GREEN);                                         \
+  vesa_term_print(" < OK > ");                                                       \
+  vesa_term_use_color(NICE_WHITE);
 
 void panic(char *err_msg) {
-  tty_use_color(VGA_RED, VGA_BLACK);
-  tty_print(" KERNEL PANIC : ");
-  tty_print(err_msg);
+  vesa_term_use_color(NICE_RED);
+  vesa_term_print(" KERNEL PANIC : ");
+  vesa_term_print(err_msg);
   while (1)
     ;
 }
 
 void kmain(uint32_t mb_magic, multiboot_info_t *mb_header) {
-  tty_init();
+
+  vesa_init(mb_header);
+  vesa_term_init(vesa_get_framebuffer());
 
   printk("[*] Kernel loaded !\n");
 
@@ -96,6 +101,7 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mb_header) {
   printk("Serial port COM1 initialized \n");
 
   pmm_init();
+  
   pg_init();
   OK();
   printk("Paging enabled \n");
@@ -106,11 +112,11 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mb_header) {
 
   vfs_dummy();
   initrd_init((multiboot_module_t *)mb_header->mods_addr);
-
+  
   printk("Welcome to ");
-  tty_use_color(VGA_MAGENTA, VGA_BLACK);
+  vesa_term_use_color(NICE_MAGENTA);
   printk("YuunOS !\n");
-  tty_use_color(VGA_WHITE, VGA_BLACK);
+  vesa_term_use_color(NICE_WHITE);
 
   /* This is a quick and dirty and temporary cli */
   /* just for the sake of testing ! */
@@ -119,18 +125,18 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mb_header) {
   vfs_node_t *cwd = vfs_get_root();
   char cmd[100];
   while (1) {
-    tty_use_color(VGA_LIGHT_BLUE, VGA_BLACK);
+    vesa_term_use_color(NICE_CYAN_0);
     printk("\nKernel ");
-    tty_use_color(VGA_CYAN, VGA_BLACK);
+    vesa_term_use_color(NICE_CYAN);
     printk("%s", vfs_abs_path_to(cwd));
-    tty_use_color(VGA_WHITE, VGA_BLACK);
+    vesa_term_use_color(NICE_WHITE);
     printk("> ");
 
     scank("%s", cmd);
     if (!strcmp("info", cmd)) {
-      tty_print("YuunOS v0.0.1\n");
+      vesa_term_print("YuunOS v0.0.1\n");
     } else if (!strcmp("clear", cmd)) {
-      tty_clear();
+      vesa_term_clear();
     } else if (!strcmp("reboot", cmd)) {
       uint8_t TW = 0x02;
       while (TW & 0x02)
