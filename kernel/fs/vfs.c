@@ -33,13 +33,36 @@ vfs_node_t *vfs_create_node(const char *name, uint8_t type) {
 
   strcpy(node->name, name);
   node->childs = 0;
+  if (type == VFS_DIR && strcmp(name, "/") && strcmp(name, ".") &&
+      strcmp(name, "..")) {
+    vfs_node_t *dot = vfs_add_child(node, ".", VFS_DIR);
+    vfs_node_t *dotdot = vfs_add_child(node, "..", VFS_DIR);
+  }
   return node;
+}
+static void vfs_free_node(vfs_node_t *node);
+static void vfs_free_child_nodes(vfs_node_t *node) {
+  vfs_node_t *n = node->childs;
+  while (n) {
+    vfs_free_node(n);
+    n = n->next;
+  }
+  node->childs = 0;
+}
+
+static void vfs_free_node(vfs_node_t *node) {
+  kfree(node->name);
+  kfree(node->file);
+
+  vfs_free_child_nodes(node);
+
+  kfree(node);
 }
 
 vfs_node_t *vfs_add_child(vfs_node_t *parent, char *name, uint8_t type) {
   if (!parent) {
 
-    printk("\nParent is NULL");
+    printk("\nCan't create %s node, parent is NULL", name);
     return NULL;
   }
   if (parent->childs == 0) {
@@ -68,10 +91,19 @@ vfs_node_t *vfs_get_child(vfs_node_t *parent, size_t index) {
     if (child == NULL)
       break;
   }
+  if (!strcmp(child->name, "."))
+    return child->parent;
+  if (!strcmp(child->name, ".."))
+    return child->parent->parent;
   return child;
 }
 
 vfs_node_t *vfs_get_child_by_name(vfs_node_t *parent, char *name) {
+  if (!strcmp(name, "."))
+    return parent;
+  if (!strcmp(name, ".."))
+    return parent->parent;
+
   vfs_node_t *child = parent->childs;
   if (!child)
     return NULL;
@@ -84,6 +116,8 @@ vfs_node_t *vfs_get_child_by_name(vfs_node_t *parent, char *name) {
 }
 
 void vfs_show_tree(vfs_node_t *root, size_t level) {
+  if (!strcmp(root->name, ".") || !strcmp(root->name, ".."))
+    return;
   size_t lvl = level;
   while (lvl--)
     printk("|  ");
@@ -91,6 +125,7 @@ void vfs_show_tree(vfs_node_t *root, size_t level) {
   if (root->childs) {
     vfs_node_t *child = root->childs;
     while (child) {
+
       vfs_show_tree(child, level + 1);
       child = child->next;
     }
@@ -102,14 +137,12 @@ void vfs_dummy() {
   vfs_root->parent = vfs_root;
   vfs_add_child(vfs_root, "bin", VFS_DIR);
   vfs_add_child(vfs_root, "etc", VFS_DIR);
-  vfs_add_child(vfs_root, "home", VFS_DIR);
+  vfs_node_t *home = vfs_add_child(vfs_root, "home", VFS_DIR);
   vfs_add_child(vfs_root, "dev", VFS_DIR);
 
-  vfs_node_t *home = vfs_get_child(vfs_root, 2);
-  vfs_add_child(home, "yuun", VFS_DIR);
+  vfs_node_t *ys = vfs_add_child(home, "yuun", VFS_DIR);
   vfs_add_child(home, "yuusuf", VFS_DIR);
 
-  vfs_node_t *ys = vfs_get_child(home, 0);
   vfs_add_child(ys, "document.txt", VFS_FILE);
   vfs_add_child(ys, "program.c", VFS_FILE);
 }
@@ -139,12 +172,18 @@ vfs_node_t *vfs_abspath_to_node(vfs_node_t *root, char *path) {
   char *ap = (char *)kmalloc(256);
   strcpy(ap, path);
   char *token = strtok(ap, "/");
-  vfs_node_t *node = root;
+  vfs_node_t *node;
+
+  if (path[0] == '/')
+    node = vfs_get_root();
+  else
+    node = root;
+
   while (token) {
     node = vfs_get_child_by_name(node, token);
     if (!node)
       return NULL;
-    token = strtok(NULL, " ");
+    token = strtok(NULL, "/");
   }
   return node;
 }
@@ -154,7 +193,9 @@ vfs_node_t *vfs_make_node(vfs_node_t *root, char *path, uint8_t type,
   char *ap = (char *)kmalloc(256);
   strcpy(ap, path);
   char *token = strtok(ap, "/");
+
   vfs_node_t *node = root;
+
   vfs_node_t *bkp = node;
   while (token) {
     node = vfs_get_child_by_name(node, token);
@@ -165,7 +206,8 @@ vfs_node_t *vfs_make_node(vfs_node_t *root, char *path, uint8_t type,
   }
   node->file->type = type;
   node->file->inode = inode;
-
+  if (type == VFS_FILE)
+    vfs_free_child_nodes(node);
   return node;
 }
 uint8_t vfs_is_dir(vfs_node_t *node) { return node->file->type == VFS_DIR; }

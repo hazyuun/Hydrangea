@@ -170,18 +170,16 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mb_header) {
       if (!strcmp(token, "cd")) {
         token = strtok(NULL, " ");
         vfs_node_t *n;
-        if (!strcmp(token, ".."))
-          cwd = cwd->parent;
-        else {
-          if ((n = vfs_abspath_to_node(cwd, token))) {
-            if (vfs_is_dir(n))
-              cwd = n;
-            else
-              printk("Not a directory");
-          } else {
-            printk("Not found");
-          }
+
+        if ((n = vfs_abspath_to_node(cwd, token))) {
+          if (vfs_is_dir(n))
+            cwd = n;
+          else
+            printk("Not a directory");
+        } else {
+          printk("Not found");
         }
+
       } else if (!strcmp("kbd", cmd)) {
         token = strtok(NULL, " ");
         if (!strcmp(token, "fr") || !strcmp(token, "en")) {
@@ -200,7 +198,7 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mb_header) {
           printk("Not found");
         else {
           char *contents = kmalloc(node->file->size);
-          if(vfs_read(node->file, 0, node->file->size, contents))
+          if (vfs_read(node->file, 0, node->file->size, contents))
             printk("%s", contents);
           kfree(contents);
         }
