@@ -20,10 +20,10 @@ typedef struct {
 
 void initrd_init(multiboot_module_t *mod); /* Haha what a name, lol */
 
-uint32_t initrd_read(vfs_node_t *node, uint32_t offset, uint32_t size,
+uint32_t initrd_read(vfs_file_t *node, uint32_t offset, uint32_t size,
                      char *buffer);
-dirent_t *initrd_readdir(vfs_node_t *node, uint32_t index);
-vfs_node_t *initrd_finddir(vfs_node_t *node, char *name);
+dirent_t *initrd_readdir(vfs_file_t *node, uint32_t index);
+vfs_file_t *initrd_finddir(vfs_file_t *node, char *name);
 
 size_t tar_get_size(const char *input);
 size_t tar_parse(vfs_node_t *node, size_t addr);

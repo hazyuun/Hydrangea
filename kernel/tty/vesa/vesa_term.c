@@ -64,6 +64,7 @@ void vesa_term_putchar(unsigned char c) {
     vesa_term_cur_stp();
 
   } else if (c == '\t') {
+    vesa_term_putat(' ', c_term.col, c_term.row);
     size_t i = 0;
     while (c_term.col + 1 > i)
       i += 4;

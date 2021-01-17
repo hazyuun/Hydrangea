@@ -32,8 +32,8 @@
 
 #include <fs/initrd/initrd.h>
 
-#include <vesa/vesa.h>
 #include <tty/vesa/vesa_term.h>
+#include <vesa/vesa.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -45,8 +45,8 @@ uint64_t memory_size;
 extern uint32_t *ker_page_dir;
 
 #define OK()                                                                   \
-  vesa_term_use_color(NICE_GREEN);                                         \
-  vesa_term_print(" < OK > ");                                                       \
+  vesa_term_use_color(NICE_GREEN);                                             \
+  vesa_term_print(" < OK > ");                                                 \
   vesa_term_use_color(NICE_WHITE);
 
 void panic(char *err_msg) {
@@ -101,7 +101,7 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mb_header) {
   printk("Serial port COM1 initialized \n");
 
   pmm_init();
-  
+
   pg_init();
   OK();
   printk("Paging enabled \n");
@@ -112,12 +112,13 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mb_header) {
 
   vfs_dummy();
   initrd_init((multiboot_module_t *)mb_header->mods_addr);
-  
+
   printk("Welcome to ");
   vesa_term_use_color(NICE_MAGENTA);
   printk("YuunOS !\n");
   vesa_term_use_color(NICE_WHITE);
 
+  kbd_switch_layout("en");
   /* This is a quick and dirty and temporary cli */
   /* just for the sake of testing ! */
   /* Edit : it is getting messy lol */
@@ -153,9 +154,15 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mb_header) {
     } else if (!strcmp(cmd, "ls")) {
       vfs_node_t *node = cwd->childs;
       while (node) {
-        printk("%s\n", node->name);
+        if (vfs_is_dir(node))
+          vesa_term_use_color(NICE_YELLOW);
+        else
+          vesa_term_use_color(NICE_WHITE);
+        printk("%s \t", node->name);
         node = node->next;
       }
+      printk("\n");
+      vesa_term_use_color(NICE_WHITE);
     } else if (!strcmp(cmd, "ki")) {
       vfs_show_tree(cwd, 0);
     } else if (strcmp(cmd, "")) {
@@ -167,7 +174,10 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mb_header) {
           cwd = cwd->parent;
         else {
           if ((n = vfs_abspath_to_node(cwd, token))) {
-            cwd = n;
+            if (vfs_is_dir(n))
+              cwd = n;
+            else
+              printk("Not a directory");
           } else {
             printk("Not found");
           }
@@ -181,6 +191,19 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mb_header) {
                  !strcmp(token, "fr") ? "\nEnjoy your baguette !\n" : "\n");
         } else
           printk("Invalid keyboard layout\n");
+
+      } else if (!strcmp("cat", cmd)) {
+        token = strtok(NULL, " ");
+
+        vfs_node_t *node = vfs_get_child_by_name(cwd, token);
+        if (!node)
+          printk("Not found");
+        else {
+          char *contents = kmalloc(node->file->size);
+          if(vfs_read(node->file, 0, node->file->size, contents))
+            printk("%s", contents);
+          kfree(contents);
+        }
 
       } else
         printk("Unknown command\n");

@@ -63,9 +63,9 @@ typedef struct vfs_file {
 
 vfs_node_t *vfs_get_root();
 
-vfs_node_t *vfs_create_node(const char *name);
+vfs_node_t *vfs_create_node(const char *name, uint8_t type);
 
-vfs_node_t *vfs_add_child(vfs_node_t *parent, char *name);
+vfs_node_t *vfs_add_child(vfs_node_t *parent, char *name, uint8_t type);
 
 vfs_node_t *vfs_get_child(vfs_node_t *parent, size_t index);
 
@@ -78,6 +78,9 @@ void vfs_dummy();
 char *vfs_abs_path_to(vfs_node_t *node);
 
 vfs_node_t *vfs_abspath_to_node(vfs_node_t *root, char *path);
+vfs_node_t *vfs_make_node(vfs_node_t *root, char *path, uint8_t type,
+                          uint32_t inode);
+uint8_t vfs_is_dir(vfs_node_t *node);
 
 uint32_t vfs_read(vfs_file_t *node, uint32_t offset, uint32_t size,
                   char *buffer);
