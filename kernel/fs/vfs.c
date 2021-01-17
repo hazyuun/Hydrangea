@@ -40,8 +40,8 @@ vfs_node_t *vfs_create_node(const char *name, uint8_t type) {
   }
   return node;
 }
-static void vfs_free_node(vfs_node_t *node);
-static void vfs_free_child_nodes(vfs_node_t *node) {
+
+void vfs_free_child_nodes(vfs_node_t *node) {
   vfs_node_t *n = node->childs;
   while (n) {
     vfs_free_node(n);
@@ -50,7 +50,7 @@ static void vfs_free_child_nodes(vfs_node_t *node) {
   node->childs = 0;
 }
 
-static void vfs_free_node(vfs_node_t *node) {
+void vfs_free_node(vfs_node_t *node) {
   kfree(node->name);
   kfree(node->file);
 

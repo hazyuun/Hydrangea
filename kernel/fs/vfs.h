@@ -64,6 +64,8 @@ typedef struct vfs_file {
 vfs_node_t *vfs_get_root();
 
 vfs_node_t *vfs_create_node(const char *name, uint8_t type);
+void vfs_free_node(vfs_node_t *node);
+void vfs_free_child_nodes(vfs_node_t *node);
 
 vfs_node_t *vfs_add_child(vfs_node_t *parent, char *name, uint8_t type);
 
