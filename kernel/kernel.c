@@ -38,11 +38,6 @@
 #include <stdio.h>
 #include <string.h>
 
-multiboot_info_t *global_mb_header;
-uint32_t mb_begin_addr;
-uint32_t mb_end_addr;
-uint64_t memory_size;
-extern uint32_t *ker_page_dir;
 
 #define OK()                                                                   \
   vesa_term_use_color(NICE_GREEN);                                             \
@@ -57,9 +52,8 @@ void panic(char *err_msg) {
     ;
 }
 
-void kmain(uint32_t mb_magic, multiboot_info_t *mb_header) {
-
-  vesa_init(mb_header);
+void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
+  vesa_init(mbi);
   vesa_term_init(vesa_get_framebuffer());
 
   printk("[*] Kernel loaded !\n");
@@ -67,26 +61,11 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mb_header) {
   if (mb_magic != MULTIBOOT_BOOTLOADER_MAGIC)
     panic("Invalid multiboot magic number !");
 
-  if (!(mb_header->flags & (1 << 6)))
+  if (!(mbi->flags & (1 << 6)))
     panic("No multiboot memory map !");
 
-  global_mb_header = mb_header;
-  mb_begin_addr = (uint32_t)mb_header;
-  mb_end_addr = (uint32_t)(mb_header + sizeof(multiboot_info_t));
-  memory_size = 0;
-
-  multiboot_memory_map_t *mmap;
-
-  for (mmap = (multiboot_memory_map_t *)global_mb_header->mmap_addr;
-       (unsigned long)mmap <
-       global_mb_header->mmap_addr + global_mb_header->mmap_length;
-       mmap = (multiboot_memory_map_t *)((unsigned long)mmap + mmap->size +
-                                         sizeof(mmap->size))) {
-    if (mmap->type & MULTIBOOT_MEMORY_AVAILABLE)
-      memory_size += (((uint64_t)(mmap->len_hi) << 8) | (mmap->len_lo));
-  }
-
-  printk("[*] Available memory : %d KiB\n", (memory_size / 1024));
+  pmm_init(mbi);
+  printk("[*] Available memory : %d KiB\n", pmm_available_memory());
 
   gdt_init();
   OK();
@@ -100,9 +79,7 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mb_header) {
   OK();
   printk("Serial port COM1 initialized \n");
 
-  pmm_init();
-
-  pg_init();
+  pg_init(mbi);
   OK();
   printk("Paging enabled \n");
 
@@ -111,7 +88,7 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mb_header) {
   printk("PIT set up \n");
 
   vfs_dummy();
-  initrd_init((multiboot_module_t *)mb_header->mods_addr);
+  initrd_init((multiboot_module_t *)mbi->mods_addr);
 
   printk("Welcome to ");
   vesa_term_use_color(NICE_MAGENTA);

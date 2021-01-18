@@ -12,12 +12,12 @@
 uint32_t *vesa_fb;
 uint32_t vesa_width, vesa_height, vesa_pitch, vesa_bpp;
 
-void vesa_init(multiboot_info_t *mb) {
-  vesa_fb = (uint32_t *)mb->framebuffer_addr;
-  vesa_width = mb->framebuffer_width;
-  vesa_height = mb->framebuffer_height;
-  vesa_pitch = mb->framebuffer_pitch;
-  vesa_bpp = mb->framebuffer_bpp;
+void vesa_init(multiboot_info_t *mbi) {
+  vesa_fb = (uint32_t *)mbi->framebuffer_addr;
+  vesa_width = mbi->framebuffer_width;
+  vesa_height = mbi->framebuffer_height;
+  vesa_pitch = mbi->framebuffer_pitch;
+  vesa_bpp = mbi->framebuffer_bpp;
 }
 
 void vesa_write(uint32_t offset, uint32_t *buffer, size_t size) {

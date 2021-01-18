@@ -9,6 +9,8 @@
 #include <mem/paging.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <boot/multiboot.h>
+
 /* Placement malloc */
 void *pmalloc(size_t size);
 
@@ -19,7 +21,9 @@ void *pmalloc_a(size_t size, size_t align);
  * memory */
 void *pmalloc_ap(size_t size, size_t align, size_t *physical_addr);
 
-void pmm_init();
+void pmm_init(multiboot_info_t *mbi);
+
+uint32_t pmm_available_memory();
 
 /* Frames bitmap related functions */
 void frame_bmp_set(uint32_t addr);

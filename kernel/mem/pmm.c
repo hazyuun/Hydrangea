@@ -12,10 +12,14 @@
 #include <tty/tty.h>
 
 extern uint32_t end_of_bin_addr;
-extern uint32_t memory_size;
+
 volatile size_t placement_addr = (size_t)&end_of_bin_addr;
+
 extern heap_t *kheap;
+
 uint32_t *frames_bmp;
+
+uint64_t memory_size;
 
 /* Placement malloc */
 void *pmalloc(size_t size) {
@@ -44,11 +48,41 @@ void *pmalloc_ap(size_t size, size_t align, size_t *physical_addr) {
   return pmalloc(size);
 }
 
-void pmm_init() {
+void pmm_init(multiboot_info_t *mbi) {
+
+  uint32_t mb_begin_addr;
+  uint32_t mb_end_addr;
+  
+  mb_begin_addr = (uint32_t)mbi;
+  mb_end_addr = (uint32_t)(mbi + sizeof(multiboot_info_t));
+  memory_size = 0;
+
+  multiboot_memory_map_t *mmap;
+
+  for (mmap = (multiboot_memory_map_t *)mbi->mmap_addr;
+       (unsigned long)mmap < mbi->mmap_addr + mbi->mmap_length;
+       mmap = (multiboot_memory_map_t *)((unsigned long)mmap + mmap->size +
+                                         sizeof(mmap->size))) {
+    if (mmap->type & MULTIBOOT_MEMORY_AVAILABLE)
+      memory_size += (uint64_t)(mmap->len);
+   
+  }
+
   frames_bmp = (uint32_t *)pmalloc(((memory_size / 4096) / 32));
   memset(frames_bmp, 0, ((memory_size / 4096) / 32));
-
   frame_alloc();
+  for (mmap = (multiboot_memory_map_t *)mbi->mmap_addr;
+       (unsigned long)mmap < mbi->mmap_addr + mbi->mmap_length;
+       mmap = (multiboot_memory_map_t *)((unsigned long)mmap + mmap->size +
+                                         sizeof(mmap->size))) {
+    if (!(mmap->type & MULTIBOOT_MEMORY_AVAILABLE))
+      frame_bmp_set(mmap->addr);
+   
+  }
+}
+
+uint32_t pmm_available_memory() {
+  return memory_size / 1024;
 }
 
 void frame_bmp_set(uint32_t addr) {

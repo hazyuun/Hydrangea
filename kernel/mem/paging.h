@@ -7,6 +7,7 @@
 #define _pg_H_
 
 #include <stdint.h>
+#include <boot/multiboot.h>
 
 #define PG_SIZE 0x1000
 
@@ -19,7 +20,7 @@
 
 #define IS_ALIGNED(addr) (!(addr % 0x1000))
 
-void pg_init();
+void pg_init(multiboot_info_t *mbi);
 
 uint32_t *pg_get_ker_dir();
 uint32_t *pg_get_current_dir();
