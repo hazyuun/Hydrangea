@@ -50,11 +50,11 @@ void *pmalloc_ap(size_t size, size_t align, size_t *physical_addr) {
 
 void pmm_init(multiboot_info_t *mbi) {
 
-  uint32_t mb_begin_addr;
-  uint32_t mb_end_addr;
+  // uint32_t mb_begin_addr;
+  // uint32_t mb_end_addr;
   
-  mb_begin_addr = (uint32_t)mbi;
-  mb_end_addr = (uint32_t)(mbi + sizeof(multiboot_info_t));
+  // mb_begin_addr = (uint32_t)mbi;
+  // mb_end_addr = (uint32_t)(mbi + sizeof(multiboot_info_t));
   memory_size = 0;
 
   multiboot_memory_map_t *mmap;

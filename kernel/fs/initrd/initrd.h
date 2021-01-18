@@ -18,7 +18,7 @@ typedef struct {
   size_t offset;
 } tar_header_t;
 
-void initrd_init(multiboot_module_t *mod); /* Haha what a name, lol */
+uint8_t initrd_init(multiboot_info_t *mbi); /* Haha what a name, lol */
 
 uint32_t initrd_read(vfs_file_t *node, uint32_t offset, uint32_t size,
                      char *buffer);

@@ -4,7 +4,7 @@
 #include <mem/pmm.h>
 #include <stdio.h>
 #include <string.h>
-#include <tty/tty.h>
+#include <tty/vesa/vesa_term.h>
 
 heap_t *kheap;
 
@@ -123,12 +123,12 @@ void pg_invalidate_page(uint32_t *virt) {
 }
 
 void pg_page_fault(uint8_t code) {
-  tty_use_color(VGA_LIGHT_RED, VGA_BLACK);
+  vesa_term_use_color(NICE_WHITE_0);
   printk("\n PAGE FAULT !\n");
   uint32_t addr;
   asm volatile("mov %%cr2, %0" : "=r"(addr));
   printk(" at ");
-  tty_print_hex(addr);
+  vesa_term_print_hex(addr);
   printk("\n\n");
 
   int present = !(code & 0x1);

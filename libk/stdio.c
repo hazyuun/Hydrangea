@@ -3,7 +3,6 @@
 #include <string.h>
 
 #include <drivers/kbd.h>
-#include <tty/vesa/vesa_term.h>
 
 void printk(const char *format, ...) {
   va_list ap;

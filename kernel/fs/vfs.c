@@ -33,11 +33,11 @@ vfs_node_t *vfs_create_node(const char *name, uint8_t type) {
 
   strcpy(node->name, name);
   node->childs = 0;
-  if (type == VFS_DIR && strcmp(name, "/") && strcmp(name, ".") &&
-      strcmp(name, "..")) {
-    vfs_node_t *dot = vfs_add_child(node, ".", VFS_DIR);
-    vfs_node_t *dotdot = vfs_add_child(node, "..", VFS_DIR);
-  }
+  // if (type == VFS_DIR && strcmp(name, "/") && strcmp(name, ".") &&
+  //     strcmp(name, "..")) {
+  //   vfs_node_t *dot = vfs_add_child(node, ".", VFS_DIR);
+  //   vfs_node_t *dotdot = vfs_add_child(node, "..", VFS_DIR);
+  // }
   return node;
 }
 

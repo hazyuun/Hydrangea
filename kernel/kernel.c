@@ -38,10 +38,9 @@
 #include <stdio.h>
 #include <string.h>
 
-
 #define OK()                                                                   \
   vesa_term_use_color(NICE_GREEN);                                             \
-  vesa_term_print(" < OK > ");                                                 \
+  vesa_term_print("\n < OK > ");                                               \
   vesa_term_use_color(NICE_WHITE);
 
 void panic(char *err_msg) {
@@ -69,28 +68,33 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
 
   gdt_init();
   OK();
-  printk("GDT set up \n");
+  printk("GDT set up");
 
   idt_init();
   OK();
-  printk("IDT set up \n");
+  printk("IDT set up");
 
   serial_init(SERIAL_COM1);
   OK();
-  printk("Serial port COM1 initialized \n");
+  printk("Serial port COM1 initialized");
 
   pg_init(mbi);
   OK();
-  printk("Paging enabled \n");
+  printk("Paging enabled");
 
   pit_init(100);
   OK();
-  printk("PIT set up \n");
+  printk("PIT set up");
 
   vfs_dummy();
-  initrd_init((multiboot_module_t *)mbi->mods_addr);
 
-  printk("Welcome to ");
+  if (mbi->flags & (1 << 3)) {
+    uint8_t mods_loaded = initrd_init(mbi);
+    OK();
+    printk("Loaded %d modules", mods_loaded);
+  }
+  
+  printk("\nWelcome to ");
   vesa_term_use_color(NICE_MAGENTA);
   printk("YuunOS !\n");
   vesa_term_use_color(NICE_WHITE);

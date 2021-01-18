@@ -4,12 +4,35 @@
 #include <stdio.h>
 #include <string.h>
 
-uint32_t *initrd_addr;
+uint8_t initrd_init(multiboot_info_t *mbi) {
+  size_t count = mbi->mods_count;
+  if (count == 0)
+    return 0;
+  printk("\n[initrd] Found %d module(s) ", count);
+  if (count > 10) {
+    vesa_term_use_color(NICE_YELLOW);
+    printk("\n\t<!> [initrd] Can't load more than 10 modules ");
+    printk("\n\t<!> [initrd] %d module(s) will be ignored ", count - 10);
+    count = 10;
+  }
 
-void initrd_init(multiboot_module_t *mod) {
   vfs_node_t *initrd = vfs_add_child(vfs_get_root(), "initrd", VFS_DIR);
-  initrd_addr = mod->mod_start;
-  tar_parse(initrd, mod->mod_start);
+
+  multiboot_module_t *module = (multiboot_module_t *)(mbi->mods_addr);
+  char num[2] = "\0\0";
+  uint8_t i = count;
+  while (i-- > 0) {
+
+    size_t mod_addr = module->mod_start;
+
+    num[0] = '0' + (uint8_t)i;
+
+    vfs_node_t *current_module = vfs_add_child(initrd, num, VFS_DIR);
+
+    tar_parse(current_module, mod_addr);
+    ++module;
+  }
+  return count;
 }
 
 uint32_t initrd_read(vfs_file_t *node, uint32_t offset, uint32_t size,
@@ -34,16 +57,17 @@ size_t tar_get_size(const char *input) {
   size_t size = 0;
   for (size_t j = 11, count = 1; j > 0; j--, count *= 8)
     size += ((input[j - 1] - '0') * count);
+
   return size;
 }
 
 size_t tar_parse(vfs_node_t *node, size_t addr) {
   uint32_t i = 0;
   while (1) {
+
     tar_header_t *header = (tar_header_t *)addr;
     if (!strlen(header->name))
       break;
-
     uint8_t *offset = (uint8_t *)addr;
     offset += 512;
 
@@ -53,6 +77,7 @@ size_t tar_parse(vfs_node_t *node, size_t addr) {
     n->file->read = &initrd_read;
 
     size_t size = tar_get_size(header->size);
+
     n->file->size = size;
     header->offset = addr;
 
