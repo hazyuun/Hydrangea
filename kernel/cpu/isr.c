@@ -12,6 +12,8 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <tty/tty.h>
+#include <stdio.h>
+
 
 typedef struct {
   uint32_t gs, fs, es, ds;
@@ -105,5 +107,8 @@ void irq_common_handler(registers *r) {
     kbd_event(scancode);
     break;
   }
+  case 32+14:
+  case 32+15:
+    break;
   }
 }

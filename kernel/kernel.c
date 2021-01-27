@@ -21,6 +21,7 @@
 #include <drivers/pci.h>
 #include <drivers/rtc.h>
 #include <drivers/serial.h>
+#include <drivers/ata.h>
 
 #include <cpu/gdt.h>
 #include <cpu/idt.h>
@@ -93,17 +94,21 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
     OK();
     printk("Loaded %d modules", mods_loaded);
   }
-  
-  printk("\nWelcome to ");
+
+  PCI_detect();
+  OK();
+  printk("Detecting and initializing PCI devices");
+
+  printk("\n\nWelcome to ");
   vesa_term_use_color(NICE_MAGENTA);
   printk("YuunOS !\n");
   vesa_term_use_color(NICE_WHITE);
+
 
   kbd_switch_layout("en");
   /* This is a quick and dirty and temporary cli */
   /* just for the sake of testing ! */
   /* Edit : it is getting messy lol */
-
   vfs_node_t *cwd = vfs_get_root();
   char cmd[100];
   while (1) {
@@ -131,7 +136,7 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
     } else if (!strcmp("datetime", cmd)) {
       rtc_print_now();
     } else if (!strcmp("lspci", cmd)) {
-      PCI_detect();
+      PCI_list();
     } else if (!strcmp(cmd, "ls")) {
       vfs_node_t *node = cwd->childs;
       while (node) {
@@ -146,6 +151,8 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
       vesa_term_use_color(NICE_WHITE);
     } else if (!strcmp(cmd, "ki")) {
       vfs_show_tree(cwd, 0);
+    } else if (!strcmp(cmd, "lsdrv")) {
+      ATA_print_infos();
     } else if (strcmp(cmd, "")) {
       char *token = strtok(cmd, " ");
       if (!strcmp(token, "cd")) {
