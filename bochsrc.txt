@@ -1,4 +1,6 @@
 ata0-master: type=cdrom, path=yuunos.iso, status=inserted
+ata0-slave: type=disk, path=hdd2.img, mode=flat
+
 boot: cdrom
 floppy_bootsig_check: disabled=1
 # display_library: x, options="gui_debug"
