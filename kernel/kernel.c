@@ -104,7 +104,6 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
   printk("YuunOS !\n");
   vesa_term_use_color(NICE_WHITE);
 
-
   kbd_switch_layout("en");
   /* This is a quick and dirty and temporary cli */
   /* just for the sake of testing ! */

@@ -2,6 +2,7 @@
 #define _ATA_H_
 
 #include <drivers/pci.h>
+#include <stddef.h>
 
 #define IDE_ATA 0x00
 #define IDE_ATAPI 0x01
@@ -82,6 +83,8 @@
 #define ATA_REG_ALTSTATUS 0x0C
 #define ATA_REG_DEVADDRESS 0x0D
 
+#define ATA_SECT_SIZE 512
+
 typedef struct {
   uint8_t present;
   uint8_t ps;
@@ -94,7 +97,13 @@ typedef struct {
   uint8_t name[64];
 } ATA_drive_t;
 
+
 uint8_t ATA_init(PCI_device_t *dev);
 void ATA_print_infos();
+ATA_drive_t *ATA_get_drive(uint8_t ps, uint8_t ms);
 
+size_t ATA_PIO_read(ATA_drive_t *drv, int block, size_t size, unsigned char *buf);
+size_t ATA_PIO_write(ATA_drive_t *drv, int block, size_t size, unsigned char *buf);
+
+size_t ATA_DMA_read_sector(uint8_t *buffer, ATA_drive_t *drv, uint32_t LBA);
 #endif

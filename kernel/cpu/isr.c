@@ -6,6 +6,8 @@
 
 #include <cpu/pit.h>
 #include <drivers/kbd.h>
+#include <drivers/ata.h>
+
 #include <drivers/serial.h>
 #include <kernel.h>
 #include <mem/paging.h>
@@ -108,7 +110,9 @@ void irq_common_handler(registers *r) {
     break;
   }
   case 32+14:
+    break;
   case 32+15:
+
     break;
   }
 }

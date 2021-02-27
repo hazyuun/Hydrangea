@@ -14,11 +14,8 @@ struct {
 
 ATA_drive_t ATA_drives[4];
 
-/* There is no overlapping between error values and ATA types */
-/* so one function is enough */
-static char *ATA_in_english_please(int err_or_type) {
-  switch (err_or_type) {
-  /* Errors */
+static char *ATA_ERR_in_english_please(int err) {
+  switch (err) {
   case ATA_ERR_BAD_BLOCK:
     return "Bad block";
   case ATA_ERR_UNCORRECTABLE:
@@ -35,8 +32,13 @@ static char *ATA_in_english_please(int err_or_type) {
     return "Track 0 not found";
   case ATA_ERR_ADDRESS_MARK_NOT_FOUND:
     return "Address mark not found";
+  default:
+    return "<Unknown error>";
+  }
+}
 
-  /* Types */
+static char *ATA_TYPE_in_english_please(int type) {
+  switch (type) {
   case ATA_TYPE_PATA:
     return "PATA";
   case ATA_TYPE_PATAPI:
@@ -45,9 +47,8 @@ static char *ATA_in_english_please(int err_or_type) {
     return "SATA";
   case ATA_TYPE_SATAPI:
     return "SATAPI";
-
   default:
-    return "<Unknown error or type>";
+    return "<Unknown type>";
   }
 }
 
@@ -55,7 +56,7 @@ void ATA_print_infos() {
   for (uint8_t ps = 0; ps < 2; ps++) {
     for (uint8_t ms = 0; ms < 2; ms++) {
       uint8_t drive_num = 2 * ps + ms;
-      
+
       uint8_t p = ATA_drives[drive_num].present;
       printk("\n [ATA] %s %s : ", ps ? "SECONDARY" : "PRIMARY",
              ms ? "MASTER" : "SLAVE");
@@ -67,42 +68,141 @@ void ATA_print_infos() {
       }
 
       printk("\n       type : %s",
-             ATA_in_english_please(ATA_drives[drive_num].type));
+             ATA_TYPE_in_english_please(ATA_drives[drive_num].type));
       printk("\n       sectors : %d", ATA_drives[drive_num].sectors);
       printk("\n");
     }
   }
 }
 
-static void ATA_400_nano_sec(uint8_t base) {
+static void ATA_400_nano_sec(uint16_t base) {
   for (int i = 0; i < 4; i++)
     io_inb(base + ATA_REG_ALTSTATUS);
 }
 
-static void ATA_print_error(uint8_t base) {
+static void ATA_print_error(uint16_t base) {
   ATA_400_nano_sec(base);
   uint8_t err = io_inb(base + ATA_REG_ERROR);
-  printk("\n [ATA] Error : %s", ATA_in_english_please(err));
+  printk("\n [ATA] Error %d : %s", err, ATA_ERR_in_english_please(err));
 }
 
-static uint8_t ATA_check_for_errors(uint8_t base) {
+static uint8_t ATA_check_for_errors(uint16_t base) {
   uint8_t status = io_inb(base + ATA_REG_STATUS);
+  uint8_t err;
+
   if (status & ATA_STATUS_ERROR) {
-    ATA_print_error(base);
-    return 1;
+    err = io_inb(base + ATA_REG_ERROR);
+    ATA_print_error(err);
+    return err;
   }
-  if (status & ATA_STATUS_DEVICE_FAULT) {
-    ATA_print_error(base);
-    return 2;
-  }
+
   if (!(status & ATA_STATUS_DATA_REQUEST_READY))
-    return 3;
+    return -1;
   return 0;
+}
+
+ATA_drive_t *ATA_get_drive(uint8_t ps, uint8_t ms) {
+  ATA_drive_t *drv = &ATA_drives[2 * ps + ms];
+  if (drv->present)
+    return &ATA_drives[2 * ps + ms];
+  return NULL;
+}
+
+static void ATA_PIO_prepare(ATA_drive_t *drv, int block, int size) {
+  uint16_t base = ch_regs[drv->ps].base;
+  uint8_t status;
+
+  io_outb(base + ATA_REG_HDDEVSEL,
+          (drv->ms ? 0xE0 : 0xF0) | ((block >> 24) & 0x0F));
+
+  ATA_400_nano_sec(base);
+
+  do{
+    status = io_inb(base + ATA_REG_STATUS);
+  } while ((status & ATA_STATUS_BUSY) || (status & ATA_STATUS_DATA_REQUEST_READY));
+
+  io_outb(base + ATA_REG_ERROR, 0x00);
+  io_outb(base + ATA_REG_SECCOUNT0, size);
+  io_outb(base + ATA_REG_SECCOUNT1, 0);
+
+  io_outb(base + ATA_REG_LBA0, (unsigned char)block);
+  io_outb(base + ATA_REG_LBA1, (unsigned char)(block >> 8));
+  io_outb(base + ATA_REG_LBA2, (unsigned char)(block >> 16));
+  io_outb(base + ATA_REG_LBA3, (unsigned char)0);
+  io_outb(base + ATA_REG_LBA4, (unsigned char)0);
+  io_outb(base + ATA_REG_LBA5, (unsigned char)0);
+}
+
+size_t ATA_PIO_read(ATA_drive_t *drv, int block, size_t size, unsigned char *buf) {
+  uint16_t base = ch_regs[drv->ps].base;
+
+  ATA_PIO_prepare(drv, block, size);
+
+  io_outb(base + ATA_REG_COMMAND, ATA_CMD_READ_PIO);
+
+  uint8_t err = ATA_check_for_errors(base);
+  if(err == ATA_ERR_CMD_ABORTED){
+    return 0;
+  }
+
+  uint16_t word;
+  uint8_t status;
+
+  for (uint64_t i = 0; i < 256 * size; i++) {
+    io_inb(base + ATA_REG_ALTSTATUS); /* ignored */
+
+    do{
+      status = io_inb(base + ATA_REG_STATUS);
+    } while ((status & ATA_STATUS_BUSY) || (!(status & ATA_STATUS_DATA_REQUEST_READY)));
+
+    word = io_inw(base);
+    buf[i * 2] = (unsigned char)word;
+    buf[i * 2 + 1] = (unsigned char)(word >> 8);
+  }
+
+  io_inb(base + ATA_REG_ALTSTATUS); /* ignored */
+  io_inb(base + ATA_REG_STATUS);
+
+  return size;
+}
+
+size_t ATA_PIO_write(ATA_drive_t *drv, int block, size_t size, unsigned char *buf) {
+  uint16_t base = ch_regs[drv->ps].base;
+
+  ATA_PIO_prepare(drv, block, size);
+
+  uint8_t status;
+  do{
+    status = io_inb(base + ATA_REG_STATUS);
+  } while ((status & ATA_STATUS_BUSY) || (status & ATA_STATUS_DATA_REQUEST_READY));
+
+  io_outb(base + ATA_REG_COMMAND, ATA_CMD_WRITE_PIO);
+
+  uint8_t err = ATA_check_for_errors(base);
+  if(err == ATA_ERR_CMD_ABORTED){
+    return 0;
+  }
+
+  uint16_t word;
+  
+  for (uint64_t i = 0; i < 256 * size; i++) {
+    io_inb(base + ATA_REG_ALTSTATUS); /* ignored */
+    do{
+      status = io_inb(base + ATA_REG_STATUS);
+    } while ((status & ATA_STATUS_BUSY) || (!(status & ATA_STATUS_DATA_REQUEST_READY)));
+
+    word = (buf[i * 2 + 1] << 8) | buf[i * 2];
+    io_outw(base, word);
+  }
+  
+  io_inb(base + ATA_REG_ALTSTATUS); /* ignored */
+  io_inb(base + ATA_REG_STATUS);
+  return size;
 }
 
 #include <tty/vesa/vesa_term.h>
 uint8_t ATA_init(PCI_device_t *dev) {
-  
+
   PCI_header0_t *header = (PCI_header0_t *)dev->header;
   /* Get the base and ctrl registers */
   ch_regs[ATA_PRIMARY].base =
@@ -185,8 +285,8 @@ uint8_t ATA_init(PCI_device_t *dev) {
         if (timeout == 10) { /* BSY never clears maybe ? */
           printk("\n [ATA] %s %s :", ps ? "PRIMARY" : "SEONDARY",
                  ms ? "SLAVE" : "MASTER");
-          printk("\n [ATA] First timeout");
-          printk("\n [ATA] Trying soft reset ..");
+          printk("\n       First timeout");
+          printk("\n       Trying soft reset ..");
 
           timeout = 10;
           io_outb(ctrl, 0x04);
@@ -196,7 +296,7 @@ uint8_t ATA_init(PCI_device_t *dev) {
 
         if (!timeout) {
           printk("\n [ATA] Second timeout");
-          printk("\n [ATA] Skipping ..");
+          printk("\n       Skipping ..");
           skip = 1;
           break;
         }
@@ -215,10 +315,10 @@ uint8_t ATA_init(PCI_device_t *dev) {
         case ATA_TYPE_SATA:
         case ATA_TYPE_SATAPI:
           printk("\n [ATA] %s device detected at %s %s",
-                 ATA_in_english_please(type), ps ? "PRIMARY" : "SEONDARY",
+                 ATA_TYPE_in_english_please(type), ps ? "PRIMARY" : "SEONDARY",
                  ms ? "SLAVE" : "MASTER");
           printk("\n       %s devices are not supported (yet ?)",
-                 ATA_in_english_please(type));
+                 ATA_TYPE_in_english_please(type));
           break;
         default:
           printk("\n [ATA] Unkonwn device detected");
