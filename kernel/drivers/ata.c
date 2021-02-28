@@ -133,6 +133,13 @@ static void ATA_PIO_prepare(ATA_drive_t *drv, int block, int size) {
   io_outb(base + ATA_REG_LBA5, (unsigned char)0);
 }
 
+size_t ATA_read(ATA_drive_t *drv, int block, size_t size, unsigned char *buf){
+  return ATA_PIO_read(drv, block, size, buf);
+}
+size_t ATA_write(ATA_drive_t *drv, int block, size_t size, unsigned char *buf){
+  return ATA_PIO_write(drv, block, size, buf);
+}
+
 size_t ATA_PIO_read(ATA_drive_t *drv, int block, size_t size, unsigned char *buf) {
   uint16_t base = ch_regs[drv->ps].base;
 
@@ -200,7 +207,7 @@ size_t ATA_PIO_write(ATA_drive_t *drv, int block, size_t size, unsigned char *bu
   return size;
 }
 
-#include <tty/vesa/vesa_term.h>
+#include <stdio.h>
 uint8_t ATA_init(PCI_device_t *dev) {
 
   PCI_header0_t *header = (PCI_header0_t *)dev->header;

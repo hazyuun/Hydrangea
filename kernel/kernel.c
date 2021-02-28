@@ -23,6 +23,8 @@
 #include <drivers/serial.h>
 #include <drivers/ata.h>
 
+#include <misc/mbr.h>
+
 #include <cpu/gdt.h>
 #include <cpu/idt.h>
 #include <cpu/pit.h>
@@ -121,22 +123,35 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
     scank("%s", cmd);
     if (!strcmp("info", cmd)) {
       vesa_term_print("YuunOS v0.0.1\n");
-    } else if (!strcmp("clear", cmd)) {
+    } 
+    
+    else if (!strcmp("clear", cmd)) {
       vesa_term_clear();
-    } else if (!strcmp("reboot", cmd)) {
+    } 
+    
+    else if (!strcmp("reboot", cmd)) {
+      // TODO: move this shit elsewhere
       uint8_t TW = 0x02;
       while (TW & 0x02)
         TW = io_inb(0x64);
       io_outb(0x64, 0xFE);
       while (1)
         ;
-    } else if (!strcmp("sleep", cmd)) { /* Will sleep 10 secs */
+    } 
+    
+    else if (!strcmp("sleep", cmd)) { /* Will sleep 10 secs */
       pit_sleep(10 * 100);
-    } else if (!strcmp("datetime", cmd)) {
+    }
+    
+    else if (!strcmp("datetime", cmd)) {
       rtc_print_now();
-    } else if (!strcmp("lspci", cmd)) {
+    }
+    
+    else if (!strcmp("lspci", cmd)) {
       PCI_list();
-    } else if (!strcmp(cmd, "ls")) {
+    }
+    
+    else if (!strcmp(cmd, "ls")) {
       vfs_node_t *node = cwd->childs;
       while (node) {
         if (vfs_is_dir(node))
@@ -148,12 +163,20 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
       }
       printk("\n");
       vesa_term_use_color(NICE_WHITE);
-    } else if (!strcmp(cmd, "ki")) {
+    }
+    
+    else if (!strcmp(cmd, "ki")) {
       vfs_show_tree(cwd, 0);
-    } else if (!strcmp(cmd, "lsdrv")) {
+    }
+    
+    else if (!strcmp(cmd, "lsdrv")) {
       ATA_print_infos();
-    } else if (strcmp(cmd, "")) {
+    }
+    
+    
+    else if (strcmp(cmd, "")) {
       char *token = strtok(cmd, " ");
+      
       if (!strcmp(token, "cd")) {
         token = strtok(NULL, " ");
         vfs_node_t *n;
@@ -166,8 +189,9 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
         } else {
           printk("Not found");
         }
-
-      } else if (!strcmp("kbd", cmd)) {
+      }
+      
+      else if (!strcmp("kbd", cmd)) {
         token = strtok(NULL, " ");
         if (!strcmp(token, "fr") || !strcmp(token, "en")) {
           kbd_switch_layout(token);
@@ -177,7 +201,9 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
         } else
           printk("Invalid keyboard layout\n");
 
-      } else if (!strcmp("cat", cmd)) {
+      }
+      
+      else if (!strcmp("cat", cmd)) {
         token = strtok(NULL, " ");
 
         vfs_node_t *node = vfs_get_child_by_name(cwd, token);
@@ -190,7 +216,26 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
           kfree(contents);
         }
 
-      } else
+      }
+      
+      else if (!strcmp("mbr", cmd)) {
+        uint8_t ms = atoi(strtok(NULL, " "));
+        uint8_t ps = atoi(strtok(NULL, " "));
+        if((ms != 0 && ms != 1)
+        || (ps != 0 && ps != 1))
+          printk("Invalid drive\n");
+        else{
+          ATA_drive_t *drv = ATA_get_drive(ms, ps);
+          if(!drv) printk("Drive not found\n");
+          else {
+            mbr_t mbr;
+            mbr_parse(drv, &mbr);
+            mbr_print(&mbr);
+          }
+        }
+      }
+
+      else
         printk("Unknown command\n");
     }
   }
