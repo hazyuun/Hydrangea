@@ -16,18 +16,30 @@
 #define VFS_SYMLNK 0x4
 #define VFS_PIPE 0x5
 #define VFS_MTPT 0x6
+#define VFS_SOCKET 0x7
+
+
+#define VFS_PERMISSIONS_OTHER_X 0x001
+#define VFS_PERMISSIONS_OTHER_W 0x002
+#define VFS_PERMISSIONS_OTHER_R 0x004
+#define VFS_PERMISSIONS_GROUP_X 0x008
+#define VFS_PERMISSIONS_GROUP_W 0x010
+#define VFS_PERMISSIONS_GROUP_R 0x020
+#define VFS_PERMISSIONS_USER_X 0x040
+#define VFS_PERMISSIONS_USER_W 0x080
+#define VFS_PERMISSIONS_USER_R 0x100
 
 typedef struct {
   char *name;
   uint32_t inode;
-} dirent_t;
+} vfs_dirent_t;
 struct vfs_file;
 
 typedef uint32_t (*read_fptr_t)(struct vfs_file *, uint32_t, uint32_t, char *);
 typedef uint32_t (*write_fptr_t)(struct vfs_file *, uint32_t, uint32_t, char *);
-typedef void (*open_fptr_t)(struct vfs_file *);
-typedef void (*close_fptr_t)(struct vfs_file *);
-typedef dirent_t *(*readdir_fptr_t)(struct vfs_file *, uint32_t);
+typedef uint8_t (*open_fptr_t)(struct vfs_file *);
+typedef uint8_t (*close_fptr_t)(struct vfs_file *);
+typedef vfs_dirent_t *(*readdir_fptr_t)(struct vfs_file *, uint32_t);
 typedef struct vfs_file *(*finddir_fptr_t)(struct vfs_file *, char *name);
 
 typedef struct vfs_node {
@@ -63,7 +75,7 @@ typedef struct vfs_file {
 
 vfs_node_t *vfs_get_root();
 
-vfs_node_t *vfs_create_node(const char *name, uint8_t type);
+vfs_node_t *vfs_create_node(char *name, uint8_t type);
 void vfs_free_node(vfs_node_t *node);
 void vfs_free_child_nodes(vfs_node_t *node);
 
@@ -88,9 +100,14 @@ uint32_t vfs_read(vfs_file_t *node, uint32_t offset, uint32_t size,
                   char *buffer);
 uint32_t vfs_write(vfs_file_t *node, uint32_t offset, uint32_t size,
                    char *buffer);
-void vfs_open(vfs_file_t *node, uint8_t read, uint8_t write);
-void vfs_close(vfs_file_t *node);
-dirent_t *vfs_readdir(vfs_file_t *node, uint32_t index);
+uint8_t vfs_open(vfs_file_t *node, uint8_t read, uint8_t write);
+uint8_t vfs_close(vfs_file_t *node);
+vfs_dirent_t *vfs_readdir(vfs_file_t *node, uint32_t index);
 vfs_file_t *vfs_finddir(vfs_file_t *node, char *name);
+
+void vfs_drwxrwxrwx(char *out, uint16_t permissions);
+
+#include <drivers/ata.h>
+uint8_t vfs_mount_partition(ATA_drive_t *drv, uint8_t partition_num, char *path);
 
 #endif

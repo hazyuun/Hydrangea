@@ -165,6 +165,22 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
       vesa_term_use_color(NICE_WHITE);
     }
     
+    else if (!strcmp(cmd, "ll")) {
+      vfs_node_t *node = cwd->childs;
+      while (node) {
+        if (vfs_is_dir(node))
+          vesa_term_use_color(NICE_YELLOW);
+        else
+          vesa_term_use_color(NICE_WHITE);
+        char drwxrwxrwx[10];
+        vfs_drwxrwxrwx(drwxrwxrwx, node->file->permissions);
+        printk("\n %s %s", drwxrwxrwx, node->name);
+        node = node->next;
+      }
+      printk("\n");
+      vesa_term_use_color(NICE_WHITE);
+    }
+
     else if (!strcmp(cmd, "ki")) {
       vfs_show_tree(cwd, 0);
     }
@@ -217,7 +233,7 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
         }
 
       }
-      
+
       else if (!strcmp("mbr", cmd)) {
         uint8_t ms = atoi(strtok(NULL, " "));
         uint8_t ps = atoi(strtok(NULL, " "));
@@ -234,6 +250,32 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
           }
         }
       }
+
+      else if (!strcmp("mount", cmd)) {
+        uint8_t ms = atoi(strtok(NULL, " "));
+        uint8_t ps = atoi(strtok(NULL, " "));
+        uint8_t part = atoi(strtok(NULL, " "));
+        char *path = strtok(NULL, " ");
+        if((ms != 0 && ms != 1)
+        || (ps != 0 && ps != 1))
+          printk("Invalid drive\n");
+        else if(part > 3)
+          printk("Invalid partition number\n");
+        else{
+          ATA_drive_t *drv = ATA_get_drive(ms, ps);
+          if(!drv) printk("Drive not found\n");
+          else {
+            uint8_t err = vfs_mount_partition(drv, part, path);
+            if(err == 1){
+              printk("Unknown filesystem");
+            } else if(err == 2){
+              printk("%s not found", path);
+            } 
+          }
+        }
+      }
+
+      
 
       else
         printk("Unknown command\n");

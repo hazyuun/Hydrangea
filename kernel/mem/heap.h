@@ -15,7 +15,7 @@
 #define HEAP_START (void*) 0x800000
 #define HEAP_MAX_SIZE 0x100000
 #define HEAP_INDEX_SIZE 0x20000
-#define HEAP_INITIAL_SIZE 0x10000
+#define HEAP_INITIAL_SIZE 0x100000
 
 typedef struct free_ll{
      void* addr;

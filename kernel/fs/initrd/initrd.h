@@ -7,7 +7,7 @@
 #include <stdint.h>
 
 typedef struct {
-  const char name[100];
+  char name[100];
   char mode[8];
   char uid[8];
   char gid[8];
@@ -22,7 +22,7 @@ uint8_t initrd_init(multiboot_info_t *mbi); /* Haha what a name, lol */
 
 uint32_t initrd_read(vfs_file_t *node, uint32_t offset, uint32_t size,
                      char *buffer);
-dirent_t *initrd_readdir(vfs_file_t *node, uint32_t index);
+vfs_dirent_t *initrd_readdir(vfs_file_t *node, uint32_t index);
 vfs_file_t *initrd_finddir(vfs_file_t *node, char *name);
 
 size_t tar_get_size(const char *input);

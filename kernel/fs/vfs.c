@@ -17,15 +17,37 @@ uint32_t vfs_read(vfs_file_t *node, uint32_t offset, uint32_t size,
   return 0;
 }
 uint32_t vfs_write(vfs_file_t *node, uint32_t offset, uint32_t size,
-                   char *buffer) {}
-void vfs_open(vfs_file_t *node, uint8_t read, uint8_t write) {}
-void vfs_close(vfs_file_t *node) {}
-dirent_t *vfs_readdir(vfs_file_t *node, uint32_t index) {}
-vfs_file_t *vfs_finddir(vfs_file_t *node, char *name) {}
+                   char *buffer) {
+  if (node->write)
+    return node->write(node, offset, size, buffer);
+  return 0;
+}
+uint8_t vfs_open(vfs_file_t *node, uint8_t read, uint8_t write) {
+  (void)read;
+  (void)write;
+  if (node->open)
+    return node->open(node);
+  return 0;
+}
+uint8_t vfs_close(vfs_file_t *node) {
+  if (node->close)
+    return node->close(node);
+  return 0;
+}
+vfs_dirent_t *vfs_readdir(vfs_file_t *node, uint32_t index) {
+  if (node->readdir)
+    return node->readdir(node, index);
+  return 0;
+}
+vfs_file_t *vfs_finddir(vfs_file_t *node, char *name) {
+  if (node->finddir)
+    return node->finddir(node, name);
+  return 0;
+}
 
-vfs_node_t *vfs_create_node(const char *name, uint8_t type) {
+vfs_node_t *vfs_create_node(char *name, uint8_t type) {
   vfs_node_t *node = (vfs_node_t *)kmalloc(sizeof(vfs_node_t));
-  memset(node, 0, sizeof(node));
+  memset((char *)node, 0, sizeof(node));
   node->name = (char *)kmalloc(256 * sizeof(char));
   node->file = (vfs_file_t *)kmalloc(sizeof(vfs_file_t));
   node->file->name = node->name;
@@ -33,11 +55,19 @@ vfs_node_t *vfs_create_node(const char *name, uint8_t type) {
 
   strcpy(node->name, name);
   node->childs = 0;
-  // if (type == VFS_DIR && strcmp(name, "/") && strcmp(name, ".") &&
-  //     strcmp(name, "..")) {
-  //   vfs_node_t *dot = vfs_add_child(node, ".", VFS_DIR);
-  //   vfs_node_t *dotdot = vfs_add_child(node, "..", VFS_DIR);
-  // }
+  node->next = 0;
+  node->file->permissions = 0;
+  if (type == VFS_DIR) {
+    node->file->permissions |= (VFS_DIR << 14);
+    node->file->permissions |= VFS_PERMISSIONS_USER_X;
+    node->file->permissions |= VFS_PERMISSIONS_GROUP_X;
+    node->file->permissions |= VFS_PERMISSIONS_OTHER_X;
+  }
+  node->file->permissions |= VFS_PERMISSIONS_USER_R;
+  node->file->permissions |= VFS_PERMISSIONS_USER_W;
+  node->file->permissions |= VFS_PERMISSIONS_GROUP_R;
+  node->file->permissions |= VFS_PERMISSIONS_OTHER_R;
+
   return node;
 }
 
@@ -72,8 +102,9 @@ vfs_node_t *vfs_add_child(vfs_node_t *parent, char *name, uint8_t type) {
   }
   vfs_node_t *child = parent->childs;
 
-  while (child->next)
+  while (child->next) {
     child = child->next;
+  }
 
   child->next = vfs_create_node(name, type);
   child->next->parent = parent;
@@ -137,6 +168,7 @@ void vfs_dummy() {
   vfs_root->parent = vfs_root;
   vfs_add_child(vfs_root, "bin", VFS_DIR);
   vfs_add_child(vfs_root, "etc", VFS_DIR);
+  vfs_add_child(vfs_root, "mnt", VFS_DIR);
   vfs_node_t *home = vfs_add_child(vfs_root, "home", VFS_DIR);
   vfs_add_child(vfs_root, "dev", VFS_DIR);
 
@@ -200,7 +232,7 @@ vfs_node_t *vfs_make_node(vfs_node_t *root, char *path, uint8_t type,
   while (token) {
     node = vfs_get_child_by_name(node, token);
     if (!node)
-      node = vfs_add_child(bkp, token, VFS_DIR);
+      node = vfs_add_child(bkp, token, type);
     bkp = node;
     token = strtok(NULL, " ");
   }
@@ -212,3 +244,74 @@ vfs_node_t *vfs_make_node(vfs_node_t *root, char *path, uint8_t type,
 }
 uint8_t vfs_is_dir(vfs_node_t *node) { return node->file->type == VFS_DIR; }
 vfs_node_t *vfs_get_root() { return vfs_root; }
+
+#include <fs/dirent.h>
+#include <fs/ext2fs/ext2.h>
+#include <fs/generic.h>
+static void vfs_ext2_populate(vfs_node_t *root, DIR *dir) {
+  struct dirent *entry;
+  do {
+    entry = ext2_readdir(dir);
+    if (!entry)
+      break;
+
+    /* In my design, . and .. directories are VFS things */
+    /* so I will just skip them here */
+    if (!strcmp(".", entry->name) || !strcmp("..", entry->name))
+      continue;
+
+    uint8_t type = ext2_type_translate(entry->type);
+
+    vfs_node_t *n = vfs_add_child(root, entry->name, type);
+    n->file->permissions = entry->permissions;
+
+    /* Recursively populate every sub-directory */
+    if (type == VFS_DIR) {
+      DIR *sub_dir = ext2_opendir(dir->fs, entry->inode_number);
+      vfs_ext2_populate(n, sub_dir);
+      ext2_closedir(sub_dir);
+    }
+
+  } while (entry);
+}
+
+uint8_t vfs_mount_ext2(fs_t *fs, char *path) {
+  vfs_node_t *mtpt = vfs_abspath_to_node(vfs_root, path);
+  if(!mtpt)
+    return 2;
+    
+  DIR *dir = ext2_opendir(fs, 2);
+  vfs_ext2_populate(mtpt, dir);
+  ext2_closedir(dir);
+  return 0;
+}
+
+#include <misc/mbr.h>
+uint8_t vfs_mount_partition(ATA_drive_t *drv, uint8_t partition_num,
+                            char *path) {
+  mbr_t mbr;
+  mbr_parse(drv, &mbr);
+
+  /* Only EXT2 for now */
+  if (mbr.partitions[partition_num].type != MBR_PART_TYPE_LINUX)
+    return 1;
+
+  fs_t *fs = ext2_init(drv, partition_num);
+  if (!fs)
+    return 1;
+
+  return vfs_mount_ext2(fs, path);
+}
+
+void vfs_drwxrwxrwx(char *out, uint16_t permissions) {
+  out[0] = (permissions & (VFS_DIR << 14)) ? 'd' : '-';
+  out[1] = (permissions & VFS_PERMISSIONS_USER_R) ? 'r' : '-';
+  out[2] = (permissions & VFS_PERMISSIONS_USER_W) ? 'w' : '-';
+  out[3] = (permissions & VFS_PERMISSIONS_USER_X) ? 'x' : '-';
+  out[4] = (permissions & VFS_PERMISSIONS_GROUP_R) ? 'r' : '-';
+  out[5] = (permissions & VFS_PERMISSIONS_GROUP_W) ? 'w' : '-';
+  out[6] = (permissions & VFS_PERMISSIONS_GROUP_X) ? 'x' : '-';
+  out[7] = (permissions & VFS_PERMISSIONS_OTHER_R) ? 'r' : '-';
+  out[8] = (permissions & VFS_PERMISSIONS_OTHER_W) ? 'w' : '-';
+  out[9] = (permissions & VFS_PERMISSIONS_OTHER_X) ? 'x' : '-';
+}

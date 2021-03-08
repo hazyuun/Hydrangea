@@ -39,19 +39,19 @@ $(YUUNOS): $(BOOT_OBJ) $(KERNEL_OBJ_C) $(KERNEL_OBJ_S) $(LIBK_OBJ)
 
 $(OBJ_PATH)/kernel/%.o: kernel/%.c
 	@echo [CC] $<
-	@$(CC) -c $< -o $@ -g -std=gnu99 -ffreestanding -O2 -Wall -Wextra -Ikernel -I. -Ilibk
+	@$(CC) -c $< -o $@ -g -m32 -std=gnu99 -ffreestanding -O2 -Wall -Wextra -Ikernel -I. -Ilibk
 
 $(OBJ_PATH)/libk/%.o: libk/%.c
 	@echo [CC] $<
-	@$(CC) -c $< -o $@ -g -std=gnu99 -ffreestanding -O2 -Wall -Wextra -Ikernel -I. -Ilibk
+	@$(CC) -c $< -o $@ -g -m32 -std=gnu99 -ffreestanding -O2 -Wall -Wextra -Ikernel -I. -Ilibk
 
 $(OBJ_PATH)/kernel/%.o: kernel/%.s
 	@echo [AS] $<
-	@$(AS) $< -o $@
+	@$(AS) $< -o $@ --32
 
 $(OBJ_PATH)/boot/%.o: boot/%.s
 	@echo [AS] $<
-	@$(AS) $< -o $@
+	@$(AS) $< -o $@ --32
 
 # Deletes the obj directory
 clean:

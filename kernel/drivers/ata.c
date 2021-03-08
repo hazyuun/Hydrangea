@@ -108,7 +108,7 @@ ATA_drive_t *ATA_get_drive(uint8_t ps, uint8_t ms) {
   return NULL;
 }
 
-static void ATA_PIO_prepare(ATA_drive_t *drv, int block, int size) {
+static void ATA_PIO_prepare(ATA_drive_t *drv, uint64_t block, uint64_t size) {
   uint16_t base = ch_regs[drv->ps].base;
   uint8_t status;
 
@@ -133,14 +133,41 @@ static void ATA_PIO_prepare(ATA_drive_t *drv, int block, int size) {
   io_outb(base + ATA_REG_LBA5, (unsigned char)0);
 }
 
-size_t ATA_read(ATA_drive_t *drv, int block, size_t size, unsigned char *buf){
+inline size_t ATA_read(ATA_drive_t *drv, uint64_t block, uint64_t size, unsigned char *buf){
   return ATA_PIO_read(drv, block, size, buf);
 }
-size_t ATA_write(ATA_drive_t *drv, int block, size_t size, unsigned char *buf){
+inline size_t ATA_write(ATA_drive_t *drv, uint64_t block, uint64_t size, unsigned char *buf){
   return ATA_PIO_write(drv, block, size, buf);
 }
 
-size_t ATA_PIO_read(ATA_drive_t *drv, int block, size_t size, unsigned char *buf) {
+inline size_t ATA_read_b(ATA_drive_t *drv, uint64_t offset, uint64_t size, unsigned char *buf){
+  // printk("\nATA 0");
+  // printk("\n offset          :"); vesa_term_print_hex((uint32_t)&offset);
+  // printk("\n size            :"); vesa_term_print_hex((uint32_t)&size);
+  // printk("\n buf             :"); vesa_term_print_hex((uint32_t)&buf);
+  // printk("\n drv             :"); vesa_term_print_hex((uint32_t)&drv);
+  uint64_t start = offset / 512;
+  uint64_t end = (offset + size) / 512;
+
+  uint64_t N = end - start + 1;
+
+  char whole_sector[N * 512];
+  // printk("\n ");
+  // printk("\n offset          :"); vesa_term_print_hex((uint32_t)offset);
+  // printk("\n size            :"); vesa_term_print_hex((uint32_t)size);
+  // printk("\n buf             :"); vesa_term_print_hex((uint32_t)buf);
+  // printk("\n drv             :"); vesa_term_print_hex((uint32_t)drv);
+  // printk("\n start           :"); vesa_term_print_hex((uint32_t)start);
+  // printk("\n N               :"); vesa_term_print_hex((uint32_t)N);
+  // printk("\n whole_sector    :"); vesa_term_print_hex((uint32_t)whole_sector);
+  ATA_read(drv, start, N, (uint8_t *)whole_sector);
+  //printk("\nATA 1");
+  memcpy(buf, (char *) (whole_sector + offset % 512), size);
+  //printk("\nATA 2");
+  return size;
+}
+
+size_t ATA_PIO_read(ATA_drive_t *drv, uint64_t block, uint64_t size, unsigned char *buf) {
   uint16_t base = ch_regs[drv->ps].base;
 
   ATA_PIO_prepare(drv, block, size);
@@ -173,7 +200,7 @@ size_t ATA_PIO_read(ATA_drive_t *drv, int block, size_t size, unsigned char *buf
   return size;
 }
 
-size_t ATA_PIO_write(ATA_drive_t *drv, int block, size_t size, unsigned char *buf) {
+size_t ATA_PIO_write(ATA_drive_t *drv, uint64_t block, uint64_t size, unsigned char *buf) {
   uint16_t base = ch_regs[drv->ps].base;
 
   ATA_PIO_prepare(drv, block, size);
