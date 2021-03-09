@@ -108,6 +108,6 @@ vfs_file_t *vfs_finddir(vfs_file_t *node, char *name);
 void vfs_drwxrwxrwx(char *out, uint16_t permissions);
 
 #include <drivers/ata.h>
-uint8_t vfs_mount_partition(ATA_drive_t *drv, uint8_t partition_num, char *path);
+uint8_t vfs_mount_partition(ATA_drive_t *drv, uint8_t partition_num, char *path, vfs_node_t *rel);
 
 #endif

@@ -141,29 +141,16 @@ inline size_t ATA_write(ATA_drive_t *drv, uint64_t block, uint64_t size, unsigne
 }
 
 inline size_t ATA_read_b(ATA_drive_t *drv, uint64_t offset, uint64_t size, unsigned char *buf){
-  // printk("\nATA 0");
-  // printk("\n offset          :"); vesa_term_print_hex((uint32_t)&offset);
-  // printk("\n size            :"); vesa_term_print_hex((uint32_t)&size);
-  // printk("\n buf             :"); vesa_term_print_hex((uint32_t)&buf);
-  // printk("\n drv             :"); vesa_term_print_hex((uint32_t)&drv);
+
   uint64_t start = offset / 512;
   uint64_t end = (offset + size) / 512;
 
   uint64_t N = end - start + 1;
-
   char whole_sector[N * 512];
-  // printk("\n ");
-  // printk("\n offset          :"); vesa_term_print_hex((uint32_t)offset);
-  // printk("\n size            :"); vesa_term_print_hex((uint32_t)size);
-  // printk("\n buf             :"); vesa_term_print_hex((uint32_t)buf);
-  // printk("\n drv             :"); vesa_term_print_hex((uint32_t)drv);
-  // printk("\n start           :"); vesa_term_print_hex((uint32_t)start);
-  // printk("\n N               :"); vesa_term_print_hex((uint32_t)N);
-  // printk("\n whole_sector    :"); vesa_term_print_hex((uint32_t)whole_sector);
+
   ATA_read(drv, start, N, (uint8_t *)whole_sector);
-  //printk("\nATA 1");
+
   memcpy(buf, (char *) (whole_sector + offset % 512), size);
-  //printk("\nATA 2");
   return size;
 }
 
@@ -317,8 +304,8 @@ uint8_t ATA_init(PCI_device_t *dev) {
         pit_sleep(100);
 
         if (timeout == 10) { /* BSY never clears maybe ? */
-          printk("\n [ATA] %s %s :", ps ? "PRIMARY" : "SEONDARY",
-                 ms ? "SLAVE" : "MASTER");
+          printk("\n [ATA] %s %s :", ps ? "SEONDARY" : "PRIMARY",
+                 ms ? "MASTER" : "SLAVE");
           printk("\n       First timeout");
           printk("\n       Trying soft reset ..");
 
@@ -345,17 +332,20 @@ uint8_t ATA_init(PCI_device_t *dev) {
         uint16_t type = (hi << 8) | lo;
 
         switch (type) {
+        case ATA_TYPE_PATA: break;
         case ATA_TYPE_PATAPI:
         case ATA_TYPE_SATA:
         case ATA_TYPE_SATAPI:
           printk("\n [ATA] %s device detected at %s %s",
-                 ATA_TYPE_in_english_please(type), ps ? "PRIMARY" : "SEONDARY",
-                 ms ? "SLAVE" : "MASTER");
+                 ATA_TYPE_in_english_please(type), ps ? "SEONDARY" : "PRIMARY",
+                 ms ? "MASTER" : "SLAVE");
           printk("\n       %s devices are not supported (yet ?)",
                  ATA_TYPE_in_english_please(type));
           break;
-        default:
-          printk("\n [ATA] Unkonwn device detected");
+        // default:
+        //   printk("\n [ATA] Unkonwn device (type : %d) detected at %s %s", type,
+        //          ATA_TYPE_in_english_please(type), ps ? "SEONDARY" : "PRIMARY",
+        //          ms ? "MASTER" : "SLAVE");
         }
 
         /* TODO : Wait bsy */

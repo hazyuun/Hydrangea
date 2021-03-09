@@ -275,11 +275,9 @@ static void vfs_ext2_populate(vfs_node_t *root, DIR *dir) {
   } while (entry);
 }
 
-uint8_t vfs_mount_ext2(fs_t *fs, char *path) {
-  vfs_node_t *mtpt = vfs_abspath_to_node(vfs_root, path);
-  if(!mtpt)
-    return 2;
-    
+uint8_t vfs_mount_ext2(fs_t *fs, vfs_node_t *mtpt) {
+  
+
   DIR *dir = ext2_opendir(fs, 2);
   vfs_ext2_populate(mtpt, dir);
   ext2_closedir(dir);
@@ -288,7 +286,7 @@ uint8_t vfs_mount_ext2(fs_t *fs, char *path) {
 
 #include <misc/mbr.h>
 uint8_t vfs_mount_partition(ATA_drive_t *drv, uint8_t partition_num,
-                            char *path) {
+                            char *path, vfs_node_t *rel) {
   mbr_t mbr;
   mbr_parse(drv, &mbr);
 
@@ -300,7 +298,11 @@ uint8_t vfs_mount_partition(ATA_drive_t *drv, uint8_t partition_num,
   if (!fs)
     return 1;
 
-  return vfs_mount_ext2(fs, path);
+  vfs_node_t *mtpt = vfs_abspath_to_node(rel, path);
+  if(!mtpt)
+    return 2;
+    
+  return vfs_mount_ext2(fs, mtpt);
 }
 
 void vfs_drwxrwxrwx(char *out, uint16_t permissions) {

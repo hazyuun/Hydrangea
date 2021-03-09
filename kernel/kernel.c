@@ -168,13 +168,19 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
     else if (!strcmp(cmd, "ll")) {
       vfs_node_t *node = cwd->childs;
       while (node) {
+        
+        char drwxrwxrwx[10];
+        vfs_drwxrwxrwx(drwxrwxrwx, node->file->permissions);
+        printk("\n %s user group ", drwxrwxrwx);
+
         if (vfs_is_dir(node))
           vesa_term_use_color(NICE_YELLOW);
         else
           vesa_term_use_color(NICE_WHITE);
-        char drwxrwxrwx[10];
-        vfs_drwxrwxrwx(drwxrwxrwx, node->file->permissions);
-        printk("\n %s %s", drwxrwxrwx, node->name);
+
+        printk("%s", node->name);
+        vesa_term_use_color(NICE_WHITE);
+        
         node = node->next;
       }
       printk("\n");
@@ -265,7 +271,7 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
           ATA_drive_t *drv = ATA_get_drive(ms, ps);
           if(!drv) printk("Drive not found\n");
           else {
-            uint8_t err = vfs_mount_partition(drv, part, path);
+            uint8_t err = vfs_mount_partition(drv, part, path, cwd);
             if(err == 1){
               printk("Unknown filesystem");
             } else if(err == 2){
