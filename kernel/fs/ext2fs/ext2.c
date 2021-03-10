@@ -133,8 +133,10 @@ DIR *ext2_opendir(fs_t *fs, uint32_t inode_number) {
   dir->block_buffer = (uint8_t *)kmalloc(ext2_infos->block_size);
 
   ATA_drive_t *drv = fs->drv;
+
   uint64_t offset = fs->p_offset;
   offset += inode->direct_block_pointer[0] * ext2_infos->block_size;
+
   uint64_t size = ext2_infos->block_size;
   uint8_t *buffer = dir->block_buffer;
 
@@ -146,6 +148,27 @@ DIR *ext2_opendir(fs_t *fs, uint32_t inode_number) {
   return dir;
 }
 
+static void ext2_make_dirent(DIR *dir, ext2_directory_entry_t *e){
+  fs_t *fs = dir->fs;
+  ext2_t *ext2_infos = (ext2_t *)(fs->fs_specific);
+
+  dir->next = (uint32_t)((uint8_t *)e + e->entry_size);
+  dir->so_far += e->entry_size;
+
+  memcpy(dir->ent.name, e->name, e->name_length_lo);
+  dir->ent.name[e->name_length_lo] = '\0';
+
+  dir->ent.inode_number = e->inode_number;
+  dir->ent.type = e->type_indicator__name_length_hi;
+
+  ext2_inode_t *inode = ext2_kmalloc_inode(ext2_infos);
+  ;
+  ext2_get_inode(fs, e->inode_number, inode);
+
+  dir->ent.permissions = inode->type_permissions;
+  ext2_kfree_inode(inode);
+}
+
 struct dirent *ext2_readdir(DIR *dir) {
   fs_t *fs = dir->fs;
   ext2_t *ext2_infos = (ext2_t *)(fs->fs_specific);
@@ -155,23 +178,60 @@ struct dirent *ext2_readdir(DIR *dir) {
     if (e->inode_number == 0)
       return 0;
 
-    dir->next = (uint32_t)((uint8_t *)e + e->entry_size);
-    dir->so_far += e->entry_size;
-
-    memcpy(dir->ent.name, e->name, e->name_length_lo);
-    dir->ent.name[e->name_length_lo] = '\0';
-
-    dir->ent.inode_number = e->inode_number;
-    dir->ent.type = e->type_indicator__name_length_hi;
-
-    ext2_inode_t *inode = ext2_kmalloc_inode(ext2_infos);
-    ;
-    ext2_get_inode(fs, e->inode_number, inode);
-
-    dir->ent.permissions = inode->type_permissions;
-    ext2_kfree_inode(inode);
+    ext2_make_dirent(dir, e);
     return &dir->ent;
   }
+
+  /* TODO : Test what's coming next (large directories) */
+  /* Read the next block */
+  ++(dir->bp_index);
+  uint64_t size = ext2_infos->block_size;
+  uint8_t *buffer = dir->block_buffer;
+
+  if(dir->bp_index < 12){
+    ext2_inode_t *inode = ext2_kmalloc_inode(ext2_infos);
+    ext2_get_inode(fs, dir->inode_number, inode);
+
+    uint64_t offset = fs->p_offset;
+    offset += inode->direct_block_pointer[dir->bp_index] * ext2_infos->block_size;
+
+    ATA_read_b(dir->fs->drv, offset, size, buffer);
+
+    dir->next = (uint32_t)(dir->block_buffer);
+    dir->so_far = 0;
+    ext2_kfree_inode(inode);
+
+    return ext2_readdir(dir);
+  }
+
+  /* Indirect block pointers */
+  uint32_t ptrs_per_block = ext2_infos->block_size / sizeof(uint32_t);
+
+  if(dir->bp_index < 12 + ptrs_per_block){ /* Singly indirect block pointer */
+    uint32_t index = (dir->bp_index - 12) * sizeof(uint32_t);
+    
+    ext2_inode_t *inode = ext2_kmalloc_inode(ext2_infos);
+    ext2_get_inode(fs, dir->inode_number, inode);
+
+    uint64_t offset = fs->p_offset;
+    offset += inode->singly_indirect_block_pointer * ext2_infos->block_size + index;
+
+    uint32_t block_ptr;
+    ATA_read_b(dir->fs->drv, offset, sizeof(uint32_t), (uint8_t *)&block_ptr);
+
+    offset = fs->p_offset;
+    offset += block_ptr * ext2_infos->block_size;
+
+    ATA_read_b(dir->fs->drv, fs->p_offset + block_ptr * ext2_infos->block_size, size, buffer);
+
+    dir->next = (uint32_t)(dir->block_buffer);
+    dir->so_far = 0;
+    ext2_kfree_inode(inode);
+
+    return ext2_readdir(dir);
+  }
+
+  /* TODO: doubly and triply indirect block pointers */
 
   return 0;
 }
