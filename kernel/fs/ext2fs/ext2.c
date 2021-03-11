@@ -1,10 +1,10 @@
 #include <fs/ext2fs/ext2.h>
 #include <fs/generic.h>
 
+#include <kernel.h>
 #include <mem/heap.h>
 #include <stdio.h>
 #include <string.h>
-#include <kernel.h>
 
 /* Returns the offset (bytes) of an inode, given its number */
 uint64_t ext2_get_inode_offset(ext2_t *ext2_infos, uint32_t inode_number) {
@@ -148,7 +148,7 @@ DIR *ext2_opendir(fs_t *fs, uint32_t inode_number) {
   return dir;
 }
 
-static void ext2_make_dirent(DIR *dir, ext2_directory_entry_t *e){
+static void ext2_make_dirent(DIR *dir, ext2_directory_entry_t *e) {
   fs_t *fs = dir->fs;
   ext2_t *ext2_infos = (ext2_t *)(fs->fs_specific);
 
@@ -167,6 +167,72 @@ static void ext2_make_dirent(DIR *dir, ext2_directory_entry_t *e){
 
   dir->ent.permissions = inode->type_permissions;
   ext2_kfree_inode(inode);
+}
+
+/* Returns the offset to the data block pointed to by a singly indirect block
+ * pointer */
+static uint64_t ext2_get_sbptr_offset(fs_t *fs, uint32_t inode_number,
+                                      uint32_t index) {
+  ext2_t *ext2_infos = (ext2_t *)(fs->fs_specific);
+
+  ext2_inode_t *inode = ext2_kmalloc_inode(ext2_infos);
+  ext2_get_inode(fs, inode_number, inode);
+
+  uint64_t offset = fs->p_offset;
+  offset +=
+      inode->singly_indirect_block_pointer * ext2_infos->block_size + index;
+
+  uint32_t block_ptr;
+  ATA_read_b(fs->drv, offset, sizeof(uint32_t), (uint8_t *)&block_ptr);
+
+  offset = fs->p_offset;
+  offset += block_ptr * ext2_infos->block_size;
+
+  ext2_kfree_inode(inode);
+  return offset;
+}
+
+/* Returns the offset to the data block pointed to by a doubly indirect block
+ * pointer */
+static uint64_t ext2_get_dbptr_offset(fs_t *fs, uint32_t inode_number,
+                                      uint32_t index_1, uint32_t index_2) {
+  ext2_t *ext2_infos = (ext2_t *)(fs->fs_specific);
+
+  /* First, get the first pointer */
+  uint32_t block_ptr_1;
+  uint64_t offset = ext2_get_sbptr_offset(fs, inode_number, index_1);
+  ATA_read_b(fs->drv, offset, sizeof(uint32_t), (uint8_t *)&block_ptr_1);
+
+  /* The first pointer points to the second pointer */
+  uint32_t block_ptr_2;
+  offset = block_ptr_1 * ext2_infos->block_size + index_2;
+  ATA_read_b(fs->drv, offset, sizeof(uint32_t), (uint8_t *)&block_ptr_2);
+
+  offset = fs->p_offset;
+  offset += block_ptr_2 * ext2_infos->block_size;
+  return offset;
+}
+
+/* Returns the offset to the data block pointed to by a triply indirect block
+ * pointer */
+static uint64_t ext2_get_tbptr_offset(fs_t *fs, uint32_t inode_number,
+                                      uint32_t index_1, uint32_t index_2,
+                                      uint32_t index_3) {
+  ext2_t *ext2_infos = (ext2_t *)(fs->fs_specific);
+
+  /* First, get the second pointer */
+  uint32_t block_ptr_1;
+  uint64_t offset = ext2_get_dbptr_offset(fs, inode_number, index_1, index_2);
+  ATA_read_b(fs->drv, offset, sizeof(uint32_t), (uint8_t *)&block_ptr_1);
+
+  /* The second pointer points to the third pointer */
+  uint32_t block_ptr_2;
+  offset = block_ptr_1 * ext2_infos->block_size + index_3;
+  ATA_read_b(fs->drv, offset, sizeof(uint32_t), (uint8_t *)&block_ptr_2);
+
+  offset = fs->p_offset;
+  offset += block_ptr_2 * ext2_infos->block_size;
+  return offset;
 }
 
 struct dirent *ext2_readdir(DIR *dir) {
@@ -188,12 +254,13 @@ struct dirent *ext2_readdir(DIR *dir) {
   uint64_t size = ext2_infos->block_size;
   uint8_t *buffer = dir->block_buffer;
 
-  if(dir->bp_index < 12){
+  if (dir->bp_index < 12) {
     ext2_inode_t *inode = ext2_kmalloc_inode(ext2_infos);
     ext2_get_inode(fs, dir->inode_number, inode);
 
     uint64_t offset = fs->p_offset;
-    offset += inode->direct_block_pointer[dir->bp_index] * ext2_infos->block_size;
+    offset +=
+        inode->direct_block_pointer[dir->bp_index] * ext2_infos->block_size;
 
     ATA_read_b(dir->fs->drv, offset, size, buffer);
 
@@ -207,31 +274,59 @@ struct dirent *ext2_readdir(DIR *dir) {
   /* Indirect block pointers */
   uint32_t ptrs_per_block = ext2_infos->block_size / sizeof(uint32_t);
 
-  if(dir->bp_index < 12 + ptrs_per_block){ /* Singly indirect block pointer */
+  /* Singly indirect block pointer */
+  if (dir->bp_index < 12 + ptrs_per_block) {
     uint32_t index = (dir->bp_index - 12) * sizeof(uint32_t);
-    
-    ext2_inode_t *inode = ext2_kmalloc_inode(ext2_infos);
-    ext2_get_inode(fs, dir->inode_number, inode);
 
-    uint64_t offset = fs->p_offset;
-    offset += inode->singly_indirect_block_pointer * ext2_infos->block_size + index;
+    uint64_t offset = ext2_get_sbptr_offset(fs, dir->inode_number, index);
 
-    uint32_t block_ptr;
-    ATA_read_b(dir->fs->drv, offset, sizeof(uint32_t), (uint8_t *)&block_ptr);
-
-    offset = fs->p_offset;
-    offset += block_ptr * ext2_infos->block_size;
-
-    ATA_read_b(dir->fs->drv, fs->p_offset + block_ptr * ext2_infos->block_size, size, buffer);
+    ATA_read_b(dir->fs->drv, offset, size, buffer);
 
     dir->next = (uint32_t)(dir->block_buffer);
     dir->so_far = 0;
-    ext2_kfree_inode(inode);
 
     return ext2_readdir(dir);
   }
 
-  /* TODO: doubly and triply indirect block pointers */
+  /* Doubly indirect block pointer */
+  if (dir->bp_index < 12 + ptrs_per_block + ptrs_per_block * ptrs_per_block) {
+    uint32_t index = dir->bp_index - 12 - ptrs_per_block;
+    uint32_t index_1 = index / ptrs_per_block;
+    uint32_t index_2 = index % ptrs_per_block;
+
+    uint64_t offset =
+        ext2_get_dbptr_offset(fs, dir->inode_number, index_1, index_2);
+
+    ATA_read_b(dir->fs->drv, offset, size, buffer);
+
+    dir->next = (uint32_t)(dir->block_buffer);
+    dir->so_far = 0;
+
+    return ext2_readdir(dir);
+  }
+
+  /* Triply indirect block pointer */
+  if (dir->bp_index < 12 + ptrs_per_block + ptrs_per_block * ptrs_per_block +
+                          ptrs_per_block * ptrs_per_block * ptrs_per_block) {
+    uint32_t index =
+        dir->bp_index - 12 - ptrs_per_block - ptrs_per_block * ptrs_per_block;
+
+    uint32_t index_1 = index / (ptrs_per_block * ptrs_per_block);
+    uint32_t tmp = index % (ptrs_per_block * ptrs_per_block);
+    uint32_t index_2 = tmp / ptrs_per_block;
+    uint32_t index_3 = tmp % ptrs_per_block;
+    /* Pretty sure this shit above is wrong somewhere */
+
+    uint64_t offset =
+        ext2_get_tbptr_offset(fs, dir->inode_number, index_1, index_2, index_3);
+
+    ATA_read_b(dir->fs->drv, offset, size, buffer);
+
+    dir->next = (uint32_t)(dir->block_buffer);
+    dir->so_far = 0;
+
+    return ext2_readdir(dir);
+  }
 
   return 0;
 }
