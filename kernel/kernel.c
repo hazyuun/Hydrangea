@@ -156,6 +156,8 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
       while (node) {
         if (vfs_is_dir(node))
           vesa_term_use_color(NICE_YELLOW);
+        else if (vfs_is_mtpt(node))
+          vesa_term_use_color(NICE_RED);
         else
           vesa_term_use_color(NICE_WHITE);
         printk("%s \t", node->name);
@@ -175,6 +177,8 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
 
         if (vfs_is_dir(node))
           vesa_term_use_color(NICE_YELLOW);
+        else if (vfs_is_mtpt(node))
+          vesa_term_use_color(NICE_RED);
         else
           vesa_term_use_color(NICE_WHITE);
 
@@ -204,7 +208,7 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
         vfs_node_t *n;
 
         if ((n = vfs_abspath_to_node(cwd, token))) {
-          if (vfs_is_dir(n))
+          if (vfs_is_dir(n) || vfs_is_mtpt(n))
             cwd = n;
           else
             printk("Not a directory");
@@ -276,7 +280,33 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
               printk("Unknown filesystem");
             } else if(err == 2){
               printk("%s not found", path);
-            } 
+            } else if(err == 3){
+              printk("%s not empty", path);
+            } else if(err == 255){
+              printk("Already mounted at %s", vfs_abs_path_to((vfs_node_t*) drv->mtpts[part]));
+            }
+          }
+        }
+      }
+
+      else if (!strcmp("umount", cmd)) {
+        uint8_t ms = atoi(strtok(NULL, " "));
+        uint8_t ps = atoi(strtok(NULL, " "));
+        uint8_t part = atoi(strtok(NULL, " "));
+
+        if((ms != 0 && ms != 1)
+        || (ps != 0 && ps != 1))
+          printk("Invalid drive\n");
+        else if(part > 3)
+          printk("Invalid partition number\n");
+        else{
+          ATA_drive_t *drv = ATA_get_drive(ms, ps);
+          if(!drv) printk("Drive not found\n");
+          else {
+            uint8_t err = vfs_umount_partition(drv, part);
+            if(err == 1){
+              printk("Not mounted");
+            }
           }
         }
       }

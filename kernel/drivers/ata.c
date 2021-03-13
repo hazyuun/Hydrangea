@@ -248,6 +248,8 @@ uint8_t ATA_init(PCI_device_t *dev) {
 
       /* Default values */
       uint8_t drive_num = 2 * ps + ms;
+      for(uint8_t p = 0; p < 4; p++)
+        ATA_drives[drive_num].mtpts[p] = 0;
       ATA_drives[drive_num].present = 0;
       ATA_drives[drive_num].ps = ps;
       ATA_drives[drive_num].ms = ms;

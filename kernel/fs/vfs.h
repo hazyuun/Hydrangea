@@ -95,6 +95,7 @@ vfs_node_t *vfs_abspath_to_node(vfs_node_t *root, char *path);
 vfs_node_t *vfs_make_node(vfs_node_t *root, char *path, uint8_t type,
                           uint32_t inode);
 uint8_t vfs_is_dir(vfs_node_t *node);
+uint8_t vfs_is_mtpt(vfs_node_t *node);
 
 uint32_t vfs_read(vfs_file_t *node, uint32_t offset, uint32_t size,
                   char *buffer);
@@ -109,5 +110,5 @@ void vfs_drwxrwxrwx(char *out, uint16_t permissions);
 
 #include <drivers/ata.h>
 uint8_t vfs_mount_partition(ATA_drive_t *drv, uint8_t partition_num, char *path, vfs_node_t *rel);
-
+uint8_t vfs_umount_partition(ATA_drive_t *drv, uint8_t partition_num);
 #endif

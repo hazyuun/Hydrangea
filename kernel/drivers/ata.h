@@ -86,6 +86,7 @@
 #define ATA_SECT_SIZE 512
 
 typedef struct {
+  void *mtpts[4];
   uint8_t present;
   uint8_t ps;
   uint8_t ms;

@@ -150,9 +150,20 @@ void vfs_show_tree(vfs_node_t *root, size_t level) {
   if (!strcmp(root->name, ".") || !strcmp(root->name, ".."))
     return;
   size_t lvl = level;
+  vesa_term_use_color(NICE_WHITE);
   while (lvl--)
     printk("|  ");
+
+  if (vfs_is_dir(root))
+    vesa_term_use_color(NICE_YELLOW);
+  else if (vfs_is_mtpt(root))
+    vesa_term_use_color(NICE_RED);
+  else
+    vesa_term_use_color(NICE_WHITE);
+
   printk("+- %s\n", root->name);
+
+  vesa_term_use_color(NICE_WHITE);
   if (root->childs) {
     vfs_node_t *child = root->childs;
     while (child) {
@@ -242,7 +253,10 @@ vfs_node_t *vfs_make_node(vfs_node_t *root, char *path, uint8_t type,
     vfs_free_child_nodes(node);
   return node;
 }
+
 uint8_t vfs_is_dir(vfs_node_t *node) { return node->file->type == VFS_DIR; }
+uint8_t vfs_is_mtpt(vfs_node_t *node) { return node->file->type == VFS_MTPT; }
+
 vfs_node_t *vfs_get_root() { return vfs_root; }
 
 #include <fs/dirent.h>
@@ -276,7 +290,6 @@ static void vfs_ext2_populate(vfs_node_t *root, DIR *dir) {
 }
 
 uint8_t vfs_mount_ext2(fs_t *fs, vfs_node_t *mtpt) {
-  
 
   DIR *dir = ext2_opendir(fs, 2);
   vfs_ext2_populate(mtpt, dir);
@@ -285,8 +298,12 @@ uint8_t vfs_mount_ext2(fs_t *fs, vfs_node_t *mtpt) {
 }
 
 #include <misc/mbr.h>
-uint8_t vfs_mount_partition(ATA_drive_t *drv, uint8_t partition_num,
-                            char *path, vfs_node_t *rel) {
+uint8_t vfs_mount_partition(ATA_drive_t *drv, uint8_t partition_num, char *path,
+                            vfs_node_t *rel) {
+
+  if (drv->mtpts[partition_num])
+    return 255;
+
   mbr_t mbr;
   mbr_parse(drv, &mbr);
 
@@ -299,10 +316,31 @@ uint8_t vfs_mount_partition(ATA_drive_t *drv, uint8_t partition_num,
     return 1;
 
   vfs_node_t *mtpt = vfs_abspath_to_node(rel, path);
-  if(!mtpt)
+  if (!mtpt)
     return 2;
-    
-  return vfs_mount_ext2(fs, mtpt);
+
+  if (mtpt->childs)
+    return 3;
+
+  uint8_t result = vfs_mount_ext2(fs, mtpt);
+  if (result)
+    return result;
+
+  mtpt->file->type = VFS_MTPT;
+  drv->mtpts[partition_num] = (void *)mtpt;
+
+  return result;
+}
+
+uint8_t vfs_umount_partition(ATA_drive_t *drv, uint8_t partition_num) {
+  if (!drv->mtpts[partition_num])
+    return 1;
+
+  vfs_node_t *mtpt = (vfs_node_t*) (drv->mtpts[partition_num]);
+  vfs_free_child_nodes(mtpt);
+  mtpt->file->type = VFS_DIR;
+  drv->mtpts[partition_num] = 0;
+  return 0;
 }
 
 void vfs_drwxrwxrwx(char *out, uint16_t permissions) {
