@@ -6,7 +6,7 @@ typedef struct fs fs_t;
 
 struct dirent{
   uint32_t inode_number;
-  
+  uint64_t size;
   uint8_t type;
   uint16_t permissions;
   char name[256];

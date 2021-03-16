@@ -278,7 +278,11 @@ static void vfs_ext2_populate(vfs_node_t *root, DIR *dir) {
 
     vfs_node_t *n = vfs_add_child(root, entry->name, type);
     n->file->permissions = entry->permissions;
-
+    n->file->fs = dir->fs;
+    n->file->inode = entry->inode_number;
+    n->file->read = &ext2_vfs_read;
+    n->file->size = entry->size;
+    
     /* Recursively populate every sub-directory */
     if (type == VFS_DIR) {
       DIR *sub_dir = ext2_opendir(dir->fs, entry->inode_number);

@@ -53,6 +53,7 @@ typedef struct vfs_node {
   struct vfs_node *prev;
 } vfs_node_t;
 
+#include <fs/generic.h>
 typedef struct vfs_file {
   char *name;
   uint8_t type;
@@ -61,6 +62,8 @@ typedef struct vfs_file {
   uint32_t gid;
   uint32_t inode;
   size_t size;
+
+  fs_t *fs;
 
   read_fptr_t read;
   write_fptr_t write;

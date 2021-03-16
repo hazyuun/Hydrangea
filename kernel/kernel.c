@@ -173,7 +173,7 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
         
         char drwxrwxrwx[10];
         vfs_drwxrwxrwx(drwxrwxrwx, node->file->permissions);
-        printk("\n %s user group ", drwxrwxrwx);
+        printk("\n %s user group %dB \t", drwxrwxrwx, node->file->size);
 
         if (vfs_is_dir(node))
           vesa_term_use_color(NICE_YELLOW);
@@ -236,7 +236,9 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
         if (!node)
           printk("Not found");
         else {
-          char *contents = kmalloc(node->file->size);
+          printk("\nReading : %d Bytes \n---\n", node->file->size);
+          char *contents = kmalloc(node->file->size + 1);
+          memset(contents, 0, node->file->size + 1);
           if (vfs_read(node->file, 0, node->file->size, contents))
             printk("%s", contents);
           kfree(contents);

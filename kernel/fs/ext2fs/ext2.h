@@ -81,7 +81,7 @@ typedef struct {
   uint32_t blocks_count;
   uint32_t superuser_blocks_count;
   uint32_t unallocated_blocks_count;
- 
+
   uint32_t unallocated_inodes_count;
   uint32_t superblock_block;
   uint32_t log2_block_size_minus_10;
@@ -200,7 +200,20 @@ void ext2_get_inode(fs_t *fs, uint32_t inode_number, ext2_inode_t *inode);
 DIR *ext2_opendir(fs_t *fs, uint32_t inode_number);
 struct dirent *ext2_readdir(DIR *dir);
 void ext2_closedir(DIR *dir);
+uint32_t ext2_readfile(fs_t *fs, uint32_t inode_number, uint64_t offset,
+                       uint64_t size, uint8_t *buffer);
 
+/* VFS related */
+#include <fs/vfs.h>
 uint8_t ext2_type_translate(uint8_t type);
+
+uint32_t ext2_vfs_read(vfs_file_t *node, uint32_t offset, uint32_t size,
+                       char *buffer);
+uint32_t ext2_vfs_write(vfs_file_t *node, uint32_t offset, uint32_t size,
+                        char *buffer);
+uint8_t ext2_vfs_open(vfs_file_t *node, uint8_t read, uint8_t write);
+uint8_t ext2_vfs_close(vfs_file_t *node);
+vfs_dirent_t *ext2_vfs_readdir(vfs_file_t *node, uint32_t index);
+vfs_file_t *ext2_vfs_finddir(vfs_file_t *node, char *name);
 
 #endif
