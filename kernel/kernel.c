@@ -156,6 +156,8 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
       while (node) {
         if (vfs_is_dir(node))
           vesa_term_use_color(NICE_YELLOW);
+        else if (vfs_is_mtpt(node))
+          vesa_term_use_color(NICE_RED);
         else
           vesa_term_use_color(NICE_WHITE);
         printk("%s \t", node->name);
@@ -165,6 +167,30 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
       vesa_term_use_color(NICE_WHITE);
     }
     
+    else if (!strcmp(cmd, "ll")) {
+      vfs_node_t *node = cwd->childs;
+      while (node) {
+        
+        char drwxrwxrwx[10];
+        vfs_drwxrwxrwx(drwxrwxrwx, node->file->permissions);
+        printk("\n %s user group %dB \t", drwxrwxrwx, node->file->size);
+
+        if (vfs_is_dir(node))
+          vesa_term_use_color(NICE_YELLOW);
+        else if (vfs_is_mtpt(node))
+          vesa_term_use_color(NICE_RED);
+        else
+          vesa_term_use_color(NICE_WHITE);
+
+        printk("%s", node->name);
+        vesa_term_use_color(NICE_WHITE);
+        
+        node = node->next;
+      }
+      printk("\n");
+      vesa_term_use_color(NICE_WHITE);
+    }
+
     else if (!strcmp(cmd, "ki")) {
       vfs_show_tree(cwd, 0);
     }
@@ -182,7 +208,7 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
         vfs_node_t *n;
 
         if ((n = vfs_abspath_to_node(cwd, token))) {
-          if (vfs_is_dir(n))
+          if (vfs_is_dir(n) || vfs_is_mtpt(n))
             cwd = n;
           else
             printk("Not a directory");
@@ -210,14 +236,16 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
         if (!node)
           printk("Not found");
         else {
-          char *contents = kmalloc(node->file->size);
+          printk("\nReading : %d Bytes \n---\n", node->file->size);
+          char *contents = kmalloc(node->file->size + 1);
+          memset(contents, 0, node->file->size + 1);
           if (vfs_read(node->file, 0, node->file->size, contents))
             printk("%s", contents);
           kfree(contents);
         }
 
       }
-      
+
       else if (!strcmp("mbr", cmd)) {
         uint8_t ms = atoi(strtok(NULL, " "));
         uint8_t ps = atoi(strtok(NULL, " "));
@@ -234,6 +262,58 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
           }
         }
       }
+
+      else if (!strcmp("mount", cmd)) {
+        uint8_t ms = atoi(strtok(NULL, " "));
+        uint8_t ps = atoi(strtok(NULL, " "));
+        uint8_t part = atoi(strtok(NULL, " "));
+        char *path = strtok(NULL, " ");
+        if((ms != 0 && ms != 1)
+        || (ps != 0 && ps != 1))
+          printk("Invalid drive\n");
+        else if(part > 3)
+          printk("Invalid partition number\n");
+        else{
+          ATA_drive_t *drv = ATA_get_drive(ms, ps);
+          if(!drv) printk("Drive not found\n");
+          else {
+            uint8_t err = vfs_mount_partition(drv, part, path, cwd);
+            if(err == 1){
+              printk("Unknown filesystem");
+            } else if(err == 2){
+              printk("%s not found", path);
+            } else if(err == 3){
+              printk("%s not empty", path);
+            } else if(err == 255){
+              printk("Already mounted at %s", vfs_abs_path_to((vfs_node_t*) drv->mtpts[part]));
+            }
+          }
+        }
+      }
+
+      else if (!strcmp("umount", cmd)) {
+        uint8_t ms = atoi(strtok(NULL, " "));
+        uint8_t ps = atoi(strtok(NULL, " "));
+        uint8_t part = atoi(strtok(NULL, " "));
+
+        if((ms != 0 && ms != 1)
+        || (ps != 0 && ps != 1))
+          printk("Invalid drive\n");
+        else if(part > 3)
+          printk("Invalid partition number\n");
+        else{
+          ATA_drive_t *drv = ATA_get_drive(ms, ps);
+          if(!drv) printk("Drive not found\n");
+          else {
+            uint8_t err = vfs_umount_partition(drv, part);
+            if(err == 1){
+              printk("Not mounted");
+            }
+          }
+        }
+      }
+
+      
 
       else
         printk("Unknown command\n");

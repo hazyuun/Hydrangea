@@ -35,11 +35,11 @@ void *memmove(void *dest, const void *src, size_t size) {
   return dest;
 }
 
+#include <stdio.h>
 void memset(void *dest, char value, int n) {
-  char *temp = (char *)dest;
-  for (; n > 0; n--) {
-    *temp = value;
-    temp += sizeof(char);
+  char *tmp = (char*) dest;
+  for (int i = 0; i < n; i++) {
+    *(tmp + i) = value;
   }
 }
 

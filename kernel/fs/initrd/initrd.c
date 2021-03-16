@@ -45,13 +45,26 @@ uint32_t initrd_read(vfs_file_t *node, uint32_t offset, uint32_t size,
   return size;
 }
 
-uint32_t initrd_write(vfs_file_t *node, uint32_t offset, uint32_t size,
-                      char *buffer) {}
-void initrd_open(vfs_file_t *node, uint8_t read, uint8_t write) {}
-void initrd_close(vfs_file_t *node) {}
+void initrd_open(vfs_file_t *node, uint8_t read, uint8_t write) {
+  (void) node;
+  (void) read;
+  (void) write;
+  
+}
+void initrd_close(vfs_file_t *node) {
+  (void) node;
+}
 
-dirent_t *initrd_readdir(vfs_file_t *node, uint32_t index) {}
-vfs_file_t *initrd_finddir(vfs_file_t *node, char *name) {}
+vfs_dirent_t *initrd_readdir(vfs_file_t *node, uint32_t index) {
+  (void) node;
+  (void) index;
+  return 0;
+}
+vfs_file_t *initrd_finddir(vfs_file_t *node, char *name) {
+  (void) node;
+  (void) name;
+  return 0;
+}
 
 size_t tar_get_size(const char *input) {
   size_t size = 0;
@@ -73,7 +86,7 @@ size_t tar_parse(vfs_node_t *node, size_t addr) {
 
     vfs_node_t *n =
         vfs_make_node(node, header->name + 2,
-                      header->typeflag[0] == 53 ? VFS_DIR : VFS_FILE, offset);
+                      header->typeflag[0] == 53 ? VFS_DIR : VFS_FILE, (uint32_t) offset);
     n->file->read = &initrd_read;
 
     size_t size = tar_get_size(header->size);

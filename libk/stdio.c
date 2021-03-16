@@ -79,7 +79,7 @@ void scank(const char *format, ...) {
       char str[256] = "\0";
       while (c != '\n') {
         uint8_t key_down = kbd_keydown();
-        if (key_down == 0xFF || key_down == 0xA)
+        if (key_down == 0xFF)
           continue;
         c = kbd_get();
         if (c == '\b') {

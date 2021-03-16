@@ -51,7 +51,9 @@ void isr_common_handler(registers *r) {
     panic("Out of bounds exception");
     break;
   case 0x6:
+    printk("\n eip : "); vesa_term_print_hex(r->eip);
     panic("Invalid opcode exception");
+    
     break;
   case 0x7:
     panic("No coprocessor exception");

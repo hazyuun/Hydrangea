@@ -86,6 +86,7 @@
 #define ATA_SECT_SIZE 512
 
 typedef struct {
+  void *mtpts[4];
   uint8_t present;
   uint8_t ps;
   uint8_t ms;
@@ -103,13 +104,14 @@ void ATA_print_infos();
 ATA_drive_t *ATA_get_drive(uint8_t ps, uint8_t ms);
 
 /* Wrappers, so I can easily switch to DMA later */
-size_t ATA_read(ATA_drive_t *drv, int block, size_t size, unsigned char *buf);
-size_t ATA_write(ATA_drive_t *drv, int block, size_t size, unsigned char *buf);
+size_t ATA_read(ATA_drive_t *drv, uint64_t block, uint64_t size, unsigned char *buf);
+size_t ATA_write(ATA_drive_t *drv, uint64_t block, uint64_t size, unsigned char *buf);
 
-size_t ATA_PIO_read(ATA_drive_t *drv, int block, size_t size, unsigned char *buf);
-size_t ATA_PIO_write(ATA_drive_t *drv, int block, size_t size, unsigned char *buf);
+size_t ATA_PIO_read(ATA_drive_t *drv, uint64_t block, uint64_t size, unsigned char *buf);
+size_t ATA_PIO_write(ATA_drive_t *drv, uint64_t block, uint64_t size, unsigned char *buf);
 
-
+/* Uses bytes instead of sectors */
+size_t ATA_read_b(ATA_drive_t *drv, uint64_t offset, uint64_t size, unsigned char *buf);
 
 size_t ATA_DMA_read_sector(uint8_t *buffer, ATA_drive_t *drv, uint32_t LBA);
 

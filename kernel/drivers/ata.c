@@ -108,7 +108,7 @@ ATA_drive_t *ATA_get_drive(uint8_t ps, uint8_t ms) {
   return NULL;
 }
 
-static void ATA_PIO_prepare(ATA_drive_t *drv, int block, int size) {
+static void ATA_PIO_prepare(ATA_drive_t *drv, uint64_t block, uint64_t size) {
   uint16_t base = ch_regs[drv->ps].base;
   uint8_t status;
 
@@ -133,14 +133,28 @@ static void ATA_PIO_prepare(ATA_drive_t *drv, int block, int size) {
   io_outb(base + ATA_REG_LBA5, (unsigned char)0);
 }
 
-size_t ATA_read(ATA_drive_t *drv, int block, size_t size, unsigned char *buf){
+inline size_t ATA_read(ATA_drive_t *drv, uint64_t block, uint64_t size, unsigned char *buf){
   return ATA_PIO_read(drv, block, size, buf);
 }
-size_t ATA_write(ATA_drive_t *drv, int block, size_t size, unsigned char *buf){
+inline size_t ATA_write(ATA_drive_t *drv, uint64_t block, uint64_t size, unsigned char *buf){
   return ATA_PIO_write(drv, block, size, buf);
 }
 
-size_t ATA_PIO_read(ATA_drive_t *drv, int block, size_t size, unsigned char *buf) {
+inline size_t ATA_read_b(ATA_drive_t *drv, uint64_t offset, uint64_t size, unsigned char *buf){
+
+  uint64_t start = offset / 512;
+  uint64_t end = (offset + size) / 512;
+
+  uint64_t N = end - start + 1;
+  char whole_sector[N * 512];
+
+  ATA_read(drv, start, N, (uint8_t *)whole_sector);
+
+  memcpy(buf, (char *) (whole_sector + offset % 512), size);
+  return size;
+}
+
+size_t ATA_PIO_read(ATA_drive_t *drv, uint64_t block, uint64_t size, unsigned char *buf) {
   uint16_t base = ch_regs[drv->ps].base;
 
   ATA_PIO_prepare(drv, block, size);
@@ -173,7 +187,7 @@ size_t ATA_PIO_read(ATA_drive_t *drv, int block, size_t size, unsigned char *buf
   return size;
 }
 
-size_t ATA_PIO_write(ATA_drive_t *drv, int block, size_t size, unsigned char *buf) {
+size_t ATA_PIO_write(ATA_drive_t *drv, uint64_t block, uint64_t size, unsigned char *buf) {
   uint16_t base = ch_regs[drv->ps].base;
 
   ATA_PIO_prepare(drv, block, size);
@@ -234,6 +248,8 @@ uint8_t ATA_init(PCI_device_t *dev) {
 
       /* Default values */
       uint8_t drive_num = 2 * ps + ms;
+      for(uint8_t p = 0; p < 4; p++)
+        ATA_drives[drive_num].mtpts[p] = 0;
       ATA_drives[drive_num].present = 0;
       ATA_drives[drive_num].ps = ps;
       ATA_drives[drive_num].ms = ms;
@@ -290,8 +306,8 @@ uint8_t ATA_init(PCI_device_t *dev) {
         pit_sleep(100);
 
         if (timeout == 10) { /* BSY never clears maybe ? */
-          printk("\n [ATA] %s %s :", ps ? "PRIMARY" : "SEONDARY",
-                 ms ? "SLAVE" : "MASTER");
+          printk("\n [ATA] %s %s :", ps ? "SEONDARY" : "PRIMARY",
+                 ms ? "MASTER" : "SLAVE");
           printk("\n       First timeout");
           printk("\n       Trying soft reset ..");
 
@@ -318,17 +334,20 @@ uint8_t ATA_init(PCI_device_t *dev) {
         uint16_t type = (hi << 8) | lo;
 
         switch (type) {
+        case ATA_TYPE_PATA: break;
         case ATA_TYPE_PATAPI:
         case ATA_TYPE_SATA:
         case ATA_TYPE_SATAPI:
           printk("\n [ATA] %s device detected at %s %s",
-                 ATA_TYPE_in_english_please(type), ps ? "PRIMARY" : "SEONDARY",
-                 ms ? "SLAVE" : "MASTER");
+                 ATA_TYPE_in_english_please(type), ps ? "SEONDARY" : "PRIMARY",
+                 ms ? "MASTER" : "SLAVE");
           printk("\n       %s devices are not supported (yet ?)",
                  ATA_TYPE_in_english_please(type));
           break;
-        default:
-          printk("\n [ATA] Unkonwn device detected");
+        // default:
+        //   printk("\n [ATA] Unkonwn device (type : %d) detected at %s %s", type,
+        //          ATA_TYPE_in_english_please(type), ps ? "SEONDARY" : "PRIMARY",
+        //          ms ? "MASTER" : "SLAVE");
         }
 
         /* TODO : Wait bsy */
