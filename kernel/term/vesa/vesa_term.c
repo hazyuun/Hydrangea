@@ -1,5 +1,5 @@
-#include <tty/vesa/default_font.h>
-#include <tty/vesa/vesa_term.h>
+#include <term/vesa/default_font.h>
+#include <term/vesa/vesa_term.h>
 #include <vesa/vesa.h>
 
 vesa_term_t c_term;
@@ -46,7 +46,7 @@ void vesa_term_scroll() {
   }
 }
 
-void vesa_term_cur_stp() { vesa_term_cur_mov(c_term.col, c_term.row); }
+void vesa_term_cur_step() { vesa_term_cur_mov(c_term.col, c_term.row); }
 
 void vesa_term_putchar(unsigned char c) {
   if (c == '\n') {
@@ -57,11 +57,11 @@ void vesa_term_putchar(unsigned char c) {
       c_term.row -= 1;
       vesa_term_scroll();
     }
-    vesa_term_cur_stp();
+    vesa_term_cur_step();
   } else if (c == '\b') {
     vesa_term_putat(' ', c_term.col, c_term.row);
     c_term.col--;
-    vesa_term_cur_stp();
+    vesa_term_cur_step();
 
   } else if (c == '\t') {
     vesa_term_putat(' ', c_term.col, c_term.row);
@@ -69,7 +69,7 @@ void vesa_term_putchar(unsigned char c) {
     while (c_term.col + 1 > i)
       i += 4;
     c_term.col = i;
-    vesa_term_cur_stp();
+    vesa_term_cur_step();
 
   } else {
     if (c_term.col + 1 == FB_COLS) {

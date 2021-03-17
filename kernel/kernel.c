@@ -15,7 +15,6 @@
 #include <kernel.h>
 
 #include <boot/multiboot.h>
-#include <tty/tty.h>
 
 #include <drivers/kbd.h>
 #include <drivers/pci.h>
@@ -35,28 +34,27 @@
 
 #include <fs/initrd/initrd.h>
 
-#include <tty/vesa/vesa_term.h>
-#include <vesa/vesa.h>
-
+#include <term/term.h>
 #include <stdio.h>
 #include <string.h>
 
 #define OK()                                                                   \
-  vesa_term_use_color(NICE_GREEN);                                             \
-  vesa_term_print("\n < OK > ");                                               \
-  vesa_term_use_color(NICE_WHITE);
+  term_use_color(NICE_GREEN);                                             \
+  term_print("\n < OK > ");                                               \
+  term_use_color(NICE_WHITE);
 
 void panic(char *err_msg) {
-  vesa_term_use_color(NICE_RED);
-  vesa_term_print(" KERNEL PANIC : ");
-  vesa_term_print(err_msg);
+  term_use_color(NICE_RED);
+  term_print(" KERNEL PANIC : ");
+  term_print(err_msg);
   while (1)
     ;
 }
 
 void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
-  vesa_init(mbi);
-  vesa_term_init(vesa_get_framebuffer());
+  
+  if(term_init(VESA_TERM, mbi))
+    hang();
 
   printk("[*] Kernel loaded !\n");
 
@@ -102,9 +100,9 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
   printk("Detecting and initializing PCI devices");
 
   printk("\n\nWelcome to ");
-  vesa_term_use_color(NICE_MAGENTA);
+  term_use_color(NICE_MAGENTA);
   printk("YuunOS !\n");
-  vesa_term_use_color(NICE_WHITE);
+  term_use_color(NICE_WHITE);
 
   kbd_switch_layout("en");
   /* This is a quick and dirty and temporary cli */
@@ -113,20 +111,20 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
   vfs_node_t *cwd = vfs_get_root();
   char cmd[100];
   while (1) {
-    vesa_term_use_color(NICE_CYAN_0);
+    term_use_color(NICE_CYAN_0);
     printk("\nKernel ");
-    vesa_term_use_color(NICE_CYAN);
+    term_use_color(NICE_CYAN);
     printk("%s", vfs_abs_path_to(cwd));
-    vesa_term_use_color(NICE_WHITE);
+    term_use_color(NICE_WHITE);
     printk("> ");
 
     scank("%s", cmd);
     if (!strcmp("info", cmd)) {
-      vesa_term_print("YuunOS v0.0.1\n");
+      term_print("YuunOS v0.0.1\n");
     } 
     
     else if (!strcmp("clear", cmd)) {
-      vesa_term_clear();
+      term_clear();
     } 
     
     else if (!strcmp("reboot", cmd)) {
@@ -155,16 +153,16 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
       vfs_node_t *node = cwd->childs;
       while (node) {
         if (vfs_is_dir(node))
-          vesa_term_use_color(NICE_YELLOW);
+          term_use_color(NICE_YELLOW);
         else if (vfs_is_mtpt(node))
-          vesa_term_use_color(NICE_RED);
+          term_use_color(NICE_RED);
         else
-          vesa_term_use_color(NICE_WHITE);
+          term_use_color(NICE_WHITE);
         printk("%s \t", node->name);
         node = node->next;
       }
       printk("\n");
-      vesa_term_use_color(NICE_WHITE);
+      term_use_color(NICE_WHITE);
     }
     
     else if (!strcmp(cmd, "ll")) {
@@ -176,19 +174,19 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
         printk("\n %s user group %dB \t", drwxrwxrwx, node->file->size);
 
         if (vfs_is_dir(node))
-          vesa_term_use_color(NICE_YELLOW);
+          term_use_color(NICE_YELLOW);
         else if (vfs_is_mtpt(node))
-          vesa_term_use_color(NICE_RED);
+          term_use_color(NICE_RED);
         else
-          vesa_term_use_color(NICE_WHITE);
+          term_use_color(NICE_WHITE);
 
         printk("%s", node->name);
-        vesa_term_use_color(NICE_WHITE);
+        term_use_color(NICE_WHITE);
         
         node = node->next;
       }
       printk("\n");
-      vesa_term_use_color(NICE_WHITE);
+      term_use_color(NICE_WHITE);
     }
 
     else if (!strcmp(cmd, "ki")) {
@@ -319,6 +317,6 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
         printk("Unknown command\n");
     }
   }
-  while (1)
-    __asm__("hlt\n\t");
+  
+  hang();
 }

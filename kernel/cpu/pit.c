@@ -5,7 +5,6 @@
 #include <mem/pmm.h>
 #include <stdio.h>
 
-#include <tty/tty.h>
 pit_infos_t *pit_infos;
 void pit_init(uint32_t freq) {
 

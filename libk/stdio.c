@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include <drivers/kbd.h>
+#include <term/term.h>
 
 void printk(const char *format, ...) {
   va_list ap;
@@ -10,22 +11,22 @@ void printk(const char *format, ...) {
   va_start(ap, format);
   while (*format != '\0') {
     if (*format != '%')
-      vesa_term_putchar(*format++);
+      term_putchar(*format++);
     else {
       format++;
       switch (*format) {
       case 'c': {
-        vesa_term_putchar(va_arg(ap, int));
+        term_putchar(va_arg(ap, int));
         break;
       }
       case 's': {
-        vesa_term_print(va_arg(ap, char *));
+        term_print(va_arg(ap, char *));
         break;
       }
       case 'd': {
         char str[20];
         itoa(va_arg(ap, int), str, 10);
-        vesa_term_print(str);
+        term_print(str);
         break;
       }
       case 'f': {
@@ -33,7 +34,7 @@ void printk(const char *format, ...) {
         /* TODO: Print floats correctly */
         double f = va_arg(ap, double);
         if (f < 0) {
-          vesa_term_putchar('-');
+          term_putchar('-');
           f *= -1;
         }
         int whole = (int)f;
@@ -51,12 +52,12 @@ void printk(const char *format, ...) {
       case 'x': {
         char str[20];
         itoa(va_arg(ap, int), str, 16);
-        vesa_term_print(str);
+        term_print(str);
         break;
       }
       default: {
-        vesa_term_putchar(*(--format));
-        vesa_term_putchar(*(++format));
+        term_putchar(*(--format));
+        term_putchar(*(++format));
         break;
       }
       }
@@ -85,14 +86,14 @@ void scank(const char *format, ...) {
         if (c == '\b') {
           if (pos != 0) {
             str[--pos] = '\0';
-            vesa_term_putchar(c);
+            term_putchar(c);
           }
         } else if (c == '\n') {
-          vesa_term_putchar(c);
+          term_putchar(c);
         } else {
           str[pos++] = c;
           str[pos] = '\0';
-          vesa_term_putchar(c);
+          term_putchar(c);
         }
       }
 

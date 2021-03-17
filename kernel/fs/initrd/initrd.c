@@ -3,6 +3,7 @@
 #include <mem/pmm.h>
 #include <stdio.h>
 #include <string.h>
+#include <term/term.h>
 
 uint8_t initrd_init(multiboot_info_t *mbi) {
   size_t count = mbi->mods_count;
@@ -10,7 +11,7 @@ uint8_t initrd_init(multiboot_info_t *mbi) {
     return 0;
   printk("\n[initrd] Found %d module(s) ", count);
   if (count > 10) {
-    vesa_term_use_color(NICE_YELLOW);
+    term_use_color(NICE_YELLOW);
     printk("\n\t<!> [initrd] Can't load more than 10 modules ");
     printk("\n\t<!> [initrd] %d module(s) will be ignored ", count - 10);
     count = 10;

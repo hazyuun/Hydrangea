@@ -11,7 +11,7 @@
 #include <mem/pmm.h>
 #include <stddef.h>
 #include <stdio.h>
-#include <tty/tty.h>
+#include <term/term.h>
 
 const char *class_names[19] = {"Unclassified",
                                "Mass Storage Controller",

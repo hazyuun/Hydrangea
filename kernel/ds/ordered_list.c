@@ -3,7 +3,7 @@
 #include <mem/pmm.h>
 #include <stdio.h>
 #include <string.h>
-#include <tty/tty.h>
+
 ordered_list_t ol_create(int max_size) {
   ordered_list_t ol;
   ol.items = (void *)pmalloc(max_size * sizeof(void *));

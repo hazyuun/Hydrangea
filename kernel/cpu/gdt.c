@@ -4,7 +4,7 @@
  * */
 
 #include <cpu/gdt.h>
-#include <tty/tty.h>
+#include <term/term.h>
 
 static GDT_ptr gdt;
 static GDT_entry gdt_entries[5];

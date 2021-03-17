@@ -7,6 +7,7 @@
 #include <mem/heap.h>
 #include <stdio.h>
 #include <string.h>
+#include <term/term.h>
 
 vfs_node_t *vfs_root;
 
@@ -150,20 +151,20 @@ void vfs_show_tree(vfs_node_t *root, size_t level) {
   if (!strcmp(root->name, ".") || !strcmp(root->name, ".."))
     return;
   size_t lvl = level;
-  vesa_term_use_color(NICE_WHITE);
+  term_use_color(NICE_WHITE);
   while (lvl--)
     printk("|  ");
 
   if (vfs_is_dir(root))
-    vesa_term_use_color(NICE_YELLOW);
+    term_use_color(NICE_YELLOW);
   else if (vfs_is_mtpt(root))
-    vesa_term_use_color(NICE_RED);
+    term_use_color(NICE_RED);
   else
-    vesa_term_use_color(NICE_WHITE);
+    term_use_color(NICE_WHITE);
 
   printk("+- %s\n", root->name);
 
-  vesa_term_use_color(NICE_WHITE);
+  term_use_color(NICE_WHITE);
   if (root->childs) {
     vfs_node_t *child = root->childs;
     while (child) {

@@ -13,7 +13,7 @@
 #include <mem/paging.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <tty/tty.h>
+#include <term/term.h>
 #include <stdio.h>
 
 
@@ -25,11 +25,11 @@ typedef struct {
 } registers;
 
 void isr_common_handler(registers *r) {
-  tty_print("Interrupt :  ");
-  tty_print_hex(r->int_num);
-  tty_print(" Err code : ");
-  tty_print_hex(r->err_code);
-  tty_print("\n");
+  term_print("Interrupt :  ");
+  term_print_hex(r->int_num);
+  term_print(" Err code : ");
+  term_print_hex(r->err_code);
+  term_print("\n");
 
   switch (r->int_num) {
   case 0x0:
@@ -51,7 +51,7 @@ void isr_common_handler(registers *r) {
     panic("Out of bounds exception");
     break;
   case 0x6:
-    printk("\n eip : "); vesa_term_print_hex(r->eip);
+    printk("\n eip : "); term_print_hex(r->eip);
     panic("Invalid opcode exception");
     
     break;

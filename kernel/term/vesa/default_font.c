@@ -1,4 +1,4 @@
-#include <tty/vesa/default_font.h>
+#include <term/vesa/default_font.h>
 
 uint32_t default_font[] = {
     0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000,

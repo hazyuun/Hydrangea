@@ -1,7 +1,10 @@
 #ifndef _KERNEL_H____
 #define _KERNEL_H____
 
-#include <tty/tty.h>
+#define hang()                                                                 \
+  do {                                                                         \
+    __asm__("hlt\n\t");                                                        \
+  } while (1);
 
 void panic(char *err_msg);
 

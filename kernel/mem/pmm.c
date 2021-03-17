@@ -9,7 +9,6 @@
 #include <mem/pmm.h>
 #include <stdio.h>
 #include <string.h>
-#include <tty/tty.h>
 
 extern uint32_t end_of_bin_addr;
 

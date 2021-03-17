@@ -27,7 +27,7 @@ void vesa_term_init(uint32_t *vesa_fb);
 void vesa_term_use_color(uint32_t color);
 
 void vesa_term_cur_mov(size_t x, size_t y);
-void vesa_term_cur_stp();
+void vesa_term_cur_step();
 
 void vesa_term_scroll();
 void vesa_term_clear();

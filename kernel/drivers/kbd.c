@@ -5,7 +5,7 @@
 
 #include <drivers/kbd.h>
 #include <string.h>
-#include <tty/tty.h>
+#include <term/term.h>
 
 /* TODO: Make a complete keyboard layout */
 /* Note : There are some mistakes in my layouts */

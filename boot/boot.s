@@ -17,7 +17,7 @@
 .section .bss
 .align 16
 stb:
-	.skip 32768
+	.skip 16384
 stt:
 
 .section .text
