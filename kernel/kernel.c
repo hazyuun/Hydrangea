@@ -32,17 +32,23 @@
 #include <string.h>
 #include <util/logger.h>
 
-void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
-  if(term_init(VESA_TERM, mbi))
-    hang();
-
-  log_info(INFO, "INFO", "Kernel loaded !");
-  
+static void check_multiboot_info(uint32_t mb_magic, multiboot_info_t *mbi){
   if (mb_magic != MULTIBOOT_BOOTLOADER_MAGIC)
     panic("Invalid multiboot magic number !");
 
   if (!(mbi->flags & (1 << 6)))
     panic("No multiboot memory map !");
+}
+
+__attribute__((noreturn)) void quick_and_dirty_kernel_cli();
+
+__attribute__((noreturn)) void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
+  if(term_init(VESA_TERM, mbi))
+    hang();
+
+  log_info(INFO, "INFO", "Kernel loaded !");
+  
+  check_multiboot_info(mb_magic, mbi);
 
   pmm_init(mbi);
   log_info(INFO, "INFO", "Available memory : %d KiB\n", pmm_available_memory());
@@ -53,10 +59,9 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
   
   pg_init(mbi);
   pit_init(100);
+  
   vfs_dummy();
-
-  if (mbi->flags & (1 << 3))
-    initrd_init(mbi);
+  initrd_init(mbi);
 
   log_result(!PCI_detect(), "Detecting and initializing PCI devices"); 
 
@@ -66,9 +71,15 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
   term_use_color(NICE_WHITE);
 
   kbd_switch_layout("en");
-  /* This is a quick and dirty and temporary cli */
-  /* just for the sake of testing ! */
-  /* Edit : it is getting messy lol */
+  quick_and_dirty_kernel_cli();
+  
+  hang();
+}
+
+/* This is a quick and dirty and temporary cli */
+/* just for the sake of testing ! */
+/* Edit : it is getting messy lol */  
+__attribute__((noreturn)) void quick_and_dirty_kernel_cli(){
   vfs_node_t *cwd = vfs_get_root();
   char cmd[100];
   while (1) {
@@ -97,10 +108,6 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
       while (1)
         ;
     } 
-    
-    else if (!strcmp("sleep", cmd)) { /* Will sleep 10 secs */
-      pit_sleep(10 * 100);
-    }
     
     else if (!strcmp("datetime", cmd)) {
       rtc_print_now();
@@ -175,7 +182,10 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
           printk("Not found");
         }
       }
-      
+      else if (!strcmp("sleep", cmd)) {
+        uint8_t s = atoi(strtok(NULL, " "));
+        pit_sleep(s * 100);
+      }
       else if (!strcmp("kbd", cmd)) {
         token = strtok(NULL, " ");
         if (!strcmp(token, "fr") || !strcmp(token, "en")) {
@@ -272,12 +282,8 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
         }
       }
 
-      
-
       else
         printk("Unknown command\n");
     }
   }
-  
-  hang();
 }

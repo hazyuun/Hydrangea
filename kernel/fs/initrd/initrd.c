@@ -7,6 +7,9 @@
 #include <util/logger.h>
 
 uint8_t initrd_init(multiboot_info_t *mbi) {
+  if (!(mbi->flags & (1 << 3)))
+    return 0;
+  
   size_t count = mbi->mods_count;
   if (count == 0)
     return 0;
