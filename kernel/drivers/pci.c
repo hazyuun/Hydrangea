@@ -12,6 +12,7 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <term/term.h>
+#include <util/logger.h>
 
 const char *class_names[19] = {"Unclassified",
                                "Mass Storage Controller",
@@ -80,14 +81,15 @@ driver_init_t PCI_is_known(PCI_device_t *dev){
 void PCI_list(){
   PCI_device_t *dev = PCI_devices;
   while(dev){
-    printk("[PCI] 0x%x:0x%x:0x%x %s \n", dev->bus, dev->device,
+    log_info(NICE_BLUE, "PCI", "(%d:%d:%d) %s", dev->bus, dev->device,
                dev->function, class_names[dev->class_code]);
     dev = dev->next;
   }
+  printk("\n");
 }
 
 #include<string.h>
-void PCI_detect() {
+uint8_t PCI_detect() {
   PCI_devices = (PCI_device_t *)kmalloc(sizeof(PCI_device_t));
   PCI_device_t *dev = PCI_devices;
 
@@ -122,7 +124,7 @@ void PCI_detect() {
 
         driver_init_t init = PCI_is_known(dev);
         if(init){
-          printk("\n [PCI] Initializing %s (0x%x:0x%x:0x%x)", class_names[dev->class_code], dev->bus, dev->device,
+          log_info(NICE_BLUE, "PCI", "Initializing %s (0x%x:0x%x:0x%x)", class_names[dev->class_code], dev->bus, dev->device,
                dev->function);
           init(dev);
         }
@@ -132,5 +134,5 @@ void PCI_detect() {
       } /* function loop */
     }   /* slot loop */
   }     /* bus loop */
-
+  return 0;
 }

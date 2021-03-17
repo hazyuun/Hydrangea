@@ -4,16 +4,17 @@
 #include <stdio.h>
 #include <string.h>
 #include <term/term.h>
+#include <util/logger.h>
 
 uint8_t initrd_init(multiboot_info_t *mbi) {
   size_t count = mbi->mods_count;
   if (count == 0)
     return 0;
-  printk("\n[initrd] Found %d module(s) ", count);
+  log_info(NICE_CYAN, "initrd", "Found %d module(s) ", count);
   if (count > 10) {
     term_use_color(NICE_YELLOW);
-    printk("\n\t<!> [initrd] Can't load more than 10 modules ");
-    printk("\n\t<!> [initrd] %d module(s) will be ignored ", count - 10);
+    log_f(WARN, "initrd", "Can't load more than 10 modules");
+    log_f(WARN, "initrd", "%d module(s) will be ignored ", count - 10);
     count = 10;
   }
 
@@ -33,6 +34,7 @@ uint8_t initrd_init(multiboot_info_t *mbi) {
     tar_parse(current_module, mod_addr);
     ++module;
   }
+  log_info(NICE_CYAN, "initrd", "Loaded %d modules", count);
   return count;
 }
 

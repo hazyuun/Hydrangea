@@ -25,11 +25,11 @@ typedef struct {
 } registers;
 
 void isr_common_handler(registers *r) {
-  term_print("Interrupt :  ");
-  term_print_hex(r->int_num);
-  term_print(" Err code : ");
-  term_print_hex(r->err_code);
-  term_print("\n");
+  // term_print("Interrupt :  ");
+  // term_print_hex(r->int_num);
+  // term_print(" Err code : ");
+  // term_print_hex(r->err_code);
+  // term_print("\n");
 
   switch (r->int_num) {
   case 0x0:

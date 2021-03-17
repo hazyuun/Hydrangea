@@ -1,9 +1,3 @@
-/*
- *	File : kernel.c
- *	Description : Contains the entry point for the kernel
- *
- * */
-
 #if !defined(__i386__) || defined(__linux__)
 #error "ERR : Please use a ix86-elf cross-compiler"
 #endif
@@ -12,17 +6,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <kernel.h>
-
 #include <boot/multiboot.h>
-
-#include <drivers/kbd.h>
-#include <drivers/pci.h>
-#include <drivers/rtc.h>
-#include <drivers/serial.h>
-#include <drivers/ata.h>
-
-#include <misc/mbr.h>
+#include <kernel.h>
 
 #include <cpu/gdt.h>
 #include <cpu/idt.h>
@@ -32,32 +17,27 @@
 #include <mem/paging.h>
 #include <mem/pmm.h>
 
+#include <drivers/kbd.h>
+#include <drivers/pci.h>
+#include <drivers/rtc.h>
+#include <drivers/serial.h>
+#include <drivers/ata.h>
+
+#include <misc/mbr.h>
+
 #include <fs/initrd/initrd.h>
 
 #include <term/term.h>
 #include <stdio.h>
 #include <string.h>
-
-#define OK()                                                                   \
-  term_use_color(NICE_GREEN);                                             \
-  term_print("\n < OK > ");                                               \
-  term_use_color(NICE_WHITE);
-
-void panic(char *err_msg) {
-  term_use_color(NICE_RED);
-  term_print(" KERNEL PANIC : ");
-  term_print(err_msg);
-  while (1)
-    ;
-}
+#include <util/logger.h>
 
 void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
-  
   if(term_init(VESA_TERM, mbi))
     hang();
 
-  printk("[*] Kernel loaded !\n");
-
+  log_info(INFO, "INFO", "Kernel loaded !");
+  
   if (mb_magic != MULTIBOOT_BOOTLOADER_MAGIC)
     panic("Invalid multiboot magic number !");
 
@@ -65,39 +45,20 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
     panic("No multiboot memory map !");
 
   pmm_init(mbi);
-  printk("[*] Available memory : %d KiB\n", pmm_available_memory());
-
+  log_info(INFO, "INFO", "Available memory : %d KiB\n", pmm_available_memory());
+  
   gdt_init();
-  OK();
-  printk("GDT set up");
-
   idt_init();
-  OK();
-  printk("IDT set up");
-
   serial_init(SERIAL_COM1);
-  OK();
-  printk("Serial port COM1 initialized");
-
+  
   pg_init(mbi);
-  OK();
-  printk("Paging enabled");
-
   pit_init(100);
-  OK();
-  printk("PIT set up");
-
   vfs_dummy();
 
-  if (mbi->flags & (1 << 3)) {
-    uint8_t mods_loaded = initrd_init(mbi);
-    OK();
-    printk("Loaded %d modules", mods_loaded);
-  }
+  if (mbi->flags & (1 << 3))
+    initrd_init(mbi);
 
-  PCI_detect();
-  OK();
-  printk("Detecting and initializing PCI devices");
+  log_result(!PCI_detect(), "Detecting and initializing PCI devices"); 
 
   printk("\n\nWelcome to ");
   term_use_color(NICE_MAGENTA);
@@ -120,7 +81,7 @@ void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
 
     scank("%s", cmd);
     if (!strcmp("info", cmd)) {
-      term_print("YuunOS v0.0.1\n");
+      term_print("YuunOS "KERNEL_VERSION "\n");
     } 
     
     else if (!strcmp("clear", cmd)) {

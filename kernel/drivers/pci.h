@@ -49,7 +49,7 @@ uint16_t PCI_read_word(int8_t bus, uint8_t slot, uint8_t function,
 
 typedef uint8_t (*driver_init_t)(PCI_device_t *);
 
-void PCI_detect();
+uint8_t PCI_detect();
 void PCI_list();
 
 #endif

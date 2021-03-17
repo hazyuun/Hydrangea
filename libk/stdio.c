@@ -5,10 +5,7 @@
 #include <drivers/kbd.h>
 #include <term/term.h>
 
-void printk(const char *format, ...) {
-  va_list ap;
-
-  va_start(ap, format);
+void v_printk(const char *format, va_list ap) {
   while (*format != '\0') {
     if (*format != '%')
       term_putchar(*format++);
@@ -64,6 +61,12 @@ void printk(const char *format, ...) {
       format++;
     }
   }
+}
+
+void printk(const char *format, ...) {
+  va_list ap;
+  va_start(ap, format);
+  v_printk(format, ap);
   va_end(ap);
 }
 

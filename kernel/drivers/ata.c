@@ -4,6 +4,7 @@
 #include <mem/heap.h>
 #include <stdio.h>
 #include <string.h>
+#include <util/logger.h>
 
 struct {
   uint16_t base;
@@ -58,7 +59,7 @@ void ATA_print_infos() {
       uint8_t drive_num = 2 * ps + ms;
 
       uint8_t p = ATA_drives[drive_num].present;
-      printk("\n [ATA] %s %s : ", ps ? "SECONDARY" : "PRIMARY",
+      log_info(NICE_WHITE, "ATA", " %s %s : ", ps ? "SECONDARY" : "PRIMARY",
              ms ? "MASTER" : "SLAVE");
       if (p)
         printk("%s", ATA_drives[drive_num].name);
@@ -83,7 +84,7 @@ static void ATA_400_nano_sec(uint16_t base) {
 static void ATA_print_error(uint16_t base) {
   ATA_400_nano_sec(base);
   uint8_t err = io_inb(base + ATA_REG_ERROR);
-  printk("\n [ATA] Error %d : %s", err, ATA_ERR_in_english_please(err));
+  log_f(ERROR, "ATA", "Error %d : %s", err, ATA_ERR_in_english_please(err));
 }
 
 static uint8_t ATA_check_for_errors(uint16_t base) {
@@ -306,10 +307,9 @@ uint8_t ATA_init(PCI_device_t *dev) {
         pit_sleep(100);
 
         if (timeout == 10) { /* BSY never clears maybe ? */
-          printk("\n [ATA] %s %s :", ps ? "SEONDARY" : "PRIMARY",
+          log_f(WARN, "ATA", "%s %s : First timeout", ps ? "SEONDARY" : "PRIMARY",
                  ms ? "MASTER" : "SLAVE");
-          printk("\n       First timeout");
-          printk("\n       Trying soft reset ..");
+          log_f(INFO, "ATA", "Trying soft reset ..");
 
           timeout = 10;
           io_outb(ctrl, 0x04);
@@ -318,8 +318,8 @@ uint8_t ATA_init(PCI_device_t *dev) {
         }
 
         if (!timeout) {
-          printk("\n [ATA] Second timeout");
-          printk("\n       Skipping ..");
+          log_f(WARN, "ATA", "Second timeout");
+          log_f(INFO, "ATA", "Skipping ..");
           skip = 1;
           break;
         }
@@ -338,14 +338,14 @@ uint8_t ATA_init(PCI_device_t *dev) {
         case ATA_TYPE_PATAPI:
         case ATA_TYPE_SATA:
         case ATA_TYPE_SATAPI:
-          printk("\n [ATA] %s device detected at %s %s",
+          log_f(INFO, "ATA", "%s device detected at %s %s",
                  ATA_TYPE_in_english_please(type), ps ? "SEONDARY" : "PRIMARY",
                  ms ? "MASTER" : "SLAVE");
-          printk("\n       %s devices are not supported (yet ?)",
+          log_f(WARN, "ATA", "%s devices are not supported (yet ?)",
                  ATA_TYPE_in_english_please(type));
           break;
         // default:
-        //   printk("\n [ATA] Unkonwn device (type : %d) detected at %s %s", type,
+        //   log_f(WARN, "ATA", "Unkonwn device (type : %d) detected at %s %s", type,
         //          ATA_TYPE_in_english_please(type), ps ? "SEONDARY" : "PRIMARY",
         //          ms ? "MASTER" : "SLAVE");
         }
