@@ -239,22 +239,22 @@ __attribute__((noreturn)) void quick_and_dirty_kernel_cli(){
         char *path = strtok(NULL, " ");
         if((ms != 0 && ms != 1)
         || (ps != 0 && ps != 1))
-          printk("Invalid drive\n");
+          printk("\nInvalid drive\n");
         else if(part > 3)
-          printk("Invalid partition number\n");
+          printk("\nInvalid partition number\n");
         else{
           ATA_drive_t *drv = ATA_get_drive(ms, ps);
-          if(!drv) printk("Drive not found\n");
+          if(!drv) printk("\nDrive not found\n");
           else {
             uint8_t err = vfs_mount_partition(drv, part, path, cwd);
             if(err == 1){
-              printk("Unknown filesystem");
+              printk("\nUnknown filesystem");
             } else if(err == 2){
-              printk("%s not found", path);
+              printk("\n%s not found", path);
             } else if(err == 3){
-              printk("%s not empty", path);
+              printk("\n%s not empty", path);
             } else if(err == 255){
-              printk("Already mounted at %s", vfs_abs_path_to((vfs_node_t*) drv->mtpts[part]));
+              printk("\nAlready mounted at %s", vfs_abs_path_to((vfs_node_t*) drv->mtpts[part]));
             }
           }
         }
