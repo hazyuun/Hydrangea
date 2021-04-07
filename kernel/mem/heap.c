@@ -136,6 +136,19 @@ void heap_free(heap_t* heap, void* ptr){
 void* kmalloc(size_t size){
      return heap_alloc(kheap, size);
 }
+
+#include <string.h>
+void *krealloc(void *ptr, size_t new_size){
+     if(!ptr) return NULL;
+
+     void *new_ptr = kmalloc(new_size);
+     if(!new_ptr) return NULL;
+
+     memcpy(new_ptr, ptr, new_size);
+     kfree(ptr);
+     return new_ptr;
+}
+
 void kfree(void* ptr){
      heap_free(kheap, ptr);
 }

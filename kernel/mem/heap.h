@@ -44,6 +44,7 @@ free_ll_t* heap_first_fit(heap_t* heap, size_t size);
 void* heap_alloc(heap_t* heap, size_t size);
 void heap_free(heap_t* heap, void* ptr);
 void* kmalloc(size_t size);
+void *krealloc(void *ptr, size_t new_size);
 void kfree(void* ptr);
 
 #endif

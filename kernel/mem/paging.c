@@ -94,9 +94,10 @@ void pg_init(multiboot_info_t *mbi) {
   pg_map_pages(ker_page_dir, (uint32_t *)  0x400000, (uint32_t *)0x400000, 1024, PG_RW);
   
   /* Map the page of the VESA framebuffer */
-  uint32_t page = mbi->framebuffer_addr & 0xFFF00000;
-  pg_map_pages(pg_get_ker_dir(), (uint32_t *)  page, (uint32_t *)page, 1024, PG_RW);
-  
+  if(term_get_type() == VESA_TERM){
+    uint32_t page = mbi->framebuffer_addr & 0xFFF00000;
+    pg_map_pages(pg_get_ker_dir(), (uint32_t *)  page, (uint32_t *)page, 1024, PG_RW);
+  }
   pg_map_pages(ker_page_dir, (uint32_t *)HEAP_START, (uint32_t *)HEAP_START, 1024, PG_RW);
 
   kheap = heap_create(HEAP_START, HEAP_INITIAL_SIZE, HEAP_MAX_SIZE, 0);
