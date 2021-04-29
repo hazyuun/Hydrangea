@@ -7,12 +7,12 @@
 
 #include <cpu/gdt.h>
 #include <cpu/idt.h>
-#include <cpu/pit.h>
 
 #include <mem/heap.h>
 #include <mem/paging.h>
 #include <mem/pmm.h>
 
+#include <drivers/pit.h>
 #include <drivers/kbd.h>
 #include <drivers/pci.h>
 #include <drivers/rtc.h>
