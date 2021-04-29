@@ -1,17 +1,18 @@
-#include <cpu/pit.h>
-#include <drivers/kbd.h>
-#include <drivers/ata.h>
-
-#include <drivers/serial.h>
-#include <kernel.h>
-#include <mem/paging.h>
-#include <stddef.h>
-#include <stdint.h>
-#include <term/term.h>
-#include <stdio.h>
-
 #include <cpu/registers.h>
 
+#include <drivers/pit.h>
+#include <drivers/kbd.h>
+#include <drivers/ata.h>
+#include <drivers/serial.h>
+
+#include <mem/paging.h>
+#include <term/term.h>
+
+#include <kernel.h>
+
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
 
 void isr_common_handler(registers_t *r) {
   switch (r->int_num) {
