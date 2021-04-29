@@ -22,13 +22,20 @@ static uint32_t gen_pid(){
 
 /* Creates a kernel task from a routine */
 task_t *ktask_create(char *name, uint32_t ppid, void (*entry)(void*), void *args){
-  
+
+  /* Verify if the parent exists before allocating a task_t structure */
+  /* in order to avoid calling kmalloc then kfree shortly after */
+
+  uint32_t pid = gen_pid();    
+  if(pid && !mt_get_task_by_pid(ppid)){
+    log_f(ERROR, "ktask_create", "Parent task (PID %d) doesn't exist", ppid);
+    return NULL;
+  }
+
   task_t *task = (task_t *) kmalloc(sizeof(task_t));
   strcpy(task->name, name);
-
-  task->pid = gen_pid();
-  
-  task->ppid = ppid; // TODO: check if the parent actually exists
+  task->pid = pid;
+  task->ppid = ppid;
 
   task->state = TS_RDY;
   task->stack_size = DEFAULT_STACK_SIZE;

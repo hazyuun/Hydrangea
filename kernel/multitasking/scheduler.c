@@ -75,7 +75,7 @@ void mt_init() {
   task_t *kernel_idle = ktask_create("kernel_idle", 0, &ker_idle, NULL);
   mt_push_task(kernel_idle);
 
-  mt_push_task(ktask_create("test", 1, &ker_idle, (void *)0));
+  mt_push_task(ktask_create("test", 0, &ker_idle, (void *)0));
 
   cur_task = tasks;
   _mt_enabled = 1;
