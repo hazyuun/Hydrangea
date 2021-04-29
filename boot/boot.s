@@ -27,7 +27,7 @@ _start:
 	push %ebx
 	push %eax
 	call kmain
-    cli
+  cli
 loop:	hlt
 	jmp loop
 

@@ -1,9 +1,3 @@
-/*
- *      File: isr.c
- *      Description : TODO
- *
- * */
-
 #include <cpu/pit.h>
 #include <drivers/kbd.h>
 #include <drivers/ata.h>
@@ -16,21 +10,10 @@
 #include <term/term.h>
 #include <stdio.h>
 
+#include <cpu/registers.h>
 
-typedef struct {
-  uint32_t gs, fs, es, ds;
-  uint32_t edi, esi, ebp, useless, ebx, edx, ecx, eax;
-  uint32_t int_num, err_code;
-  uint32_t eip, cs, eflags, esp, ss;
-} registers;
 
-void isr_common_handler(registers *r) {
-  // term_print("Interrupt :  ");
-  // term_print_hex(r->int_num);
-  // term_print(" Err code : ");
-  // term_print_hex(r->err_code);
-  // term_print("\n");
-
+void isr_common_handler(registers_t *r) {
   switch (r->int_num) {
   case 0x0:
     panic("Division by zero exception");
@@ -96,7 +79,7 @@ void isr_common_handler(registers *r) {
   }
 }
 
-void irq_common_handler(registers *r) {
+void irq_common_handler(registers_t *r) {
   if (r->int_num >= 40) {
     io_outb(0xA0, 0x20);
   }

@@ -1,7 +1,3 @@
-#if !defined(__i386__) || defined(__linux__)
-#error "ERR : Please use a ix86-elf cross-compiler"
-#endif
-
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -26,6 +22,8 @@
 #include <misc/mbr.h>
 
 #include <fs/initrd/initrd.h>
+
+#include <multitasking/scheduler.h>
 
 #include <term/term.h>
 #include <stdio.h>
@@ -58,7 +56,7 @@ __attribute__((noreturn)) void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
   serial_init(SERIAL_COM1);
   
   pg_init(mbi);
-  pit_init(100);
+  pit_init(1000);
   
   vfs_dummy();
   initrd_init(mbi);
@@ -70,15 +68,16 @@ __attribute__((noreturn)) void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
   printk("YuunOS !\n");
   term_use_color(NICE_WHITE);
 
-  kbd_switch_layout("en");
-  quick_and_dirty_kernel_cli();
-  
+  mt_init();
+  mt_spawn_ktask("cli", 0, &quick_and_dirty_kernel_cli, NULL);
+
   hang();
 }
 
 /* This is a quick and dirty and temporary cli */
 /* just for the sake of testing ! */
 /* Edit : it is getting messy lol */  
+/* Edit : I can't wait to replace this with an actual shell in userland */
 __attribute__((noreturn)) void quick_and_dirty_kernel_cli(){
   vfs_node_t *cwd = vfs_get_root();
   char cmd[100];
@@ -215,6 +214,26 @@ __attribute__((noreturn)) void quick_and_dirty_kernel_cli(){
 
       }
 
+      else if (!strcmp("rush", cmd)) {
+        char *c = strtok(NULL, " ");
+        mt_spawn_ktask("rush", 1, &rush, (void*)(*c));
+      }
+
+      else if (!strcmp("term", cmd)) {
+        uint32_t pid = atoi(strtok(NULL, " "));
+        mt_task_terminate_pid(pid);
+      }
+
+      else if (!strcmp("pid", cmd)) {
+        uint32_t pid = atoi(strtok(NULL, " "));
+        printk("PID %d : %s \n", pid, mt_get_task_by_pid(pid)->name);
+      }
+
+      else if (!strcmp("tasks", cmd)) {
+        
+        mt_print_tasks();
+      }
+
       else if (!strcmp("mbr", cmd)) {
         uint8_t ms = atoi(strtok(NULL, " "));
         uint8_t ps = atoi(strtok(NULL, " "));
@@ -286,4 +305,18 @@ __attribute__((noreturn)) void quick_and_dirty_kernel_cli(){
         printk("Unknown command\n");
     }
   }
+}
+
+__attribute__((noreturn)) inline void hang(void){
+  do{
+    __asm__ __volatile__("hlt\n\t");
+  }while(1);
+}
+
+void panic(char *err_msg){
+  __asm__ __volatile__("cli");
+  mt_panic();
+  term_use_color(NICE_RED);
+  printk("\n KERNEL PANIC : %s", err_msg);
+  hang();
 }
