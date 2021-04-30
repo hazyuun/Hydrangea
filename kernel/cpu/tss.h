@@ -31,9 +31,11 @@ struct tss_ent {
   uint32_t ldt;
   uint16_t trap;
   uint16_t iomap;
-} __attribute__ ((packed));
+} __attribute__((packed));
 
 #include <cpu/gdt.h>
-void tss_init(GDT_entry_t *gdt_entries, uint8_t index);
+void tss_init(GDT_entry_t *gdt_entries, uint8_t index, uint32_t ss0);
+void tss_load(uint16_t segsel);
+void tss_set_esp0(uint32_t new_esp0);
 
 #endif

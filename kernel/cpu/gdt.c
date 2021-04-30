@@ -28,15 +28,17 @@ void gdt_init() {
   gdt_set_entry(gdt_entries, 4, 0x0, 0xFFFFFFFF,
                 (GDT_RW | (1 << 4) | GDT_RG(3) | GDT_PR), 0xC0);
 
-  tss_init(gdt_entries, 5);
+  tss_init(gdt_entries, 5, 0x10);
+  
   gdt_load(&gdt);
+  tss_load(0x28);
 }
 
 void gdt_set_entry(GDT_entry_t *entries, int index, uint32_t base, uint32_t limit,
                    uint8_t rights, uint8_t flags) {
   entries[index].base_lo = base & 0x0000FFFF;
-  entries[index].base_mid = base & 0x00FF0000;
-  entries[index].base_hi = base & 0xFF000000;
+  entries[index].base_mid = (base & 0x00FF0000) >> 16;
+  entries[index].base_hi = (base & 0xFF000000) >> 24;
 
   entries[index].limit_lo = limit & 0x0000FFFF;
   entries[index].lim_hi_and_flags =
