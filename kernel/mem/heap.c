@@ -14,7 +14,7 @@
 #include <mem/paging.h>
 #include <mem/pmm.h>
 
-extern heap_t* kheap;
+heap_t* kheap;
 
 heap_t* heap_create(void* start, size_t size, size_t max_size, uint8_t usr){
      heap_t* heap = (heap_t*) pmalloc(sizeof(heap_t));
