@@ -50,6 +50,7 @@ isr_werr 17
 isr_gen_handlers 18,12,0
 isr_werr 30
 isr 31
+isr 32
 /* Now it's the IRQs' turn */
 
 .macro irq num, mapped_to
@@ -127,9 +128,11 @@ irq_common_handler_wrapper:
     
     add $8, %esp
     iret
+.global test
+test:
+    mov $str, %ebx
+    int $0x30
+    ret
 
-
-
-
-
-
+str:.ascii "hello"
+    .byte 0

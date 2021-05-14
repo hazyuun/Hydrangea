@@ -8,6 +8,8 @@
 #include <mem/paging.h>
 #include <term/term.h>
 
+#include <syscalls/syscall.h>
+
 #include <kernel.h>
 
 #include <stddef.h>
@@ -75,7 +77,9 @@ void isr_common_handler(registers_t *r) {
     break;
   case 0x12:
     panic("Machine check exception");
-
+    break;
+  case 0x20:
+    syscall(r);
     break;
   }
 }

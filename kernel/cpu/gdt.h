@@ -4,6 +4,19 @@
 #include <stddef.h>
 #include <stdint.h>
 
+/*
+  Segment selector :
+
+  **** **** **** *0##
+                  ^ Always 0 for GDT, and always 1 for LDT
+
+
+  where * means the segment index in the gdt
+  and # means RPL
+
+*/
+#define GDT_SEGSEL(index, RPL) ((index << 3) | RPL)
+
 /* Code : Readable | Data : Writable */
 #define GDT_RW (1 << 1)
 
