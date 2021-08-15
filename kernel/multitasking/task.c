@@ -42,22 +42,25 @@ task_t *ktask_create(char *name, uint32_t ppid, void (*entry)(void*), void *args
 
   /* Setting up the stack */
   uint8_t *s = (uint8_t *) kmalloc(task->stack_size);
-  uint32_t *stack = (uint32_t *)(s + task->stack_size - 4);
+  uint32_t *stack = (uint32_t *)(s + task->stack_size);
   
-  *(stack--) = (uint32_t) args; /* void *args */
-  *(stack--) = 0;
-  *(stack--) = (uint32_t) entry; /* Entry point */
-  *(stack--) = 0; /* eax */
-  *(stack--) = 0; /* ebx */
-  *(stack--) = 0; /* esi */
-  *(stack--) = 0; /* edi */
-  *(stack) = 0;   /* ebp */
-
+  *(--stack) = (uint32_t) args; /* void *args */
+  *(--stack) = 0;
+  *(--stack) = (uint32_t) entry; /* Entry point */
+  *(--stack) = 0; /* ebp */
+  *(--stack) = 0; /* eax */
+  *(--stack) = 0; /* ebx */
+  *(--stack) = 0; /* ecx */
+  *(--stack) = 0; /* edx */
+  *(--stack) = 0; /* esi */
+  *(--stack) = 0; /* edi */
+  *(--stack) = 0x200; /* eflags */
+  
   task->next = NULL;
 
   task->esp = (uint32_t) stack;
   task->allocated_stack = (uint32_t) s;
-  task->cr3 = (uint32_t) pg_get_ker_dir();
+  task->cr3 = pg_virt_to_phys(pg_get_ker_dir(), (uint32_t) pg_get_ker_dir());
 
   task->time_slice = DEFAULT_TIME_SLICE;
   task->time_remaining = DEFAULT_TIME_SLICE;

@@ -7,40 +7,30 @@
 
 /* void mt_switch_task(task_t *task); */
 mt_switch_task:
-  cli
+  push %ebp
+  mov %esp, %ebp
+
   push %eax
   push %ebx
+  push %ecx
+  push %edx
   push %esi
   push %edi
-  push %ebp
+  pushf
 
   mov cur_task, %esi
   mov %esp, (%esi)
 
-  mov 24(%esp), %edi
-  mov %edi, cur_task;
+  mov 8(%ebp), %edi
+  mov %edi, cur_task
   mov (%edi), %esp
 
-  /* Check if we should change cr3 */
-  push %eax
-  push %ebx
-
-  mov %cr3, %eax
-  mov 16(%esi), %ebx
-  
-  cmp %eax, %ebx
-  je same_cr3
-  mov %ebx, %cr3
-
-same_cr3:
-  pop %ebx
-  pop %eax
-
-  pop %ebp
-  pop %edi
+  popf
+  pop %edi  
   pop %esi
+  pop %edx
+  pop %ecx
   pop %ebx
   pop %eax
-  sti
+  pop %ebp
   ret
-  

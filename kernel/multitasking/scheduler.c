@@ -134,6 +134,8 @@ static void mt_clean_finished_tasks() {
   tasks_count = new_count;
 }
 
+#include <cpu/tss.h>
+
 void mt_schedule() {
   if (!mt_is_initialized() || tasks_count == 1)
     return;
@@ -142,6 +144,10 @@ void mt_schedule() {
 
   cur_task->state = TS_SUS;
   task_t *next_task = mt_pick_next_task();
+  
+  tss_set_esp0(next_task->esp);
+  pg_switch_page_dir(next_task->cr3);
+  pg_invalidate_cache();
 
   next_task->state = TS_RUN;
 

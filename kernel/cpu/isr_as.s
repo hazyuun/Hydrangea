@@ -5,6 +5,7 @@
 .macro isr num
     .global isr\num
     isr\num:
+        cli
         push $0
         push $\num
         jmp isr_common_handler_wrapper		
@@ -14,6 +15,7 @@
 .macro isr_werr num
     .global isr\num
     isr\num:
+        cli
         push $\num
         jmp isr_common_handler_wrapper
 
@@ -56,6 +58,7 @@ isr 32
 .macro irq num, mapped_to
     .global irq\num
     irq\num:
+        cli
         push $0
         push $\mapped_to
         jmp irq_common_handler_wrapper
@@ -75,11 +78,11 @@ irq_gen_handlers
 .extern irq_common_handler
 
 isr_common_handler_wrapper:
-    pusha
-    push %ds
-    push %es
-    push %fs
-    push %gs
+    pushal
+    pushl %ds
+    pushl %es
+    pushl %fs
+    pushl %gs
     
     mov $0x10, %ax
     mov %ax, %ds
@@ -92,20 +95,21 @@ isr_common_handler_wrapper:
     call isr_common_handler
     
     add $4, %esp
-    pop %gs
-	pop %fs
-	pop %es
-	pop %ds
-	popa
+    popl %gs
+	popl %fs
+	popl %es
+	popl %ds
+	popal
     add $8, %esp
+    sti
     iret
 
 irq_common_handler_wrapper:
-    pusha
-    push %ds
-    push %es
-    push %fs
-    push %gs
+    pushal
+    pushl %ds
+    pushl %es
+    pushl %fs
+    pushl %gs
 
     mov $0x10, %ax
     mov %ax, %ds
@@ -119,20 +123,13 @@ irq_common_handler_wrapper:
     
     add $4, %esp
 
-    pop %gs
-	pop %fs
-	pop %es
-	pop %ds
+    popl %gs
+	popl %fs
+	popl %es
+	popl %ds
 
-    popa
+    popal
     
     add $8, %esp
+    sti
     iret
-.global test
-test:
-    mov $str, %ebx
-    int $0x30
-    ret
-
-str:.ascii "hello"
-    .byte 0
