@@ -12,6 +12,7 @@ struct vga_term_state {
 };
 
 void vga_term_init();
+void vga_term_use_vesa_color(uint32_t color);
 void vga_term_use_color(vga_color fg, vga_color bg);
 
 void vga_term_cur_mov(size_t x, size_t y);

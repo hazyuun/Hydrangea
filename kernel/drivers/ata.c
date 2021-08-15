@@ -1,4 +1,4 @@
-#include <cpu/pit.h>
+#include <drivers/pit.h>
 #include <drivers/ata.h>
 #include <io/io.h>
 #include <mem/heap.h>

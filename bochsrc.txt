@@ -1,5 +1,5 @@
 ata0-master: type=cdrom, path=yuunos.iso, status=inserted
-ata0-slave: type=disk, path=YuunOS_1.vdi, mode=vbox
+#ata0-slave: type=disk, path=YuunOS_1.vdi, mode=vbox
 
 boot: cdrom
 floppy_bootsig_check: disabled=1

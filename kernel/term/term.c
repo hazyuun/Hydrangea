@@ -11,7 +11,7 @@ uint8_t term_init(uint8_t type, multiboot_info_t *mbi){
   {
     vga_term_init();
     /* TODO : fix this */
-    //current_term.use_color  = &vga_term_use_color;
+    current_term.use_color  = &vga_term_use_vesa_color;
     current_term.cur_mov    = &vga_term_cur_mov;
     current_term.cur_step   = &vga_term_cur_step;
     current_term.scroll     = &vga_term_scroll;

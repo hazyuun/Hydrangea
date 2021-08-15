@@ -1,8 +1,3 @@
-/*
- *	File : pmm.c
- *	Description : TODO
- * */
-
 #include <kernel.h>
 #include <mem/heap.h>
 #include <mem/paging.h>
@@ -11,13 +6,9 @@
 #include <string.h>
 
 extern uint32_t end_of_bin_addr;
-
 volatile size_t placement_addr = (size_t)&end_of_bin_addr;
 
-extern heap_t *kheap;
-
 uint32_t *frames_bmp;
-
 uint64_t memory_size;
 
 /* Placement malloc */
@@ -36,7 +27,11 @@ void *pmalloc_a(size_t size, size_t align) {
 }
 
 /* Placement malloc with alignment that also gives physical address of allocated
- * memory */
+ * memory
+ * 
+ * EDIT : Hey me ! Where tf are you gonna use this function ? 
+ * TODO : Find useless stuff and delete it
+ */
 void *pmalloc_ap(size_t size, size_t align, size_t *physical_addr) {
   if (align && (placement_addr & 0xFFF)) {
     placement_addr &= 0xFFFFF000;

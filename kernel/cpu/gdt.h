@@ -1,14 +1,21 @@
-/*
- *	File:	 gdt.h
- *	Description : TODO
- *
- * */
-
 #ifndef _GDT_H_
 #define _GDT_H_
 
 #include <stddef.h>
 #include <stdint.h>
+
+/*
+  Segment selector :
+
+  **** **** **** *0##
+                  ^ Always 0 for GDT, and always 1 for LDT
+
+
+  where * means the segment index in the gdt
+  and # means RPL
+
+*/
+#define GDT_SEGSEL(index, RPL) ((index << 3) | RPL)
 
 /* Code : Readable | Data : Writable */
 #define GDT_RW (1 << 1)
@@ -29,7 +36,7 @@
 typedef struct {
   uint16_t size;
   uint32_t base;
-} __attribute__((packed)) GDT_ptr;
+} __attribute__((packed)) GDT_ptr_t;
 
 typedef struct {
   uint16_t limit_lo; /* Lowest 16 bits of the limit */
@@ -38,11 +45,11 @@ typedef struct {
   uint8_t rights;    /* Access rights */
   uint8_t lim_hi_and_flags;
   uint8_t base_hi; /* Highest 8 bits of the base */
-} __attribute__((packed)) GDT_entry;
+} __attribute__((packed)) GDT_entry_t;
 
 void gdt_init();
-void gdt_set_entry(GDT_entry *entries, int index, uint32_t base, uint32_t limit,
+void gdt_set_entry(GDT_entry_t *entries, int index, uint32_t base, uint32_t limit,
                    uint8_t rights, uint8_t flags);
-extern void gdt_load(GDT_ptr *gdt_ptr);
+extern void gdt_load(GDT_ptr_t *gdt_ptr);
 
 #endif

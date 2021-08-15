@@ -4,7 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 struct vga_term_state c_vga_term_state; /* Current tty state */
-uint16_t *vga_term_frame_buffer;   /* Pointer to video memory */
+uint16_t *vga_term_frame_buffer;        /* Pointer to video memory */
 
 void vga_term_init() {
   c_vga_term_state.row = 0;
@@ -14,6 +14,65 @@ void vga_term_init() {
   vga_term_cur_mov(0, 0);
   for (size_t k = 0; k < (size_t)(VGA_WIDTH * VGA_HEIGHT); k++)
     *(vga_term_frame_buffer + k) = vga_char(' ', c_vga_term_state.color);
+}
+#include <vesa/nice_colors.h>
+void vga_term_use_vesa_color(uint32_t color) {
+  switch (color) {
+  case NICE_FG:
+    vga_term_use_color(VGA_WHITE, VGA_BLACK);
+    break;
+  case NICE_BG:
+    vga_term_use_color(VGA_BLACK, VGA_BLACK);
+    break;
+  
+  case NICE_BLACK_0:
+    vga_term_use_color(VGA_BLACK, VGA_BLACK);
+    break;
+  case NICE_BLACK:
+    vga_term_use_color(VGA_BLACK, VGA_BLACK);
+    break;
+  case NICE_RED_0:
+    vga_term_use_color(VGA_RED, VGA_BLACK);
+    break;
+  case NICE_RED:
+    vga_term_use_color(VGA_LIGHT_RED, VGA_BLACK);
+    break;
+  case NICE_GREEN_0:
+    vga_term_use_color(VGA_GREEN, VGA_BLACK);
+    break;
+  case NICE_GREEN:
+    vga_term_use_color(VGA_LIGHT_GREEN, VGA_BLACK);
+    break;
+  case NICE_YELLOW_0:
+    vga_term_use_color(VGA_BROWN, VGA_BLACK);
+    break;
+  case NICE_YELLOW:
+    vga_term_use_color(VGA_LIGHT_BROWN, VGA_BLACK);
+    break;
+  case NICE_BLUE_0:
+    vga_term_use_color(VGA_BLUE, VGA_BLACK);
+    break;
+  case NICE_BLUE:
+    vga_term_use_color(VGA_LIGHT_BLUE, VGA_BLACK);
+    break;
+  case NICE_MAGENTA_0:
+    vga_term_use_color(VGA_MAGENTA, VGA_BLACK);
+    break;
+  case NICE_MAGENTA:
+    vga_term_use_color(VGA_LIGHT_MAGENTA, VGA_BLACK);
+    break;
+  case NICE_CYAN_0:
+    vga_term_use_color(VGA_CYAN, VGA_BLACK);
+    break;
+  case NICE_CYAN:
+    vga_term_use_color(VGA_LIGHT_CYAN, VGA_BLACK);
+    break;
+  case NICE_WHITE_0:
+    vga_term_use_color(VGA_DARK_GREY, VGA_BLACK);
+    break;
+  case NICE_WHITE:
+    vga_term_use_color(VGA_WHITE, VGA_BLACK);
+  }
 }
 
 void vga_term_use_color(vga_color fg, vga_color bg) {
@@ -38,7 +97,9 @@ uint16_t vga_term_cur_pos() {
   cur_pos |= ((uint16_t)io_inb(0x3D5)) << 8;
   return cur_pos;
 }
-void vga_term_cur_step() { vga_term_cur_mov(c_vga_term_state.column, c_vga_term_state.row); }
+void vga_term_cur_step() {
+  vga_term_cur_mov(c_vga_term_state.column, c_vga_term_state.row);
+}
 
 void vga_term_scroll() {
   for (size_t i = 0; i < VGA_HEIGHT; i++) {

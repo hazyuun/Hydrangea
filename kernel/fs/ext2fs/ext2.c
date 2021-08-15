@@ -3,6 +3,7 @@
 
 #include <kernel.h>
 #include <mem/heap.h>
+#include <util/logger.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -25,7 +26,7 @@ uint64_t ext2_get_inode_offset(ext2_t *ext2_infos, uint32_t inode_number) {
 
 /* Initializes an ext2 partition, returns NULL if bad signature */
 fs_t *ext2_init(ATA_drive_t *drv, uint8_t partition_number) {
-
+  log_info(NICE_CYAN_0, "EXT2", "EXT2 filesystem detected");
   mbr_t mbr;
   mbr_parse(drv, &mbr);
   uint64_t offset = mbr.partitions[partition_number].LBA_start * 512;
@@ -47,12 +48,13 @@ fs_t *ext2_init(ATA_drive_t *drv, uint8_t partition_number) {
   if (ext2_infos->superblock->fs_state == EXT2_FS_STATE_ERROR) {
     switch (ext2_infos->superblock->error_handling_method) {
     case EXT2_ERR_PANIC:
+      log_f(ERROR, "EXT2", "Filesystem not clean");
       panic("EXT2 filesystem not clean");
       break;
     /* TODO: handle readonly properly */
-    case EXT2_ERR_IGNORE:
     case EXT2_ERR_READONLY:
-      printk("[EXT2] Warning : Filesystem not clean");
+    case EXT2_ERR_IGNORE:
+      log_f(WARN, "EXT2", "Filesystem not clean");
     }
   }
 

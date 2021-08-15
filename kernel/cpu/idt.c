@@ -12,7 +12,7 @@
 
 static IDT_ptr idt;
 static IDT_entry idt_entries[256];
-
+extern void test();
 void idt_init() {
   io_outb(PIC_1, 0x11);
   io_outb(PIC_2, 0x11);
@@ -89,8 +89,11 @@ void idt_init() {
   idt_set_entry(47, (uint32_t)irq15, 0x08, 0x8E);
   /* Finally ! 2.0 */
 
+  /* syscalls : int $0x30 */
+  idt_set_entry(48, (uint32_t)isr32, 0x08, I_PRESENT | I_DPL(3) | I_GATETYPE_INT32);
+
   __asm__ __volatile__("lidt %0" ::"m"(idt));
-  __asm__ __volatile__("sti");
+  __asm__ __volatile__("sti");  
 }
 
 void idt_set_entry(uint8_t index, uint32_t base, uint16_t segsel,
