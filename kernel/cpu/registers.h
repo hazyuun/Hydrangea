@@ -5,7 +5,7 @@
 
 typedef struct {
   uint32_t gs, fs, es, ds;
-  uint32_t edi, esi, ebp, useless, ebx, edx, ecx, eax;
+  uint32_t edi, esi, ebp, ebx, edx, ecx, eax;
   uint32_t int_num, err_code;
   uint32_t eip, cs, eflags, esp, ss;
 } registers_t;

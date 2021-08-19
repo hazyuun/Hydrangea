@@ -20,6 +20,7 @@ static uint32_t gen_pid(){
   return _pid++;  
 }
 
+extern void irq_common_handler_pop_and_iret(void);
 /* Creates a kernel task from a routine */
 task_t *ktask_create(char *name, uint32_t ppid, void (*entry)(void*), void *args){
 
@@ -40,13 +41,38 @@ task_t *ktask_create(char *name, uint32_t ppid, void (*entry)(void*), void *args
   task->state = TS_RDY;
   task->stack_size = DEFAULT_STACK_SIZE;
 
-  /* Setting up the stack */
-  uint8_t *s = (uint8_t *) kmalloc(task->stack_size);
-  uint32_t *stack = (uint32_t *)(s + task->stack_size);
+  /* Setting up the kernel stack */
+  task->esp0 = (uint8_t *) kmalloc(task->stack_size);
+  uint32_t *stack = (uint32_t *)(task->esp0 + task->stack_size);
   
-  *(--stack) = (uint32_t) args; /* void *args */
-  *(--stack) = 0;
-  *(--stack) = (uint32_t) entry; /* Entry point */
+  /* Arguments and a 0x0 return address */
+  /* so do not return, use syscall exit instead */
+  /* TODO: exit syscall doesn't exist yet */
+  *(--stack) = (uint32_t) args;
+  *(--stack) = 0x0;
+
+  /* eflags, cs, eip, that are pushed by the cpu when irq occurs */
+  /* there is no ss, esp because there is no priviliage change (ring 0 to ring 0) */
+  *(--stack) = 0x200;
+  *(--stack) = 0x8;
+  *(--stack) = (uint32_t) entry;
+
+  /* Error code and interrupt number */
+  /* TODO: Maybe I eliminate error code for IRQs, it makes no sense */
+  /*    (Currently I am pushing $0x0 here in the IRQ handlers) */
+  stack -= 2;
+
+  /* General purpose registers */
+  stack -= 7;
+
+  /* ds es fs gs */
+  *(--stack) = 0x10;
+  *(--stack) = 0x10;
+  *(--stack) = 0x10;
+  *(--stack) = 0x10;
+  
+  *(--stack) = &irq_common_handler_pop_and_iret;
+  
   *(--stack) = 0; /* ebp */
   *(--stack) = 0; /* eax */
   *(--stack) = 0; /* ebx */
@@ -55,11 +81,12 @@ task_t *ktask_create(char *name, uint32_t ppid, void (*entry)(void*), void *args
   *(--stack) = 0; /* esi */
   *(--stack) = 0; /* edi */
   *(--stack) = 0x200; /* eflags */
-  
+
+
   task->next = NULL;
 
   task->esp = (uint32_t) stack;
-  task->allocated_stack = (uint32_t) s;
+  task->allocated_stack = (uint32_t) task->esp0;
   task->cr3 = pg_virt_to_phys(pg_get_ker_dir(), (uint32_t) pg_get_ker_dir());
 
   task->time_slice = DEFAULT_TIME_SLICE;
@@ -68,6 +95,23 @@ task_t *ktask_create(char *name, uint32_t ppid, void (*entry)(void*), void *args
   
   return task;
 }
+
+extern void go_usermode(void);
+void utask_exec(void *args){
+  /* TODO: Make a proper ELF loader and delete this shit */
+  pg_alloc(0x1000000, PG_USER | PG_RW);
+  memcpy(0x1000000, args, 100);
+  pg_invalidate_page(0x1000000);
+  go_usermode();
+}
+
+task_t *utask_create(char *name, uint32_t ppid, void (*entry)(void *),
+                     void *args){
+  task_t *t = ktask_create(name, ppid, &utask_exec, entry);
+  t->cr3 = pg_make_user_page_dir();
+  return t;
+}
+
 
 void task_destroy(task_t *task){
   kfree((void*)(task->allocated_stack));

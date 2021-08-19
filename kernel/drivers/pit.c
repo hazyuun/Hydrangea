@@ -1,4 +1,7 @@
 #include <drivers/pit.h>
+#include <cpu/irq.h>
+#include <cpu/pic.h>
+
 #include <io/io.h>
 #include <mem/heap.h>
 #include <mem/paging.h>
@@ -19,6 +22,9 @@ void pit_init(uint32_t freq) {
   io_outb(0x43, 0x36);
   io_outb(0x40, (uint8_t)(div & 0xFF));
   io_outb(0x40, (uint8_t)((div >> 8) & 0xFF));
+  
+  pic_unmask(0);
+  irq_register(0, &pit_event);
 }
 
 void pit_sleep(uint64_t t) {
@@ -29,24 +35,9 @@ void pit_sleep(uint64_t t) {
 
 #include <multitasking/schedlock.h>
 #include <util/logger.h>
-void pit_event() {
+void pit_event(registers_t *r) {
   if (pit_infos->timer_value > 0)
     pit_infos->timer_value--;
-
-  if(!mt_is_initialized())
-    return;
-  
-  uint32_t __ef;
-  SCHEDLOCK(__ef);
-
-  task_t *cur_task = mt_get_current_task();
-  cur_task->time_remaining -= 1;
-  if(cur_task->state == TS_RUN && cur_task->time_remaining > 0){
-    SCHEDUNLOCK(__ef);  
-    return;
-  }
-  cur_task->time_remaining = cur_task->time_slice;
-  
+    
   mt_schedule();
-  SCHEDUNLOCK(__ef);  
 }

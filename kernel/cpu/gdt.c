@@ -14,19 +14,19 @@ void gdt_init() {
 
   /* Kernel code */
   gdt_set_entry(gdt_entries, 1, 0x0, 0xFFFFFFFF,
-                (GDT_RW | GDT_X | (1 << 4) | GDT_PR), 0xC0);
+                (GDT_RW | GDT_X | GDT_S | GDT_PR), 0xC0);
 
   /* Kernel data */
-  gdt_set_entry(gdt_entries, 2, 0x0, 0xFFFFFFFF, (GDT_RW | (1 << 4) | GDT_PR),
+  gdt_set_entry(gdt_entries, 2, 0x0, 0xFFFFFFFF, (GDT_RW | GDT_S | GDT_PR),
                 0xC0);
 
   /* User code (Ring 3) */
   gdt_set_entry(gdt_entries, 3, 0x0, 0xFFFFFFFF,
-                (GDT_RW | GDT_X | (1 << 4) | GDT_RG(3) | GDT_PR), 0xC0);
+                (GDT_RW | GDT_X | GDT_S | GDT_RG(3) | GDT_PR), 0xC0);
 
   /* User data */
   gdt_set_entry(gdt_entries, 4, 0x0, 0xFFFFFFFF,
-                (GDT_RW | (1 << 4) | GDT_RG(3) | GDT_PR), 0xC0);
+                (GDT_RW | GDT_S | GDT_RG(3) | GDT_PR), 0xC0);
 
   tss_init(gdt_entries, 5, 0x10);
   

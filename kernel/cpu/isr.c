@@ -15,6 +15,8 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <util/logger.h>
+#include <multitasking/scheduler.h>
 
 void isr_common_handler(registers_t *r) {
   switch (r->int_num) {
@@ -79,30 +81,7 @@ void isr_common_handler(registers_t *r) {
     panic("Machine check exception");
     break;
   case 0x20:
-    syscall(r);
-    break;
-  }
-}
-
-void irq_common_handler(registers_t *r) {
-  if (r->int_num >= 40) {
-    io_outb(0xA0, 0x20);
-  }
-  io_outb(0x20, 0x20);
-
-  switch (r->int_num) {
-  case 32:
-    pit_event();
-    break;
-  case 0x21: {
-    uint8_t scancode = io_inb(0x60);
-    kbd_event(scancode);
-    break;
-  }
-  case 32+14:
-    break;
-  case 32+15:
-
+    sys_call(r);
     break;
   }
 }

@@ -25,11 +25,9 @@ typedef struct {
 #define I_GATETYPE_INT32  0xE
 #define I_GATETYPE_TRAP32 0xF
 
-#define I_STORAGE_SEG     (1 << 4)
+#define I_SEG             (1 << 4)
 #define I_DPL(r)          (r << 5)
 #define I_PRESENT         (1 << 7)
-
-
 
 /* ISR Handlers */
 extern void isr0();
@@ -115,12 +113,6 @@ extern void irq15();
  * EDIT : Hey, I am you from the future !
  *    No you are not lonely, I am with you
  * */
-
-
-#define PIC_1 0x20
-#define PIC_2 0xA0
-#define PIC_1_DATA 0x21
-#define PIC_2_DATA 0xA1
 
 void idt_init();
 void idt_set_entry(uint8_t, uint32_t, uint16_t, uint8_t);

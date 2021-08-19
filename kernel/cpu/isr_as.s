@@ -53,83 +53,45 @@ isr_gen_handlers 18,12,0
 isr_werr 30
 isr 31
 isr 32
-/* Now it's the IRQs' turn */
 
-.macro irq num, mapped_to
-    .global irq\num
-    irq\num:
-        cli
-        push $0
-        push $\mapped_to
-        jmp irq_common_handler_wrapper
-.endm
-
-.macro irq_gen_handlers
-    .altmacro
-    .set i, 0
-    .rept 16
-        irq %i, %i+32
-        .set i, i+1
-    .endr
-.endm
-irq_gen_handlers
 
 .extern isr_common_handler
-.extern irq_common_handler
 
 isr_common_handler_wrapper:
-    pushal
+    push %edi
+    push %esi
+    push %ebp
+    push %ebx
+    push %edx
+    push %ecx
+    push %eax
     pushl %ds
     pushl %es
     pushl %fs
     pushl %gs
-    
+
     mov $0x10, %ax
     mov %ax, %ds
     mov %ax, %es
     mov %ax, %fs
     mov %ax, %gs
-    
-    push %esp
-    
+
+    cld
+    push %esp    
     call isr_common_handler
-    
+
     add $4, %esp
     popl %gs
-	popl %fs
-	popl %es
-	popl %ds
-	popal
+    popl %fs
+    popl %es
+    popl %ds
+    pop %eax
+    pop %ecx
+    pop %edx
+    pop %ebx
+    pop %ebp
+    pop %esi
+    pop %edi
     add $8, %esp
-    sti
-    iret
 
-irq_common_handler_wrapper:
-    pushal
-    pushl %ds
-    pushl %es
-    pushl %fs
-    pushl %gs
-
-    mov $0x10, %ax
-    mov %ax, %ds
-    mov %ax, %es
-    mov %ax, %fs
-    mov %ax, %gs
-    
-    push %esp
-    
-    call irq_common_handler
-    
-    add $4, %esp
-
-    popl %gs
-	popl %fs
-	popl %es
-	popl %ds
-
-    popal
-    
-    add $8, %esp
-    sti
-    iret
+    iretl

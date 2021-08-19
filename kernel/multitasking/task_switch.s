@@ -2,14 +2,15 @@
 .align 4
 
 .extern cur_task
+.extern staged_task
 
 .global mt_switch_task
 
 /* void mt_switch_task(task_t *task); */
 mt_switch_task:
+
   push %ebp
   mov %esp, %ebp
-
   push %eax
   push %ebx
   push %ecx
@@ -18,12 +19,13 @@ mt_switch_task:
   push %edi
   pushf
 
-  mov cur_task, %esi
-  mov %esp, (%esi)
+  movl cur_task, %esi
+  movl %esp, (%esi)
 
-  mov 8(%ebp), %edi
-  mov %edi, cur_task
-  mov (%edi), %esp
+  movl 8(%ebp), %esi
+  movl %esi, cur_task
+  
+  movl (%esi), %esp
 
   popf
   pop %edi  
@@ -34,3 +36,22 @@ mt_switch_task:
   pop %eax
   pop %ebp
   ret
+
+
+.global go_usermode
+go_usermode:
+  cli
+  mov $0x23, %ax
+  mov %ax, %ds
+  mov %ax, %es
+  mov %ax, %fs
+  mov %ax, %gs
+
+  mov %esp, %eax
+
+  pushl $0x23
+  pushl %eax
+  pushl $0x200
+  pushl $0x1B
+  pushl $0x1000000
+  iret

@@ -35,15 +35,15 @@ kernel: dirs $(YUUNOS)
 $(YUUNOS): $(BOOT_OBJ) $(KERNEL_OBJ_C) $(KERNEL_OBJ_S) $(LIBK_OBJ)
 	@$(shell mkdir --parents $(dir $(YUUNOS)))
 	@echo Linking everything into $@
-	@$(CC) -T linker.ld -o $@ -g -ffreestanding -O2 -nostdlib $^ -lgcc
+	@$(CC) -T linker.ld -o $@ -g -ffreestanding -O2 -nostdlib $^ -lgcc -mno-red-zone
 
 $(OBJ_PATH)/kernel/%.o: kernel/%.c
 	@echo [CC] $<
-	@$(CC) -c $< -o $@ -g -m32 -std=gnu99 -ffreestanding -O2 -Wall -Wextra -Ikernel -I. -Ilibk
+	@$(CC) -c $< -o $@ -g -m32 -std=gnu99 -ffreestanding -O2 -Wall -Wextra -Ikernel -I. -Ilibk -mno-red-zone
 
 $(OBJ_PATH)/libk/%.o: libk/%.c
 	@echo [CC] $<
-	@$(CC) -c $< -o $@ -g -m32 -std=gnu99 -ffreestanding -O2 -Wall -Wextra -Ikernel -I. -Ilibk
+	@$(CC) -c $< -o $@ -g -m32 -std=gnu99 -ffreestanding -O2 -Wall -Wextra -Ikernel -I. -Ilibk -mno-red-zone
 
 $(OBJ_PATH)/kernel/%.o: kernel/%.s
 	@echo [AS] $<

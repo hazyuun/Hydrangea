@@ -7,6 +7,6 @@
 
 #include <cpu/registers.h>
 
-void syscall(registers_t *regs);
+void sys_call(registers_t *r);
 
 #endif

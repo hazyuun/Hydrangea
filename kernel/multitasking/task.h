@@ -10,7 +10,7 @@
 #define TS_FIN 3
 
 #define DEFAULT_TIME_SLICE 1
-#define DEFAULT_STACK_SIZE (0x2000)
+#define DEFAULT_STACK_SIZE (0x4000)
 
 #define MAX_PID 0xFFFF
 
@@ -38,6 +38,10 @@ typedef struct task {
 
 task_t *ktask_create(char *name, uint32_t ppid, void (*entry)(void *),
                      void *args);
+task_t *utask_create(char *name, uint32_t ppid, void (*entry)(void *),
+                     void *args);
+
 void task_destroy(task_t *task);
+void utask_exec(void *args);
 
 #endif

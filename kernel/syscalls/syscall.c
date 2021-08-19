@@ -1,5 +1,6 @@
 #include <syscalls/syscall.h>
+#include <drivers/serial.h>
 
-void syscall(registers_t *regs){
-  printk("usermode");
+void sys_call(registers_t *r){
+  serial_write(SERIAL_COM1, 'u');
 }

@@ -3,16 +3,18 @@
  *  Description: TODO
  * */
 
-#ifndef _KBD_
-#define _KBD_
+#ifndef _KBD_H_
+#define _KBD_H_
 
 #include <stddef.h>
 #include <stdint.h>
+#include <cpu/registers.h>
 
+void kbd_init();
 uint8_t kbd_switch_layout(char *layout_name);
 uint8_t kbd_set_layout(char *layout, char *layout_cap);
 uint8_t kbd_keydown();
 uint8_t kbd_get();
-void kbd_event(uint8_t scancode);
+void kbd_event(registers_t *r);
 
 #endif

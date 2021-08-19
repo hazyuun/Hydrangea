@@ -14,4 +14,3 @@ gdt_load:
 	ljmp $0x08, $csr
 csr:
 	ret
-     

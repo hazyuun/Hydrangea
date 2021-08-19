@@ -6,6 +6,14 @@
 #include <drivers/kbd.h>
 #include <string.h>
 #include <term/term.h>
+#include <io/io.h>
+#include <cpu/registers.h>
+#include <cpu/irq.h>
+#include <cpu/pic.h>
+
+
+
+
 
 /* TODO: Make a complete keyboard layout */
 /* Note : There are some mistakes in my layouts */
@@ -50,6 +58,11 @@ char *kbd_cur_layout_cap = kbd_layout_us_cap;
 char kbd_key_states[128] = {0};
 uint8_t kbd_last_key = 0;
 
+void kbd_init(){
+  pic_unmask(1);
+  irq_register(1, &kbd_event);
+}
+
 uint8_t kbd_switch_layout(char *layout_name) {
   if (!strcmp(layout_name, "en"))
     return kbd_set_layout(kbd_layout_us, kbd_layout_us_cap);
@@ -90,15 +103,16 @@ uint8_t kbd_get() {
   return c;
 }
 
-void kbd_event(uint8_t scancode) {
+void kbd_event(registers_t *r) {
+  uint8_t scancode = io_inb(0x60);
+  
   kbd_key_states[scancode & 0xF] = !(scancode & 0x80);
   /* Released */
   if (scancode & 0x80) {
-
+    
   }
   /* Pressed */
   else {
-
     kbd_last_key = scancode;
   }
 }

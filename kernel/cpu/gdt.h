@@ -26,6 +26,9 @@
 /* Executable? (ie. 0:data | 1:code) */
 #define GDT_X (1 << 3)
 
+/* Descriptor type (1 for code/data, 0 for system segments ) */
+#define GDT_S (1 << 4)
+
 /* Ring (Privilliege level) */
 #define GDT_RG(k) (k << 5)
 

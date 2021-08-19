@@ -13,9 +13,10 @@ task_t *mt_get_task_by_pid(uint32_t pid);
 
 uint32_t mt_spawn_ktask(char *name, uint32_t ppid, void (*entry)(void *),
                         void *args);
+void mt_task_terminate(task_t *t);
 void mt_task_terminate_pid(uint32_t pid);
 
-uint32_t mt_switch_task();
+void mt_switch_task(task_t*);
 void mt_schedule(void);
 
 /* TODO : Delete these when finished testing */

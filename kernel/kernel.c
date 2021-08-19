@@ -6,7 +6,7 @@
 #include <kernel.h>
 
 #include <cpu/gdt.h>
-#include <cpu/idt.h>
+#include <cpu/interrupts.h>
 
 #include <mem/heap.h>
 #include <mem/paging.h>
@@ -52,11 +52,12 @@ __attribute__((noreturn)) void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
   log_info(INFO, "INFO", "Available memory : %d KiB\n", pmm_available_memory());
   
   gdt_init();
-  idt_init();
+  interrupts_init();
   serial_init(SERIAL_COM1);
   
   pg_init(mbi);
   pit_init(1000);
+  kbd_init();
   
   vfs_dummy();
   initrd_init(mbi);
@@ -78,6 +79,7 @@ __attribute__((noreturn)) void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
 /* just for the sake of testing ! */
 /* Edit : it is getting messy lol */  
 /* Edit : I can't wait to replace this with an actual shell in userland */
+/* Edit : Usermode works ! I am getting closer and closer to a userland shell */
 __attribute__((noreturn)) void quick_and_dirty_kernel_cli(){
   vfs_node_t *cwd = vfs_get_root();
   char cmd[100];
@@ -91,15 +93,21 @@ __attribute__((noreturn)) void quick_and_dirty_kernel_cli(){
 
     scank("%s", cmd);
     if (!strcmp("info", cmd)) {
-      term_print("YuunOS "KERNEL_VERSION "\n");
+      term_print("YuunOS kernel "KERNEL_VERSION "\n");
     } 
     
     else if (!strcmp("clear", cmd)) {
       term_clear();
+    }
+
+    else if (!strcmp("help", cmd)) {
+      printk("Too lazy to write help, sorry\n");
+      printk("This shitty \"shell\" will be replaced anyway\n");
     } 
     
     else if (!strcmp("reboot", cmd)) {
       // TODO: move this shit elsewhere
+      /* EDIT : Yo ! I am you from future, BRUH WTF THIS IS CURSED ! */
       uint8_t TW = 0x02;
       while (TW & 0x02)
         TW = io_inb(0x64);
@@ -216,7 +224,7 @@ __attribute__((noreturn)) void quick_and_dirty_kernel_cli(){
 
       else if (!strcmp("rush", cmd)) {
         char *c = strtok(NULL, " ");
-        mt_spawn_ktask("rush", 1, &rush, (void*)(*c));
+        mt_spawn_utask("rush", 1, &rush, (void*)(*c));
       }
 
       else if (!strcmp("term", cmd)) {
