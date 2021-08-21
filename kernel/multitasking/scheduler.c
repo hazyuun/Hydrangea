@@ -77,9 +77,9 @@ uint32_t mt_spawn_ktask(char *name, uint32_t ppid, void (*entry)(void *),
   return t->pid;
 }
 
-uint32_t mt_spawn_utask(char *name, uint32_t ppid, void (*entry)(void *),
-                        void *args) {
-  task_t *t = utask_create(name, ppid, entry, args);
+uint32_t mt_spawn_utask(char *name, uint32_t ppid, char *path, void *args) {
+  task_t *t = utask_create(name, ppid, path, args);
+  if(!t) return 0;
   mt_push_task(t);
   return t->pid;
 }

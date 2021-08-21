@@ -38,8 +38,7 @@ typedef struct task {
 
 task_t *ktask_create(char *name, uint32_t ppid, void (*entry)(void *),
                      void *args);
-task_t *utask_create(char *name, uint32_t ppid, void (*entry)(void *),
-                     void *args);
+task_t *utask_create(char *name, uint32_t ppid, char *path, void *args);
 
 void task_destroy(task_t *task);
 void utask_exec(void *args);

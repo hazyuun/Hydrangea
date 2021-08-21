@@ -96,18 +96,24 @@ task_t *ktask_create(char *name, uint32_t ppid, void (*entry)(void*), void *args
   return task;
 }
 
+#include <exec/elf.h>
+#include <fs/vfs.h>
+
 extern void go_usermode(void);
 void utask_exec(void *args){
-  /* TODO: Make a proper ELF loader and delete this shit */
-  pg_alloc(0x1000000, PG_USER | PG_RW);
-  memcpy(0x1000000, args, 100);
-  pg_invalidate_page(0x1000000);
+  if(!elf_load((vfs_node_t *) args))
+    asm volatile("1: pause; jmp 1b"); /* Until I implement exit() properly */
+    
   go_usermode();
 }
 
-task_t *utask_create(char *name, uint32_t ppid, void (*entry)(void *),
-                     void *args){
-  task_t *t = ktask_create(name, ppid, &utask_exec, entry);
+task_t *utask_create(char *name, uint32_t ppid, char *path, void *args){
+  vfs_node_t *node = vfs_abspath_to_node(vfs_get_root(), path);
+  
+  if (!node || node->file->permissions & VFS_DIR)
+    return NULL;
+
+  task_t *t = ktask_create(name, ppid, &utask_exec, node);
   t->cr3 = pg_make_user_page_dir();
   return t;
 }

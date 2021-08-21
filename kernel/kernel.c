@@ -29,6 +29,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <util/logger.h>
+#include <exec/elf.h>
 
 static void check_multiboot_info(uint32_t mb_magic, multiboot_info_t *mbi){
   if (mb_magic != MULTIBOOT_BOOTLOADER_MAGIC)
@@ -80,9 +81,26 @@ __attribute__((noreturn)) void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
 /* Edit : it is getting messy lol */  
 /* Edit : I can't wait to replace this with an actual shell in userland */
 /* Edit : Usermode works ! I am getting closer and closer to a userland shell */
+/* Edit : I just wrote a (shitty) ELF loader, Now I just need enough syscalls 
+/*        for a userspace shell ! So far so good */
 __attribute__((noreturn)) void quick_and_dirty_kernel_cli(){
+  /*
+  mt_spawn_utask("hello.elf", 0, "/initrd/0/hello.elf", 0);
+    printk("\nKernel ");
+
+  hang();
+  */
   vfs_node_t *cwd = vfs_get_root();
-  char cmd[100];
+  // cwd = vfs_abspath_to_node(cwd, "/initrd/0");
+  char cmd[100] = "\0";
+  // vfs_node_t *node = vfs_get_child_by_name(cwd, cmd);
+  // if (!node || node->file->permissions & VFS_DIR)
+  //   printk("Unknown command\n");
+  // else {
+  //   uint32_t entry = elf_load(node);
+  //   mt_spawn_utask(cmd, 1, entry, 0);
+  // }
+  
   while (1) {
     term_use_color(NICE_CYAN_0);
     printk("\nKernel ");
@@ -309,8 +327,12 @@ __attribute__((noreturn)) void quick_and_dirty_kernel_cli(){
         }
       }
 
-      else
-        printk("Unknown command\n");
+      else {
+        //printk("Unknown command\n");
+        if(!mt_spawn_utask(cmd, 0, cmd, 0))
+          printk("Unknown command\n");
+        
+      }
     }
   }
 }
