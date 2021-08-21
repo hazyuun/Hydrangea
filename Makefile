@@ -1,58 +1,61 @@
 CC = i686-elf-gcc
 AS = i686-elf-as
 
-YUUNOS = bin/yuunos.bin
-OBJ_PATH = ./obj
+CCFLAGS   = -g -m32 -std=gnu99 -ffreestanding -O2 -Wall -Wextra
+CCLDFLAGS = -ffreestanding -O2 -nostdlib -lgcc -mno-red-zone
+ASFLAGS   = --32
+INCLUDE   = -Ikernel -I. -Ilibk
 
-# Finding source files
-BOOT_SRC		= $(shell find boot -name "*.s")
-KERNEL_SRC_C	= $(shell find kernel -name "*.c")
-KERNEL_SRC_S	= $(shell find kernel -name "*.s")
-LIBK_SRC		= $(shell find libk -name "*.c")
+DIR_ISO    = ./iso
+DIR_INITRD = ./initrd
 
-# Generating .o paths
-BOOT_OBJ__ = $(patsubst %.s, %.o, $(BOOT_SRC))
-KERNEL_OBJ_C__ = $(patsubst %.c, %.o, $(KERNEL_SRC_C))
-KERNEL_OBJ_S__ = $(patsubst %.s, %.o, $(KERNEL_SRC_S))
-LIBK_OBJ__ = $(patsubst %.c, %.o, $(LIBK_SRC))
+TARGET = ./bin/yuunos.bin
+ISO    = $(DIR_ISO)/yuunos.iso
+INITRD = $(DIR_ISO)/boot/initrd.tar
 
-BOOT_OBJ = $(addprefix $(OBJ_PATH)/, $(BOOT_OBJ__))
-KERNEL_OBJ_C = $(addprefix $(OBJ_PATH)/, $(KERNEL_OBJ_C__))
-KERNEL_OBJ_S = $(addprefix $(OBJ_PATH)/, $(KERNEL_OBJ_S__))
-LIBK_OBJ = $(addprefix $(OBJ_PATH)/, $(LIBK_OBJ__))
-KERNEL_OBJECTS = $(BOOT_OBJ) $(KERNEL_OBJ_C) $(KERNEL_OBJ_S) $(LIBK_OBJ)
+SRC_BOOT      = $(shell find ./boot -name "*.s")
+SRC_KERNEL_C	= $(shell find ./kernel -name "*.c")
+SRC_KERNEL_S	= $(shell find ./kernel -name "*.s")
+SRC_LIBK      = $(shell find ./libk -name "*.c")
 
+OBJ_BOOT      = $(patsubst ./boot/%.s, ./obj/boot/%.o, $(SRC_BOOT))
+OBJ_KERNEL_C  = $(patsubst ./kernel/%.c, ./obj/kernel/%.o, $(SRC_KERNEL_C))
+OBJ_KERNEL_S  = $(patsubst ./kernel/%.s, ./obj/kernel/%.o, $(SRC_KERNEL_S))
+OBJ_LIBK      = $(patsubst ./libk/%.c, ./obj/libk/%.o, $(SRC_LIBK))
 
-# Creates the obj directories
+OBJ = $(OBJ_BOOT) $(OBJ_KERNEL_C) $(OBJ_KERNEL_S) $(OBJ_LIBK)
+
+.PHONY: kernel
+kernel: dirs $(OBJ)
+	@echo "Linking everything into $(TARGET)"
+	@$(CC) -T linker.ld $(OBJ) -o $(TARGET) $(CCLDFLAGS)
+
+.PHONY: iso
+iso: kernel
+	@echo "Making initrd"
+	@tar -cf $(INITRD) $(DIR_INITRD)
+	@echo "Making the iso"
+	@rm -f $(ISO)
+	@cp $(TARGET) $(DIR_ISO)/boot
+	@grub-mkrescue -o $(ISO) $(DIR_ISO)
+	@mv $(ISO) .
+
 .PHONY: dirs
 dirs:
-	$(shell mkdir --parents $(dir $(KERNEL_OBJECTS)))
+	@mkdir -p $(dir $(OBJ)) bin
 
-# Builds the kernel
-.PHONY: kernel
-kernel: dirs $(YUUNOS)
+obj/%.o: %.c
+	@echo [CC] $@
+	@$(CC) -c $< -o $@ $(CCFLAGS) $(INCLUDE)
 
-$(YUUNOS): $(BOOT_OBJ) $(KERNEL_OBJ_C) $(KERNEL_OBJ_S) $(LIBK_OBJ)
-	@$(shell mkdir --parents $(dir $(YUUNOS)))
-	@echo Linking everything into $@
-	@$(CC) -T linker.ld -o $@ -g -ffreestanding -O2 -nostdlib $^ -lgcc -mno-red-zone
+obj/%.o: %.s
+	@echo [AS] $@
+	@$(AS) $< -o $@ $(ASFLAGS)
 
-$(OBJ_PATH)/kernel/%.o: kernel/%.c
-	@echo [CC] $<
-	@$(CC) -c $< -o $@ -g -m32 -std=gnu99 -ffreestanding -O2 -Wall -Wextra -Ikernel -I. -Ilibk -mno-red-zone
-
-$(OBJ_PATH)/libk/%.o: libk/%.c
-	@echo [CC] $<
-	@$(CC) -c $< -o $@ -g -m32 -std=gnu99 -ffreestanding -O2 -Wall -Wextra -Ikernel -I. -Ilibk -mno-red-zone
-
-$(OBJ_PATH)/kernel/%.o: kernel/%.s
-	@echo [AS] $<
-	@$(AS) $< -o $@ --32
-
-$(OBJ_PATH)/boot/%.o: boot/%.s
-	@echo [AS] $<
-	@$(AS) $< -o $@ --32
-
-# Deletes the obj directory
+.PHONY: clean
 clean:
-	@rm -rf $(OBJ_PATH)
+	@rm -rf obj
+
+.PHONY: clean_all
+clean_all:
+	@rm -rf obj bin $(INITRD) $(ISO)

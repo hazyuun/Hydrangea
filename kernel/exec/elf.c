@@ -99,7 +99,8 @@ uint32_t elf_load(vfs_node_t *node){
     return 0;
   }
 
-  uint32_t entry = elf_load_segments(buffer);
+  entry = elf_load_segments(buffer);
+
   kfree(buffer);
   return entry;
 }
