@@ -81,7 +81,7 @@ __attribute__((noreturn)) void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
 /* Edit : it is getting messy lol */  
 /* Edit : I can't wait to replace this with an actual shell in userland */
 /* Edit : Usermode works ! I am getting closer and closer to a userland shell */
-/* Edit : I just wrote a (shitty) ELF loader, Now I just need enough syscalls 
+/* Edit : I just wrote a (shitty) ELF loader, Now I just need enough syscalls */
 /*        for a userspace shell ! So far so good */
 __attribute__((noreturn)) void quick_and_dirty_kernel_cli(){
   vfs_node_t *cwd = vfs_get_root();
@@ -226,11 +226,6 @@ __attribute__((noreturn)) void quick_and_dirty_kernel_cli(){
           kfree(contents);
         }
 
-      }
-
-      else if (!strcmp("rush", cmd)) {
-        char *c = strtok(NULL, " ");
-        mt_spawn_utask("rush", 1, &rush, (void*)(*c));
       }
 
       else if (!strcmp("term", cmd)) {

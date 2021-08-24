@@ -121,7 +121,7 @@ static void mt_clean_finished_tasks() {
     }
     t = next;
   }
-  
+
   tasks_count = new_count;
 }
 
@@ -185,23 +185,6 @@ void mt_print_tasks() {
     printk("\n %d \t | %d \t\t| %s\t", t->pid, t->ppid, t->name);
     t = t->next;
   }
-}
-
-#include <drivers/serial.h>
-void rush(void *args) {
-  while (1) {
-    asm volatile("int $0x80");
-  }
-}
-
-void gpf(void *args) {
-  (void)args;
-
-  __asm__ __volatile__("cli");
-
-  mt_task_self_terminate();
-  while (1)
-    __asm__ __volatile__("pause");
 }
 
 void ker_idle(void *args) {

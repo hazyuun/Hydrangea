@@ -42,7 +42,7 @@ task_t *ktask_create(char *name, uint32_t ppid, void (*entry)(void*), void *args
   task->stack_size = DEFAULT_STACK_SIZE;
 
   /* Setting up the kernel stack */
-  task->esp0 = (uint8_t *) kmalloc(task->stack_size);
+  task->esp0 = (uint32_t) kmalloc(task->stack_size);
   uint32_t *stack = (uint32_t *)(task->esp0 + task->stack_size);
   
   /* Arguments and a 0x0 return address */
@@ -71,7 +71,7 @@ task_t *ktask_create(char *name, uint32_t ppid, void (*entry)(void*), void *args
   *(--stack) = 0x10;
   *(--stack) = 0x10;
   
-  *(--stack) = &irq_common_handler_pop_and_iret;
+  *(--stack) = (uint32_t) &irq_common_handler_pop_and_iret;
   
   *(--stack) = 0; /* ebp */
   *(--stack) = 0; /* eax */
@@ -108,6 +108,7 @@ void utask_exec(void *args){
 }
 
 task_t *utask_create(char *name, uint32_t ppid, char *path, void *args){
+  (void) args;
   vfs_node_t *node = vfs_abspath_to_node(vfs_get_root(), path);
   
   if (!node || node->file->permissions & VFS_DIR)

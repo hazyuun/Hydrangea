@@ -61,9 +61,9 @@ static uint32_t elf_load_segments(uint8_t *buffer){
       *((uint8_t*)ph_tbl[n].vaddr) = 0x5;
 
       
-      memcpy(ph_tbl[n].vaddr, buffer + ph_tbl[n].offset, ph_tbl[n].mem_size);
+      memcpy((void*)(ph_tbl[n].vaddr), buffer + ph_tbl[n].offset, ph_tbl[n].mem_size);
       if(ph_tbl[n].file_size < ph_tbl[n].mem_size)
-        memset(ph_tbl[n].vaddr + ph_tbl[n].file_size, 0, ph_tbl[n].mem_size - ph_tbl[n].file_size);
+        memset((void*)(ph_tbl[n].vaddr + ph_tbl[n].file_size), 0, ph_tbl[n].mem_size - ph_tbl[n].file_size);
     }
   }
 
@@ -82,7 +82,7 @@ uint32_t elf_load(vfs_node_t *node){
 
   elf_header_t *eh = (elf_header_t *) buffer;
 
-  if (!vfs_read(node->file, 0, node->file->size, buffer)){
+  if (!vfs_read(node->file, 0, node->file->size, (char *) buffer)){
     log_info(NICE_GREEN_0, "ELF", "Couldn't read from file : %s", node->name);
     kfree(buffer);
     return 0;

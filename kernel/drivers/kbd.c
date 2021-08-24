@@ -104,6 +104,7 @@ uint8_t kbd_get() {
 }
 
 void kbd_event(registers_t *r) {
+  (void) r;
   uint8_t scancode = io_inb(0x60);
   
   kbd_key_states[scancode & 0xF] = !(scancode & 0x80);

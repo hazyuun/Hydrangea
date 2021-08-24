@@ -26,10 +26,13 @@ void syscall_handler(registers_t *r){
 }
 
 void sys_hello(syscall_params_t *params){
+  (void) params;
   serial_write(SERIAL_COM1, params->ebx);
 }
 #include <multitasking/scheduler.h>
 void sys_exit(syscall_params_t *params){
+  (void) params;
+
   /* TODO: Implement this as well as other syscalls */
   log_info(NICE_YELLOW_0, "SYSCALL", "exit()");
   asm volatile("1: hlt; jmp 1b");

@@ -36,6 +36,8 @@ void pit_sleep(uint64_t t) {
 #include <multitasking/schedlock.h>
 #include <util/logger.h>
 void pit_event(registers_t *r) {
+  (void) r;
+  
   if (pit_infos->timer_value > 0)
     pit_infos->timer_value--;
     
