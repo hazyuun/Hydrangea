@@ -163,9 +163,6 @@ void mt_schedule(void) {
   }
   cur_task->time_remaining = cur_task->time_slice;
   
-
-  cur_task->state = TS_SUS;
-
   task_t *next_task = mt_pick_next_task();
   
   tss_set_esp0(next_task->allocated_stack + DEFAULT_STACK_SIZE);

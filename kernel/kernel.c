@@ -84,22 +84,10 @@ __attribute__((noreturn)) void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
 /* Edit : I just wrote a (shitty) ELF loader, Now I just need enough syscalls 
 /*        for a userspace shell ! So far so good */
 __attribute__((noreturn)) void quick_and_dirty_kernel_cli(){
-  /*
-  mt_spawn_utask("hello.elf", 0, "/initrd/0/hello.elf", 0);
-    printk("\nKernel ");
-
-  hang();
-  */
   vfs_node_t *cwd = vfs_get_root();
-  // cwd = vfs_abspath_to_node(cwd, "/initrd/0");
+  mt_spawn_utask("hello", 0, "/initrd/0/initrd/hello.elf", 0);
+  //hang();
   char cmd[100] = "\0";
-  // vfs_node_t *node = vfs_get_child_by_name(cwd, cmd);
-  // if (!node || node->file->permissions & VFS_DIR)
-  //   printk("Unknown command\n");
-  // else {
-  //   uint32_t entry = elf_load(node);
-  //   mt_spawn_utask(cmd, 1, entry, 0);
-  // }
   
   while (1) {
     term_use_color(NICE_CYAN_0);

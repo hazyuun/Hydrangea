@@ -81,7 +81,7 @@ void isr_common_handler(registers_t *r) {
     panic("Machine check exception");
     break;
   case 0x20:
-    sys_call(r);
+    syscall_handler(r);
     break;
   }
 }
