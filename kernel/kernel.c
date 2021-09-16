@@ -242,7 +242,9 @@ __attribute__((noreturn)) void quick_and_dirty_kernel_cli(){
         
         mt_print_tasks();
       }
-
+      else if (!strcmp("ttasks", cmd)) {
+        mt_print_terminated_tasks();
+      }
       else if (!strcmp("mbr", cmd)) {
         uint8_t ms = atoi(strtok(NULL, " "));
         uint8_t ps = atoi(strtok(NULL, " "));
