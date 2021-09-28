@@ -8,10 +8,9 @@ get_eflags_and_cli:
   cli
   ret
 
-.global set_eflags_and_sti
-set_eflags_and_sti:
+.global set_eflags
+set_eflags:
   movl 4(%esp), %eax
   pushl %eax
   popfl
-  sti
   ret

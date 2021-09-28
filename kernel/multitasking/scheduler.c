@@ -118,7 +118,7 @@ void cleaner(void *args){
 
     task_t *t = terminated_tasks;
     if(!t){
-      set_eflags_and_sti(ef);
+      set_eflags(ef);
       continue;
     }
 
@@ -132,7 +132,7 @@ void cleaner(void *args){
 
     terminated_tasks = NULL;
 
-    set_eflags_and_sti(ef);
+    set_eflags(ef);
   }
 } 
 

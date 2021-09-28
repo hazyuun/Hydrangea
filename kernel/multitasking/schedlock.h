@@ -4,6 +4,6 @@
 #include <stdint.h>
 
 uint32_t get_eflags_and_cli(void);
-void set_eflags_and_sti(uint32_t);
+void set_eflags(uint32_t);
 
 #endif

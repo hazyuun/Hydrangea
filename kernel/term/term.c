@@ -11,30 +11,32 @@ uint8_t term_init(uint8_t type, multiboot_info_t *mbi){
   {
     vga_term_init();
     /* TODO : fix this */
-    current_term.use_color  = &vga_term_use_vesa_color;
-    current_term.cur_mov    = &vga_term_cur_mov;
-    current_term.cur_step   = &vga_term_cur_step;
-    current_term.scroll     = &vga_term_scroll;
-    current_term.clear      = &vga_term_clear;
-    current_term.putchar    = &vga_term_putchar;
-    current_term.putat      = &vga_term_putat;
-    current_term.print      = &vga_term_print;
-    current_term.print_hex  = &vga_term_print_hex;
+    current_term.use_color    = &vga_term_use_vesa_color;
+    current_term.cur_mov      = &vga_term_cur_mov;
+    current_term.cur_step     = &vga_term_cur_step;
+    current_term.scroll       = &vga_term_scroll;
+    current_term.clear        = &vga_term_clear;
+    current_term.swap_buffers = 0;
+    current_term.putchar      = &vga_term_putchar;
+    current_term.putat        = &vga_term_putat;
+    current_term.print        = &vga_term_print;
+    current_term.print_hex    = &vga_term_print_hex;
     return 0;
   }
   case VESA_TERM:
   {
     vesa_init(mbi);
     vesa_term_init(vesa_get_framebuffer());
-    current_term.use_color  = &vesa_term_use_color;
-    current_term.cur_mov    = &vesa_term_cur_mov;
-    current_term.cur_step   = &vesa_term_cur_step;
-    current_term.scroll     = &vesa_term_scroll;
-    current_term.clear      = &vesa_term_clear;
-    current_term.putchar    = &vesa_term_putchar;
-    current_term.putat      = &vesa_term_putat;
-    current_term.print      = &vesa_term_print;
-    current_term.print_hex  = &vesa_term_print_hex;
+    current_term.use_color    = &vesa_term_use_color;
+    current_term.cur_mov      = &vesa_term_cur_mov;
+    current_term.cur_step     = &vesa_term_cur_step;
+    current_term.scroll       = &vesa_term_scroll;
+    current_term.clear        = &vesa_term_clear;
+    current_term.swap_buffers = &vesa_swap_buffers;
+    current_term.putchar      = &vesa_term_putchar;
+    current_term.putat        = &vesa_term_putat;
+    current_term.print        = &vesa_term_print;
+    current_term.print_hex    = &vesa_term_print_hex;
     return 0;
   }
   }
@@ -64,6 +66,11 @@ void term_scroll(){
 void term_clear(){
   if(current_term.clear)
     current_term.clear();
+}
+
+void term_swap_buffers(){
+  if(current_term.swap_buffers)
+    current_term.swap_buffers();
 }
 
 void term_putchar(unsigned char c){

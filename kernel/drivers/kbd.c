@@ -10,7 +10,7 @@
 #include <cpu/registers.h>
 #include <cpu/irq.h>
 #include <cpu/pic.h>
-
+#include <drivers/ps2.h>
 
 
 
@@ -58,9 +58,26 @@ char *kbd_cur_layout_cap = kbd_layout_us_cap;
 char kbd_key_states[128] = {0};
 uint8_t kbd_last_key = 0;
 
-void kbd_init(){
-  pic_unmask(1);
+#include <util/logger.h>
+void kbd_init(uint8_t ch){
+  
+  ps2_ctrlr_cmd(PS2_CMD_READ_CFG);
+
+  uint8_t cfg = ps2_inb(PS2_DATA);
+
+  cfg |= ch == 2 ? PS2_CFG_PORT2_INT : PS2_CFG_PORT1_INT;
+  cfg |= PS2_CFG_PORT1_TRANSLATION;
+
+  cfg &= ~(ch == 2 ? PS2_CFG_PORT2_CLK : PS2_CFG_PORT1_CLK);
+
+  ps2_ctrlr_cmd(PS2_CMD_WRITE_CFG);
+  ps2_outb(PS2_DATA, cfg);
+
+  ps2_dev_cmd(ch, PS2_DEV_CMD_SCAN_ENABLE);
+  ps2_expect(PS2_DEV_ACK);
+  
   irq_register(1, &kbd_event);
+  pic_unmask(1);
 }
 
 uint8_t kbd_switch_layout(char *layout_name) {
@@ -105,6 +122,7 @@ uint8_t kbd_get() {
 
 void kbd_event(registers_t *r) {
   (void) r;
+  
   uint8_t scancode = io_inb(0x60);
   
   kbd_key_states[scancode & 0xF] = !(scancode & 0x80);

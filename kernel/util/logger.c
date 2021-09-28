@@ -28,7 +28,7 @@ void log_info(uint32_t color, const char *who, char *format, ...){
   va_end(args);
   
   if(mt_is_initialized()){
-    set_eflags_and_sti(ef);
+    set_eflags(ef);
   }
 }
 
@@ -64,7 +64,7 @@ void log_f(int64_t lvl, const char *who, char *format, ...) {
   term_use_color(NICE_WHITE);
   va_end(args);
   if(mt_is_initialized()){
-    set_eflags_and_sti(ef);
+    set_eflags(ef);
   }
 }
 
@@ -82,6 +82,6 @@ void log_result(uint8_t condition, char *format, ...){
   va_end(args);
 
   if(mt_is_initialized()){
-    set_eflags_and_sti(ef);
+    set_eflags(ef);
   }
 }

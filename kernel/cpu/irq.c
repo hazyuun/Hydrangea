@@ -14,7 +14,7 @@ void irq_common_handler(registers_t *r) {
     return;
 
   pic_eoi(irq);
-  
+
   if(irq_handlers[irq])
     irq_handlers[irq](r);
 }

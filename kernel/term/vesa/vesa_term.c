@@ -24,7 +24,7 @@ void vesa_term_cur_mov(size_t x, size_t y) {
   c_term.col = x;
   c_term.row = y;
   if(mt_is_initialized())
-    set_eflags_and_sti(ef);
+    set_eflags(ef);
 }
 
 void vesa_term_clear() {
@@ -35,7 +35,7 @@ void vesa_term_clear() {
   vesa_term_cur_mov(0, 0);
 
   if(mt_is_initialized())
-    set_eflags_and_sti(ef);
+    set_eflags(ef);
 }
 
 
@@ -53,7 +53,7 @@ void vesa_term_putat(unsigned char c, size_t x, size_t y) {
   }
 
   if(mt_is_initialized())
-    set_eflags_and_sti(ef);
+    set_eflags(ef);
 }
 
 void vesa_term_scroll() {
@@ -68,8 +68,9 @@ void vesa_term_scroll() {
               : c_term.vesa_fb[(i + 16) * FB_WIDTH + j];
     }
   }
+  
   if(mt_is_initialized())
-    set_eflags_and_sti(ef);
+    set_eflags(ef);
 }
 
 void vesa_term_cur_step() { vesa_term_cur_mov(c_term.col, c_term.row); }

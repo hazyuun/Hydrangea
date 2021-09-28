@@ -21,12 +21,12 @@ void pic_init(){
   io_outb(PIC_2_DATA, 0x01);
 
   /* Mask all interrupts */
-  io_outb(PIC_1_MASK, 0xFF);
+  io_outb(PIC_1_MASK, 0xFB);
   io_outb(PIC_2_MASK, 0xFF);
 }
 
 uint8_t pic_get_mask(uint8_t pic){
-  if(pic > 1) return 0;
+  if(pic != 1 && pic != 2) return 0;
 
   uint8_t mask;
   uint16_t port;
@@ -38,7 +38,7 @@ uint8_t pic_get_mask(uint8_t pic){
 }
 
 void pic_set_mask(uint8_t pic, uint8_t mask){
-  if(pic > 1) return;
+  if(pic != 1 && pic != 2) return;
   
   uint16_t port;
   port = (pic == 1) ? PIC_1_MASK : PIC_2_MASK;
@@ -54,7 +54,7 @@ void pic_mask(uint8_t irq){
 
   uint8_t mask = pic_get_mask(pic);
   mask |= (1 << irq);
-
+  
   pic_set_mask(pic, mask);
 }
 

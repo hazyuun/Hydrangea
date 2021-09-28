@@ -10,7 +10,7 @@
 #include <stdint.h>
 #include <cpu/registers.h>
 
-void kbd_init();
+void kbd_init(uint8_t ch);
 uint8_t kbd_switch_layout(char *layout_name);
 uint8_t kbd_set_layout(char *layout, char *layout_cap);
 uint8_t kbd_keydown();

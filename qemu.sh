@@ -11,7 +11,7 @@ case "$1" in
   ;;
 
   *)
-    qemu-system-i386 -cdrom $ISO -serial stdio
+    qemu-system-i386 -cdrom $ISO -serial stdio -no-reboot -no-shutdown
   ;;
 
 esac

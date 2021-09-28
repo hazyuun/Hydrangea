@@ -17,6 +17,7 @@ void vesa_put_pixel(uint32_t x, uint32_t y, uint32_t color);
 void vesa_put_char(uint32_t x, uint32_t y, uint32_t color, char c);
 void vesa_write(uint32_t offset, uint32_t *buffer, size_t size);
 void vesa_clear();
+void vesa_swap_buffers();
 uint32_t *vesa_get_framebuffer();
 
 #endif

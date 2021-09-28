@@ -121,9 +121,9 @@ void pg_init(multiboot_info_t *mbi) {
   // pg_map_pages(pg_get_ker_dir(),   0x400000,   0x400000, 1024, PG_RW);
   
   /* Map the page of the VESA framebuffer */
-  if(term_get_type() == VESA_TERM){
+  if(term_get_type() != VESA_TERM){
     uint32_t page = mbi->framebuffer_addr & 0xFFF00000;
-    pg_map_pages(pg_get_ker_dir(), page, page, 1024, PG_RW);
+    pg_map_pages(pg_get_ker_dir(), page, page, 2*1024, PG_RW);
   }
   
   pg_map_pages(pg_get_ker_dir(), (uint32_t) HEAP_START, (uint32_t) HEAP_START, 1024, PG_RW);
@@ -134,6 +134,8 @@ void pg_init(multiboot_info_t *mbi) {
   uint32_t cr0;
   __asm__ __volatile__("mov %%cr0, %0" : "=r"(cr0));
   cr0 |= 0x80000000;
+  cr0 &= ~((1<<29) | (1<<30));
+  
   __asm__ __volatile__("mov %0, %%cr0" ::"r"(cr0));
 }
 

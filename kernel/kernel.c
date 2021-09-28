@@ -14,6 +14,12 @@
 
 #include <drivers/pit.h>
 #include <drivers/kbd.h>
+#include <drivers/mouse.h>
+#include <drivers/ps2.h>
+#include <drivers/kbd.h>
+#include <drivers/mouse.h>
+
+
 #include <drivers/pci.h>
 #include <drivers/rtc.h>
 #include <drivers/serial.h>
@@ -40,26 +46,30 @@ static void check_multiboot_info(uint32_t mb_magic, multiboot_info_t *mbi){
 }
 
 __attribute__((noreturn)) void quick_and_dirty_kernel_cli();
+extern uint32_t vesa_width, vesa_height, vesa_pitch, vesa_bpp;
 
+#include <util/logger.h>
 __attribute__((noreturn)) void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
+  check_multiboot_info(mb_magic, mbi);
+  pmm_init(mbi);
+  gdt_init();
+  interrupts_init();
+  serial_init(SERIAL_COM1);
+  pg_init(mbi);
+
   if(term_init(VESA_TERM, mbi))
     hang();
 
   log_info(INFO, "INFO", "Kernel loaded !");
+  log_f(INFO, "", "%dx%d %d %d", vesa_width, vesa_height, vesa_pitch, vesa_bpp);
   
-  check_multiboot_info(mb_magic, mbi);
-
-  pmm_init(mbi);
   log_info(INFO, "INFO", "Available memory : %d KiB\n", pmm_available_memory());
   
-  gdt_init();
-  interrupts_init();
-  serial_init(SERIAL_COM1);
-  
-  pg_init(mbi);
   pit_init(1000);
-  kbd_init();
   
+  // ps2_init();
+  kbd_init(1);
+    
   vfs_dummy();
   initrd_init(mbi);
 
@@ -85,7 +95,7 @@ __attribute__((noreturn)) void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
 /*        for a userspace shell ! So far so good */
 __attribute__((noreturn)) void quick_and_dirty_kernel_cli(){
   vfs_node_t *cwd = vfs_get_root();
-  mt_spawn_utask("hello", 0, "/initrd/0/initrd/hello.elf", 0);
+  //mt_spawn_utask("hello", 0, "/initrd/0/initrd/hello.elf", 0);
   //hang();
   char cmd[100] = "\0";
   
