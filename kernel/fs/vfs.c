@@ -212,7 +212,7 @@ char *vfs_abs_path_to(vfs_node_t *node) {
   return path;
 }
 
-vfs_node_t *vfs_abspath_to_node(vfs_node_t *root, char *path) {
+vfs_node_t *vfs_node_from_path(vfs_node_t *root, char *path) {
   char *ap = (char *)kmalloc(256);
   strcpy(ap, path);
   char *token = strtok(ap, "/");
@@ -320,7 +320,7 @@ uint8_t vfs_mount_partition(ATA_drive_t *drv, uint8_t partition_num, char *path,
   if (!fs)
     return 1;
 
-  vfs_node_t *mtpt = vfs_abspath_to_node(rel, path);
+  vfs_node_t *mtpt = vfs_node_from_path(rel, path);
   if (!mtpt)
     return 2;
 

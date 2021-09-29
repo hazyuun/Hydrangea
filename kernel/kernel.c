@@ -196,7 +196,7 @@ __attribute__((noreturn)) void quick_and_dirty_kernel_cli(){
         token = strtok(NULL, " ");
         vfs_node_t *n;
 
-        if ((n = vfs_abspath_to_node(cwd, token))) {
+        if ((n = vfs_node_from_path(cwd, token))) {
           if (vfs_is_dir(n) || vfs_is_mtpt(n))
             cwd = n;
           else

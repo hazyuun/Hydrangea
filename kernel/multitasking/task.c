@@ -109,7 +109,7 @@ void utask_exec(void *args){
 
 task_t *utask_create(char *name, uint32_t ppid, char *path, void *args){
   (void) args;
-  vfs_node_t *node = vfs_abspath_to_node(vfs_get_root(), path);
+  vfs_node_t *node = vfs_node_from_path(vfs_get_root(), path);
   
   if (!node || node->file->permissions & VFS_DIR)
     return NULL;
