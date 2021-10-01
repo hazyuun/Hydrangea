@@ -51,26 +51,39 @@ extern uint32_t vesa_width, vesa_height, vesa_pitch, vesa_bpp;
 #include <util/logger.h>
 __attribute__((noreturn)) void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
   check_multiboot_info(mb_magic, mbi);
-  pmm_init(mbi);
   gdt_init();
+  pmm_init(mbi);
   interrupts_init();
-  serial_init(SERIAL_COM1);
   pg_init(mbi);
-
+  
   if(term_init(VESA_TERM, mbi))
     hang();
-
+  
+  vfs_dummy();
+  devfs_init("/dev");
+  
   log_info(INFO, "INFO", "Kernel loaded !");
-  log_f(INFO, "", "%dx%d %d %d", vesa_width, vesa_height, vesa_pitch, vesa_bpp);
+  // log_info(NICE_CYAN_0, "VESA", "Framebuffer : %dx%d \tpitch=%d \tbpp=%d", vesa_width, vesa_height, vesa_pitch, vesa_bpp);
   
   log_info(INFO, "INFO", "Available memory : %d KiB\n", pmm_available_memory());
   
+  serial_init(SERIAL_COM1);
+  serial_init(SERIAL_COM2);
+  serial_init(SERIAL_COM3);
+  serial_init(SERIAL_COM4);
+  
+  
+  vfs_node_t *n = vfs_node_from_path(vfs_get_root(), "/dev/com1");
+  char buffer[] = "Hello serial !";
+  vfs_write(n->file, 0, sizeof(buffer), buffer);
+
   pit_init(1000);
   
   // ps2_init();
   kbd_init(1);
     
-  vfs_dummy();
+
+  
   initrd_init(mbi);
 
   log_result(!PCI_detect(), "Detecting and initializing PCI devices"); 

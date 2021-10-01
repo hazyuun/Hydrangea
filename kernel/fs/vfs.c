@@ -4,6 +4,7 @@
  * */
 
 #include <fs/vfs.h>
+#include <fs/devfs/devfs.h>
 #include <mem/heap.h>
 #include <stdio.h>
 #include <string.h>
@@ -183,7 +184,7 @@ void vfs_dummy() {
   vfs_add_child(vfs_root, "mnt", VFS_DIR);
   vfs_node_t *home = vfs_add_child(vfs_root, "home", VFS_DIR);
   vfs_add_child(vfs_root, "dev", VFS_DIR);
-
+  
   vfs_node_t *ys = vfs_add_child(home, "yuun", VFS_DIR);
   vfs_add_child(home, "yuusuf", VFS_DIR);
 

@@ -25,7 +25,7 @@ void syscall_handler(registers_t *r){
 
 void sys_hello(syscall_params_t *params){
   (void) params;
-  serial_write(SERIAL_COM1, params->ebx);
+  //serial_write(SERIAL_COM1, params->ebx);
 }
 
 void sys_exit(syscall_params_t *params){
