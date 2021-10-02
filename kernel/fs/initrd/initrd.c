@@ -47,7 +47,7 @@ uint32_t initrd_read(vfs_file_t *node, uint32_t offset, uint32_t size,
     return 0;
   if (offset + size > node->size)
     size = node->size - offset;
-  memcpy(buffer, (uint8_t *)node->inode, size);
+  memcpy(buffer, (uint8_t *)node->inode + offset, size);
   return size;
 }
 

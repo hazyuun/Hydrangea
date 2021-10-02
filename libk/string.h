@@ -17,6 +17,7 @@ char *strcat(char *dest, const char *src);
 char *strchr(const char *str, char c);
 size_t strspn(const char *str1, const char *str2);
 size_t strcspn(const char *str1, const char *str2);
+char *strstr(char *str1, const char *str2);
 
 char *strtok(char *str, const char *delim);
 

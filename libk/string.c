@@ -108,6 +108,19 @@ char *strtok(char *str, const char *delim) {
   return str;
 }
 
+char *strstr(char *str1, const char *str2){
+  uint32_t N1 = strlen(str1);
+  uint32_t N2 = strlen(str2);
+  if(N1 < N2) return NULL;
+  
+  for(uint32_t i = 0; i < N1 - N2 + 1; i++){
+    if(!memcmp(str1 + i, str2, N2))
+      return str1 + i;
+  }
+  
+  return NULL;
+}
+
 char *itoa(int value, char *result, int base) {
   unsigned long tmp = value;
 
@@ -148,3 +161,4 @@ int atoi(char *str) {
 
   return negative ? -result : result;
 }
+

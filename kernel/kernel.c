@@ -27,7 +27,10 @@
 
 #include <misc/mbr.h>
 
+#include <fs/vfs.h>
 #include <fs/initrd/initrd.h>
+#include <fs/tmpfs/tmpfs.h>
+#include <fs/devfs/devfs.h>
 
 #include <multitasking/scheduler.h>
 
@@ -61,6 +64,17 @@ __attribute__((noreturn)) void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
   
   vfs_dummy();
   devfs_init("/dev");
+  tmpfs_init("/tmp");
+  
+  tmpfs_create("lol", VFS_DIR);
+  tmpfs_create("file.txt", VFS_FILE);
+  tmpfs_create("lol/foo", VFS_DIR);
+  tmpfs_create("lol/bar", VFS_DIR);
+  tmpfs_create("lol/bar/hello.txt", VFS_FILE);
+  
+  vfs_node_t *t = vfs_node_from_path(vfs_get_root(), "/tmp/lol/bar/hello.txt");
+  char buffertmp[] = "ABCDEFG";
+  vfs_write(t->file, 0, sizeof(buffertmp), buffertmp);
   
   log_info(INFO, "INFO", "Kernel loaded !");
   // log_info(NICE_CYAN_0, "VESA", "Framebuffer : %dx%d \tpitch=%d \tbpp=%d", vesa_width, vesa_height, vesa_pitch, vesa_bpp);
@@ -81,8 +95,6 @@ __attribute__((noreturn)) void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
   
   // ps2_init();
   kbd_init(1);
-    
-
   
   initrd_init(mbi);
 
