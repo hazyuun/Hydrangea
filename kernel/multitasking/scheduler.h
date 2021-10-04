@@ -9,6 +9,7 @@ void mt_panic();
 
 uint8_t mt_is_initialized();
 task_t *mt_get_current_task();
+
 task_t *mt_get_task_by_pid(uint32_t pid);
 
 uint32_t mt_spawn_ktask(char *name, uint32_t ppid, void (*entry)(void *),

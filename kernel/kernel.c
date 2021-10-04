@@ -87,9 +87,9 @@ __attribute__((noreturn)) void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
   serial_init(SERIAL_COM4);
   
   
-  vfs_node_t *n = vfs_node_from_path(vfs_get_root(), "/dev/com1");
-  char buffer[] = "Hello serial !";
-  vfs_write(n->file, 0, sizeof(buffer), buffer);
+  //vfs_node_t *n = vfs_node_from_path(vfs_get_root(), "/dev/com1");
+  //char buffer[] = "Hello serial !";
+  //vfs_write(n->file, 0, sizeof(buffer), buffer);
 
   pit_init(1000);
   
@@ -111,6 +111,7 @@ __attribute__((noreturn)) void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
   hang();
 }
 
+#include <fs/file_descriptor.h>
 /* This is a quick and dirty and temporary cli */
 /* just for the sake of testing ! */
 /* Edit : it is getting messy lol */  
@@ -119,6 +120,7 @@ __attribute__((noreturn)) void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
 /* Edit : I just wrote a (shitty) ELF loader, Now I just need enough syscalls */
 /*        for a userspace shell ! So far so good */
 __attribute__((noreturn)) void quick_and_dirty_kernel_cli(){
+
   vfs_node_t *cwd = vfs_get_root();
   //mt_spawn_utask("hello", 0, "/initrd/0/initrd/hello.elf", 0);
   //hang();

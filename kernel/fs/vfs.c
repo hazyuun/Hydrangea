@@ -187,7 +187,7 @@ void vfs_dummy() {
   vfs_add_child(vfs_root, "tmp", VFS_DIR);
   
   vfs_node_t *ys = vfs_add_child(home, "yuun", VFS_DIR);
-  vfs_add_child(home, "yuusuf", VFS_DIR);
+  //vfs_add_child(home, "yuusuf", VFS_DIR);
 
   vfs_add_child(ys, "document.txt", VFS_FILE);
   vfs_add_child(ys, "program.c", VFS_FILE);

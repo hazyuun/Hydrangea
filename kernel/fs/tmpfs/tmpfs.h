@@ -7,6 +7,8 @@
 
 uint8_t tmpfs_init(char *path);
 
+uint32_t tmpfs_create(char *path, uint8_t type);
+
 uint32_t tmpfs_vfs_read(vfs_file_t *node, uint32_t offset, uint32_t size,
                        char *buffer);
 uint32_t tmpfs_vfs_write(vfs_file_t *node, uint32_t offset, uint32_t size,

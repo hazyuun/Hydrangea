@@ -4,6 +4,8 @@
 #include <mem/heap.h>
 #include <mem/paging.h>
 
+#include <fs/file_descriptor.h>
+
 #include <util/logger.h>
 #include <term/term.h>
 
@@ -56,8 +58,7 @@ void mt_init() {
 
   mt_push_task(ktask_create("test", 0, &ker_idle, (void *)0));
   mt_push_task(ktask_create("cleaner", 0, &cleaner, (void *)0));
-  
-  
+
   cur_task = tasks;
   _mt_enabled = 1;
 }

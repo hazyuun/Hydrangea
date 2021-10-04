@@ -15,12 +15,14 @@ list_t *make_list(uint32_t size){
   return list;
 }
 
-void list_push(list_t *list, void *element){
+uint32_t list_push(list_t *list, void *element){
   if(list->used == list->size){
     list->size *= 2;
     list->data = (void**) krealloc(list->data, list->size * sizeof(void*));
   }
+  
   list->data[list->used++] = element;
+  return list->used - 1;
 }
 
 uint8_t list_delete(list_t *list, uint32_t index){
