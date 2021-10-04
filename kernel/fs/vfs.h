@@ -102,14 +102,14 @@ vfs_node_t *vfs_make_node(vfs_node_t *root, char *path, uint8_t type,
 uint8_t vfs_is_dir(vfs_node_t *node);
 uint8_t vfs_is_mtpt(vfs_node_t *node);
 
-uint32_t vfs_read(vfs_file_t *node, uint32_t offset, uint32_t size,
+uint32_t vfs_read(vfs_file_t *file, uint32_t offset, uint32_t size,
                   char *buffer);
-uint32_t vfs_write(vfs_file_t *node, uint32_t offset, uint32_t size,
+uint32_t vfs_write(vfs_file_t *file, uint32_t offset, uint32_t size,
                    char *buffer);
-uint8_t vfs_open(vfs_file_t *node, uint8_t read, uint8_t write);
-uint8_t vfs_close(vfs_file_t *node);
-vfs_dirent_t *vfs_readdir(vfs_file_t *node, uint32_t index);
-vfs_file_t *vfs_finddir(vfs_file_t *node, char *name);
+uint8_t vfs_open(vfs_file_t *file, uint8_t read, uint8_t write);
+uint8_t vfs_close(vfs_file_t *file);
+vfs_dirent_t *vfs_readdir(vfs_file_t *file, uint32_t index);
+vfs_file_t *vfs_finddir(vfs_file_t *file, char *name);
 
 void vfs_drwxrwxrwx(char *out, uint16_t permissions);
 

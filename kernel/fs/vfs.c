@@ -12,38 +12,40 @@
 
 vfs_node_t *vfs_root;
 
-uint32_t vfs_read(vfs_file_t *node, uint32_t offset, uint32_t size,
+uint32_t vfs_read(vfs_file_t *file, uint32_t offset, uint32_t size,
                   char *buffer) {
-  if (node->read)
-    return node->read(node, offset, size, buffer);
+  if (file->read)
+    return file->read(file, offset, size, buffer);
   return 0;
 }
-uint32_t vfs_write(vfs_file_t *node, uint32_t offset, uint32_t size,
+uint32_t vfs_write(vfs_file_t *file, uint32_t offset, uint32_t size,
                    char *buffer) {
-  if (node->write)
-    return node->write(node, offset, size, buffer);
+  if(file->write)
+    return file->write(file, offset, size, buffer);
   return 0;
 }
-uint8_t vfs_open(vfs_file_t *node, uint8_t read, uint8_t write) {
+
+uint8_t vfs_open(vfs_file_t *file, uint8_t read, uint8_t write) {
   (void)read;
   (void)write;
-  if (node->open)
-    return node->open(node);
+  if (file->open)
+    return file->open(file);
   return 0;
 }
-uint8_t vfs_close(vfs_file_t *node) {
-  if (node->close)
-    return node->close(node);
+
+uint8_t vfs_close(vfs_file_t *file) {
+  if (file->close)
+    return file->close(file);
   return 0;
 }
-vfs_dirent_t *vfs_readdir(vfs_file_t *node, uint32_t index) {
-  if (node->readdir)
-    return node->readdir(node, index);
+vfs_dirent_t *vfs_readdir(vfs_file_t *file, uint32_t index) {
+  if (file->readdir)
+    return file->readdir(file, index);
   return 0;
 }
-vfs_file_t *vfs_finddir(vfs_file_t *node, char *name) {
-  if (node->finddir)
-    return node->finddir(node, name);
+vfs_file_t *vfs_finddir(vfs_file_t *file, char *name) {
+  if (file->finddir)
+    return file->finddir(file, name);
   return 0;
 }
 
