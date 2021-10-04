@@ -113,6 +113,8 @@ __attribute__((noreturn)) void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
 
 #include <fs/file_descriptor.h>
 #include <fs/file_ops.h>
+#include <fs/pipe.h>
+
 
 /* This is a quick and dirty and temporary cli */
 /* just for the sake of testing ! */
@@ -122,7 +124,15 @@ __attribute__((noreturn)) void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
 /* Edit : I just wrote a (shitty) ELF loader, Now I just need enough syscalls */
 /*        for a userspace shell ! So far so good */
 __attribute__((noreturn)) void quick_and_dirty_kernel_cli(){
-    
+  /*
+  ring_buffer_t *rb = make_rb(3);
+  rb_write(rb, "abcdefg", 7);
+  
+  uint8_t b[16] = {0};
+  int s = rb_read(rb, b, 4);
+  printk("\n-%d-\n%s\n--\n", s, b);
+  */
+  
   vfs_node_t *cwd = vfs_get_root();
   //mt_spawn_utask("hello", 0, "/initrd/0/initrd/hello.elf", 0);
   //hang();
