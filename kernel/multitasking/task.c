@@ -91,6 +91,9 @@ task_t *ktask_create(char *name, uint32_t ppid, void (*entry)(void*), void *args
 
   task->time_slice = DEFAULT_TIME_SLICE;
   task->time_remaining = DEFAULT_TIME_SLICE;
+  
+  task->file_descriptors = make_list(8);
+  
   log_f(INFO, "ktask_create", "Created kernel task (PID %d) : %s", task->pid, name);
   
   return task;

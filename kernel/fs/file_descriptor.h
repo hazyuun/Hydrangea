@@ -43,7 +43,6 @@ uint8_t fd_seek(file_descriptor_t *fd, uint32_t offset);
 uint8_t fd_lock(file_descriptor_t *fd);
 uint8_t fd_unlock(file_descriptor_t *fd);
 uint32_t fd_locked_by(file_descriptor_t *fd);
-
-
+vfs_node_t *fd_to_node(file_descriptor_t *fd);
 #endif
 

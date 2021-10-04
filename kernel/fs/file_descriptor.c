@@ -19,8 +19,10 @@ uint8_t gft_init(){
 }
 
 static uint32_t gft_entry_exists(vfs_node_t *node){
-    for(uint32_t i = 0; i < gft->used; i++){
-        if(((gft_entry_t *)list_get(gft, i))->node == node) return i;
+    return 0;
+    for(uint32_t i = 1; i <= gft->used; i++){
+        gft_entry_t *e = (gft_entry_t *)list_get(gft, i);
+        if(e && e->node == node) return i;
     }
     return 0;
 }
@@ -110,7 +112,6 @@ file_descriptor_t *fd_open(vfs_node_t *node, uint32_t flags) {
     uint8_t write  = (flags & O_RDWR) || (flags & O_WRONLY);
     
     uint32_t index = gft_add(node);
-    
     file_descriptor_t *fd;
     fd = (file_descriptor_t *) kmalloc(sizeof(file_descriptor_t));
     
@@ -127,10 +128,8 @@ uint8_t fd_close(file_descriptor_t *fd) {
     uint32_t ef;
     ef = get_eflags_and_cli();
     
-    printk("\n--%d", gft_get_ref_count(fd->gft_index));
     
     gft_dec_ref_count(fd->gft_index);
-    printk("\n--%d", gft_get_ref_count(fd->gft_index));
     
     if(gft_get_ref_count(fd->gft_index) == 0)
         gft_delete(fd->gft_index);
@@ -180,5 +179,10 @@ uint32_t fd_locked_by(file_descriptor_t *fd){
     
     set_eflags(ef);
     return e->locked_by;
+}
+
+inline vfs_node_t *fd_to_node(file_descriptor_t *fd){
+    gft_entry_t *e = (gft_entry_t *)list_get(gft, fd->gft_index);
+    return e->node;
 }
 

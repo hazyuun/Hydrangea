@@ -2,6 +2,7 @@
 #define _TASK_H_
 
 #include <stdint.h>
+#include <ds/list.h>
 
 /* Task states */
 #define TS_SUS 0
@@ -31,7 +32,9 @@ typedef struct task {
   uint32_t ppid;
   struct task *next;
   struct task *prev;
-
+  
+  list_t *file_descriptors;
+  
   uint8_t state;
   char name[128];
 } task_t;
