@@ -12,9 +12,6 @@
 #include <cpu/pic.h>
 #include <drivers/ps2.h>
 
-
-
-
 /* TODO: Make a complete keyboard layout */
 /* Note : There are some mistakes in my layouts */
 
@@ -78,6 +75,7 @@ void kbd_init(uint8_t ch){
   
   irq_register(1, &kbd_event);
   pic_unmask(1);
+  
 }
 
 uint8_t kbd_switch_layout(char *layout_name) {
@@ -120,12 +118,18 @@ uint8_t kbd_get() {
   return c;
 }
 
+#include <multitasking/scheduler.h>
+#include <fs/file_ops.h>
+#include <fs/file_descriptor.h>
+#include <fs/vfs.h>
+
 void kbd_event(registers_t *r) {
   (void) r;
   
   uint8_t scancode = io_inb(0x60);
   
   kbd_key_states[scancode & 0xF] = !(scancode & 0x80);
+  
   /* Released */
   if (scancode & 0x80) {
     
@@ -133,5 +137,16 @@ void kbd_event(registers_t *r) {
   /* Pressed */
   else {
     kbd_last_key = scancode;
+    
+    /* 
+      Note : For now, the foreground task (the one receiving user input) 
+      is hardcoded as PID 3, I'll deal with this later
+      
+      TODO : Do it properly
+    */
+    
+    file_descriptor_t *f = list_get(mt_get_task_by_pid(3)->file_descriptors, 0);
+    vfs_file_t *file = fd_to_node(f)->file;
+    file->write(file, 0, 1,  &kbd_cur_layout[kbd_last_key]);
   }
 }

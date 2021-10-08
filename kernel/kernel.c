@@ -1,6 +1,8 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <string.h>
 
 #include <boot/multiboot.h>
 #include <kernel.h>
@@ -13,13 +15,12 @@
 #include <mem/pmm.h>
 
 #include <drivers/pit.h>
+#include <drivers/console.h>
 #include <drivers/kbd.h>
 #include <drivers/mouse.h>
 #include <drivers/ps2.h>
 #include <drivers/kbd.h>
 #include <drivers/mouse.h>
-
-
 #include <drivers/pci.h>
 #include <drivers/rtc.h>
 #include <drivers/serial.h>
@@ -31,14 +32,15 @@
 #include <fs/initrd/initrd.h>
 #include <fs/tmpfs/tmpfs.h>
 #include <fs/devfs/devfs.h>
+#include <fs/file_descriptor.h>
+#include <fs/file_ops.h>
+#include <fs/pipe.h>
 
 #include <multitasking/scheduler.h>
+#include <exec/elf.h>
 
 #include <term/term.h>
-#include <stdio.h>
-#include <string.h>
 #include <util/logger.h>
-#include <exec/elf.h>
 
 static void check_multiboot_info(uint32_t mb_magic, multiboot_info_t *mbi){
   if (mb_magic != MULTIBOOT_BOOTLOADER_MAGIC)
@@ -49,9 +51,7 @@ static void check_multiboot_info(uint32_t mb_magic, multiboot_info_t *mbi){
 }
 
 __attribute__((noreturn)) void quick_and_dirty_kernel_cli();
-extern uint32_t vesa_width, vesa_height, vesa_pitch, vesa_bpp;
 
-#include <util/logger.h>
 __attribute__((noreturn)) void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
   check_multiboot_info(mb_magic, mbi);
   gdt_init();
@@ -65,7 +65,8 @@ __attribute__((noreturn)) void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
   vfs_dummy();
   devfs_init("/dev");
   tmpfs_init("/tmp");
-  
+
+  /*
   tmpfs_create("lol", VFS_DIR);
   tmpfs_create("file.txt", VFS_FILE);
   tmpfs_create("lol/foo", VFS_DIR);
@@ -75,17 +76,16 @@ __attribute__((noreturn)) void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
   vfs_node_t *t = vfs_node_from_path(vfs_get_root(), "/tmp/lol/bar/hello.txt");
   char buffertmp[] = "ABCDEFG";
   vfs_write(t->file, 0, sizeof(buffertmp), buffertmp);
+  */
   
   log_info(INFO, "INFO", "Kernel loaded !");
-  // log_info(NICE_CYAN_0, "VESA", "Framebuffer : %dx%d \tpitch=%d \tbpp=%d", vesa_width, vesa_height, vesa_pitch, vesa_bpp);
-  
   log_info(INFO, "INFO", "Available memory : %d KiB\n", pmm_available_memory());
   
   serial_init(SERIAL_COM1);
   serial_init(SERIAL_COM2);
   serial_init(SERIAL_COM3);
   serial_init(SERIAL_COM4);
-  
+  console_init();
   
   //vfs_node_t *n = vfs_node_from_path(vfs_get_root(), "/dev/com1");
   //char buffer[] = "Hello serial !";
@@ -111,11 +111,6 @@ __attribute__((noreturn)) void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
   hang();
 }
 
-#include <fs/file_descriptor.h>
-#include <fs/file_ops.h>
-#include <fs/pipe.h>
-
-
 /* This is a quick and dirty and temporary cli */
 /* just for the sake of testing ! */
 /* Edit : it is getting messy lol */  
@@ -124,6 +119,7 @@ __attribute__((noreturn)) void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
 /* Edit : I just wrote a (shitty) ELF loader, Now I just need enough syscalls */
 /*        for a userspace shell ! So far so good */
 __attribute__((noreturn)) void quick_and_dirty_kernel_cli(){
+
   /*
   ring_buffer_t *rb = make_rb(3);
   rb_write(rb, "abcdefg", 7);
@@ -133,9 +129,26 @@ __attribute__((noreturn)) void quick_and_dirty_kernel_cli(){
   printk("\n-%d-\n%s\n--\n", s, b);
   */
   
+  /*
+  char b[7] = "1234567";
+  vfs_node_t *n = vfs_node_from_path(vfs_get_root(), "/dev/con");
+  vfs_write(n->file, 0, 7, b);
+  */
+  
+  /*
+  char b[] = "\nstdout is working !";
+  char a = 0 ;//[2] = {0};
+  write(1, b, strlen(b));
+  
+  while(read(0, &a, 1) > 0){
+    printk("\n stdin : %c", a);
+    if(a == '\n') break;
+  }
+  */
+  
   vfs_node_t *cwd = vfs_get_root();
   //mt_spawn_utask("hello", 0, "/initrd/0/initrd/hello.elf", 0);
-  //hang();
+    
   char cmd[100] = "\0";
   
   while (1) {
@@ -291,9 +304,11 @@ __attribute__((noreturn)) void quick_and_dirty_kernel_cli(){
         
         mt_print_tasks();
       }
+      /*
       else if (!strcmp("ttasks", cmd)) {
         mt_print_terminated_tasks();
       }
+      */
       else if (!strcmp("mbr", cmd)) {
         uint8_t ms = atoi(strtok(NULL, " "));
         uint8_t ps = atoi(strtok(NULL, " "));

@@ -21,7 +21,7 @@ uint32_t vfs_read(vfs_file_t *file, uint32_t offset, uint32_t size,
 uint32_t vfs_write(vfs_file_t *file, uint32_t offset, uint32_t size,
                    char *buffer) {
   if(file->write)
-    return file->write(file, offset, size, buffer);
+    return file->write(file, offset, size, buffer);  
   return 0;
 }
 

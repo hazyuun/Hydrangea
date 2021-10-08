@@ -1,5 +1,10 @@
 #include <multitasking/task.h>
 #include <multitasking/scheduler.h>
+#include <fs/file_descriptor.h>
+#include <fs/pipe.h>
+#include <fs/vfs.h>
+
+
 
 #include <util/logger.h>
 
@@ -47,7 +52,6 @@ task_t *ktask_create(char *name, uint32_t ppid, void (*entry)(void*), void *args
   
   /* Arguments and a 0x0 return address */
   /* so do not return, use syscall exit instead */
-  /* TODO: exit syscall doesn't exist yet */
   *(--stack) = (uint32_t) args;
   *(--stack) = 0x0;
 
@@ -93,6 +97,22 @@ task_t *ktask_create(char *name, uint32_t ppid, void (*entry)(void*), void *args
   task->time_remaining = DEFAULT_TIME_SLICE;
   
   task->file_descriptors = make_list(8);
+  
+  
+  /* Open stdin, stdout, and stderr */
+  ring_buffer_t *rb = make_rb(256);
+  vfs_node_t *in  = rb_node(rb);
+  vfs_node_t *out = vfs_node_from_path(vfs_get_root(), "/dev/con");
+  
+  file_descriptor_t *stdin_fd  = fd_open(in,  O_RDWR);
+  file_descriptor_t *stdout_fd = fd_open(out, O_WRONLY);
+  file_descriptor_t *stderr_fd = fd_open(out, O_WRONLY);
+  
+  list_push(task->file_descriptors, stdin_fd);
+  list_push(task->file_descriptors, stdout_fd);
+  list_push(task->file_descriptors, stderr_fd);
+  
+  /* TODO : Inherit other file descriptors from parent */
   
   log_f(INFO, "ktask_create", "Created kernel task (PID %d) : %s", task->pid, name);
   
