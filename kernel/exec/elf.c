@@ -52,14 +52,11 @@ static uint32_t elf_load_segments(uint8_t *buffer){
   for(uint16_t n = 0; n < eh->ph_table_entry_count; n++){
     if(ph_tbl[n].type == ELF_PH_SEGTYPE_NULL) continue;
     if(ph_tbl[n].type == ELF_PH_SEGTYPE_LOAD){
-      log_info(NICE_GREEN_0, "ELF", "Loading segment into vaddr=%d", ph_tbl[n].vaddr);
+      //log_info(NICE_GREEN_0, "ELF", "Loading segment into vaddr=%d", ph_tbl[n].vaddr);
       
-     
       pg_alloc(ph_tbl[n].vaddr, PG_RW | PG_USER);
       pg_invalidate_page(ph_tbl[n].vaddr);
       pg_invalidate_cache();
-      *((uint8_t*)ph_tbl[n].vaddr) = 0x5;
-
       
       memcpy((void*)(ph_tbl[n].vaddr), buffer + ph_tbl[n].offset, ph_tbl[n].mem_size);
       if(ph_tbl[n].file_size < ph_tbl[n].mem_size)

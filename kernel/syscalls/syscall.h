@@ -19,4 +19,9 @@ void syscall_handler(registers_t *r);
 void sys_hello(syscall_params_t *params);
 void sys_exit(syscall_params_t *params);
 
+void sys_read(syscall_params_t *params);
+void sys_write(syscall_params_t *params);
+void sys_open(syscall_params_t *params);
+void sys_close(syscall_params_t *params);
+
 #endif

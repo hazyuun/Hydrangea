@@ -2,7 +2,7 @@
 #include <fs/file_descriptor.h>
 #include <multitasking/schedlock.h>
 #include <multitasking/scheduler.h>
-
+#include <util/logger.h>
 
 int open(char *path, uint32_t flags, uint32_t mode){
   uint32_t ef;

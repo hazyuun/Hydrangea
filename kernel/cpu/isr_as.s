@@ -52,7 +52,12 @@ isr_werr 17
 isr_gen_handlers 18,12,0
 isr_werr 30
 isr 31
-isr 32
+
+.global isr32
+isr32:
+    push $0
+    push $32
+    jmp isr_common_handler_wrapper
 
 
 .extern isr_common_handler

@@ -144,8 +144,10 @@ void kbd_event(registers_t *r) {
       
       TODO : Do it properly
     */
+    task_t *t = mt_get_fg_task();
+    if(!t) return;
     
-    file_descriptor_t *f = list_get(mt_get_task_by_pid(3)->file_descriptors, 0);
+    file_descriptor_t *f = list_get(t->file_descriptors, 0);
     vfs_file_t *file = fd_to_node(f)->file;
     file->write(file, 0, 1,  &kbd_cur_layout[kbd_last_key]);
   }

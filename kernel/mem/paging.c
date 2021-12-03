@@ -58,11 +58,12 @@ uint32_t pg_virt_to_phys(uint32_t dir, uint32_t virt){
 
 void pg_map_pages(uint32_t dir, uint32_t virt, uint32_t phys, uint32_t num,
                   uint32_t flags) {
+  
   if (!IS_ALIGNED((uint32_t)virt))
     panic("pg_map_pages: Unaligned page address (virt)");
   if (!IS_ALIGNED((uint32_t)phys))
     panic("pg_map_pages: Unaligned page address (phys)");
-
+  //log_info(NICE_RED, "MEM", "dir:%d virt:%d phys:%d num:%d flahs:%d", dir, virt, phys, num, flags);
   uint32_t dir_index = (uint32_t)virt >> 22;
 
   if (!pg_tbl_exists(dir, virt)) {

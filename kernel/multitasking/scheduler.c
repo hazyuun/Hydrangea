@@ -21,17 +21,26 @@ uint32_t tasks_count;
 /* The currently running task */
 task_t *cur_task;
 
+/* The task that receives user input (foreground task) */
+task_t *fg_task;
+
 /* Those will be deleted by the cleaner task */
 task_t *terminated_tasks = NULL;
 
 inline uint8_t mt_is_initialized() { return _mt_enabled; }
+inline void mt_set_fg_task(task_t *task) { 
+  fg_task = task;
+}
+inline task_t *mt_get_fg_task() { 
+  return fg_task;
+}
 
 static void mt_push_task(task_t *new_task) {
   if (!tasks) {
     tasks = new_task;
     return;
   }
-
+  
 #if 0
   new_task->next = tasks;
   tasks->prev = new_task;
@@ -61,6 +70,7 @@ void mt_init() {
   mt_push_task(ktask_create("test", 0, &ker_idle, (void *)0));
   mt_push_task(ktask_create("cleaner", 0, &cleaner, (void *)0));
   cur_task = tasks;
+  fg_task = NULL;
   _mt_enabled = 1;
 }
 
@@ -127,7 +137,7 @@ void cleaner(void *args){
     while (t) {
       task_t *next = t->next;
       
-      log_info(NICE_CYAN, "cleaner", "removing PID %d", t->pid);
+      //log_info(NICE_CYAN, "cleaner", "removing PID %d", t->pid);
       task_destroy(t);
       t = next;
     }

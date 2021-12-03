@@ -4,8 +4,6 @@
 #include <fs/pipe.h>
 #include <fs/vfs.h>
 
-
-
 #include <util/logger.h>
 
 #include <mem/heap.h>
@@ -114,7 +112,7 @@ task_t *ktask_create(char *name, uint32_t ppid, void (*entry)(void*), void *args
   
   /* TODO : Inherit other file descriptors from parent */
   
-  log_f(INFO, "ktask_create", "Created kernel task (PID %d) : %s", task->pid, name);
+  //log_f(INFO, "ktask_create", "Created kernel task (PID %d) : %s", task->pid, name);
   
   return task;
 }
@@ -126,7 +124,7 @@ extern void go_usermode(void);
 void utask_exec(void *args){
   if(!elf_load((vfs_node_t *) args))
     asm volatile("1: pause; jmp 1b"); /* Until I implement exit() properly */
-    
+  pg_alloc(0xF000000, PG_RW | PG_USER);
   go_usermode();
 }
 

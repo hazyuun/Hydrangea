@@ -3,7 +3,7 @@
 #include <fs/vfs.h>
 #include <fs/file_descriptor.h>
 #include <multitasking/scheduler.h>
-
+#include <util/logger.h>
 
 ring_buffer_t *make_rb(size_t size){
   ring_buffer_t *rb;
@@ -25,7 +25,7 @@ static uint8_t rb_read_byte(ring_buffer_t *rb){
   
   ++(rb->read_index);
   --(rb->valid_data_size);
-  rb->read_index %= rb->size; 
+  rb->read_index %= rb->size;
   
   return byte;
 }
@@ -51,10 +51,9 @@ size_t rb_read(ring_buffer_t *rb, uint8_t *buffer, size_t size){
   for(uint32_t i = 0; i < size; i++){
     buffer[i] = rb_read_byte(rb);
   }
-  
   return size;
 }
-#include <util/logger.h>
+
 size_t rb_write(ring_buffer_t *rb, uint8_t *buffer, size_t size){
   if(size == 0) return 0;
   

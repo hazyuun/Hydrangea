@@ -145,10 +145,16 @@ __attribute__((noreturn)) void quick_and_dirty_kernel_cli(){
     if(a == '\n') break;
   }
   */
-  
   vfs_node_t *cwd = vfs_get_root();
-  //mt_spawn_utask("hello", 0, "/initrd/0/initrd/hello.elf", 0);
-    
+  cwd = vfs_node_from_path(cwd, "initrd/0/initrd");
+  
+  printk("\n");
+  //mt_spawn_utask("hello", mt_get_current_task()->pid, "/initrd/0/initrd/hello.elf", 0);
+  //mt_print_tasks();
+  //pg_alloc(0x1000000, PG_RW | PG_USER);
+  //pg_alloc(0x1001000, PG_RW | PG_USER);
+  
+  //asm volatile("1:hlt;jmp 1b");
   char cmd[100] = "\0";
   
   while (1) {
@@ -378,9 +384,25 @@ __attribute__((noreturn)) void quick_and_dirty_kernel_cli(){
 
       else {
         //printk("Unknown command\n");
-        if(!mt_spawn_utask(cmd, 0, cmd, 0))
+        vfs_node_t *n = vfs_node_from_path(cwd, cmd);
+        if(!n)
           printk("Unknown command\n");
-        
+        else{
+          char *abs = vfs_abs_path_to(n);
+          uint32_t pid = mt_spawn_utask(cmd, 0, abs, 0);
+          
+          if(!pid)
+            printk("Couldn't spawn new task\n");
+          else {
+            task_t *t = mt_get_task_by_pid(pid);
+            mt_set_fg_task(t);
+
+            /* Ah yes, wait */
+            while(mt_get_task_by_pid(pid)) asm volatile("pause");
+            mt_set_fg_task(mt_get_current_task());
+          }
+
+        }
       }
     }
   }

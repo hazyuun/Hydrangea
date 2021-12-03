@@ -48,7 +48,7 @@ go_usermode:
   mov %ax, %gs
 
   mov %esp, %eax
-
+  
   pushl $0x23
   pushl %eax
   pushl $0x200
