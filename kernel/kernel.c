@@ -149,7 +149,7 @@ __attribute__((noreturn)) void quick_and_dirty_kernel_cli(){
   cwd = vfs_node_from_path(cwd, "initrd/0/initrd");
   
   printk("\n");
-  //mt_spawn_utask("hello", mt_get_current_task()->pid, "/initrd/0/initrd/hello.elf", 0);
+  //mt_spawn_utask("hello", mt_get_current_task()->pid, "/initrd/0/initrd/test.elf", 0);
   //mt_print_tasks();
   //pg_alloc(0x1000000, PG_RW | PG_USER);
   //pg_alloc(0x1001000, PG_RW | PG_USER);
@@ -389,7 +389,7 @@ __attribute__((noreturn)) void quick_and_dirty_kernel_cli(){
           printk("Unknown command\n");
         else{
           char *abs = vfs_abs_path_to(n);
-          uint32_t pid = mt_spawn_utask(cmd, 0, abs, 0);
+          uint32_t pid = mt_spawn_utask(cmd, mt_get_current_task()->pid, abs, 0);
           
           if(!pid)
             printk("Couldn't spawn new task\n");

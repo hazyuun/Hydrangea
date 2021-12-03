@@ -120,12 +120,13 @@ task_t *ktask_create(char *name, uint32_t ppid, void (*entry)(void*), void *args
 #include <exec/elf.h>
 #include <fs/vfs.h>
 
-extern void go_usermode(void);
+extern void go_usermode(uint32_t);
 void utask_exec(void *args){
-  if(!elf_load((vfs_node_t *) args))
+  uint32_t entry = elf_load((vfs_node_t *) args);
+  if(!entry)
     asm volatile("1: pause; jmp 1b"); /* Until I implement exit() properly */
   pg_alloc(0xF000000, PG_RW | PG_USER);
-  go_usermode();
+  go_usermode(entry);
 }
 
 task_t *utask_create(char *name, uint32_t ppid, char *path, void *args){

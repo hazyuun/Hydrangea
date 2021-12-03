@@ -63,8 +63,9 @@ static uint32_t elf_load_segments(uint8_t *buffer){
         memset((void*)(ph_tbl[n].vaddr + ph_tbl[n].file_size), 0, ph_tbl[n].mem_size - ph_tbl[n].file_size);
     }
   }
-
-  return ph_tbl->vaddr + eh->entry;
+  // log_info(NICE_GREEN_0, "ELF", "Entry = %d", eh->entry);
+      
+  return eh->entry;
 }
 
 uint32_t elf_load(vfs_node_t *node){

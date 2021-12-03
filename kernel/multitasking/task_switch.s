@@ -53,5 +53,5 @@ go_usermode:
   pushl %eax
   pushl $0x200
   pushl $0x1B
-  pushl $0x1000000
+  pushl 20(%esp)
   iret
