@@ -138,12 +138,6 @@ void kbd_event(registers_t *r) {
   else {
     kbd_last_key = scancode;
     
-    /* 
-      Note : For now, the foreground task (the one receiving user input) 
-      is hardcoded as PID 3, I'll deal with this later
-      
-      TODO : Do it properly
-    */
     task_t *t = mt_get_fg_task();
     if(!t) return;
     
