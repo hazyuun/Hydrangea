@@ -11,6 +11,8 @@ syscall_t syscall_list[] = {
   &sys_write,
   &sys_open,
   &sys_close,
+  &sys_getpid,
+  &sys_getppid,
 };
 
 void syscall_handler(registers_t *r){
@@ -26,6 +28,14 @@ void syscall_handler(registers_t *r){
   };
 
   (syscall_list[r->eax])(&params);
+  
+  r->eax = params.eax;
+  r->ebx = params.ebx;
+  r->ecx = params.ecx;
+  r->edx = params.edx;
+  r->esi = params.esi;
+  r->edi = params.edi;
+  r->ebp = params.ebp;
 }
 
 void sys_hello(syscall_params_t *params){
@@ -70,4 +80,13 @@ void sys_open(syscall_params_t *params){
 }
 void sys_close(syscall_params_t *params){
   (void) params;
+}
+
+void sys_getpid(syscall_params_t *params){
+  (void) params;
+  params->eax = mt_get_current_task()->pid;
+}
+void sys_getppid(syscall_params_t *params){
+  (void) params;
+  params->eax = mt_get_current_task()->ppid;
 }
