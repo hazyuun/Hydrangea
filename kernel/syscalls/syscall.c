@@ -64,7 +64,7 @@ void sys_read(syscall_params_t *params){
   size_t size = (size_t) params->edx;
   //log_info(NICE_YELLOW_0, "SYSCALL", "read(%d, %d, %d)", fd, buffer, size);
   
-  read(fd, buffer, size);
+  params->eax = read(fd, buffer, size);
 }
 void sys_write(syscall_params_t *params){
 
@@ -76,10 +76,18 @@ void sys_write(syscall_params_t *params){
   write(fd, buffer, size);
 }
 void sys_open(syscall_params_t *params){
-  (void) params;
+  char *path = (char *) params->ebx;
+  uint32_t flags = (uint32_t) params->ecx;
+  uint32_t mode = (uint32_t) params->edx;
+  //log_info(NICE_YELLOW_0, "SYSCALL", "open(%s, %d, %d)", path, flags, mode);
+  
+  params->eax = open(path, flags, mode);
 }
 void sys_close(syscall_params_t *params){
   (void) params;
+  int fd = (int) params->ebx;
+  
+  params->eax = close(fd);
 }
 
 void sys_getpid(syscall_params_t *params){

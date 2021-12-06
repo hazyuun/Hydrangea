@@ -149,12 +149,12 @@ __attribute__((noreturn)) void quick_and_dirty_kernel_cli(){
   cwd = vfs_node_from_path(cwd, "initrd/0/initrd");
   
   printk("\n");
-  //mt_spawn_utask("hello", mt_get_current_task()->pid, "/initrd/0/initrd/test.elf", 0);
+  uint32_t pid= mt_spawn_utask("hello", mt_get_current_task()->pid, "/initrd/0/initrd/helloworld.elf", 0);
   //mt_print_tasks();
   //pg_alloc(0x1000000, PG_RW | PG_USER);
   //pg_alloc(0x1001000, PG_RW | PG_USER);
-  
-  //asm volatile("1:hlt;jmp 1b");
+  mt_set_fg_task(mt_get_task_by_pid(pid));
+  asm volatile("1:hlt;jmp 1b");
   char cmd[100] = "\0";
   
   while (1) {
