@@ -123,6 +123,9 @@ void sys_setcwd(syscall_params_t *params){
   log_info(NICE_YELLOW_0, "SYSCALL", "setcwd(%s)", path);
   
   vfs_node_t *cwd = mt_get_current_task()->cwd_node;
-  mt_get_current_task()->cwd_node = vfs_node_from_path(cwd, path);
+  vfs_node_t *node = vfs_node_from_path(cwd, path);
+  
+  if(!node) return;
 
+  mt_get_current_task()->cwd_node = node;
 }
