@@ -13,6 +13,12 @@ syscall_t syscall_list[] = {
   &sys_close,
   &sys_getpid,
   &sys_getppid,
+  NULL,
+  NULL,
+  NULL,
+  &sys_getcwd,
+  &sys_setcwd,
+  
 };
 
 void syscall_handler(registers_t *r){
@@ -97,4 +103,26 @@ void sys_getpid(syscall_params_t *params){
 void sys_getppid(syscall_params_t *params){
   (void) params;
   params->eax = mt_get_current_task()->ppid;
+}
+
+#include <string.h>
+
+void sys_getcwd(syscall_params_t *params){
+  char *buffer       = (char *) params->ebx;
+  size_t buffer_size = (size_t) params->ecx;
+
+  char *cwd    = vfs_abs_path_to(mt_get_current_task()->cwd_node);
+  size_t len   = strlen(cwd);
+  
+  size_t to_copy = buffer_size < len ? buffer_size : len;
+  memcpy(buffer, cwd, to_copy);
+}
+
+void sys_setcwd(syscall_params_t *params){
+  char *path = (char *) params->ebx;
+  log_info(NICE_YELLOW_0, "SYSCALL", "setcwd(%s)", path);
+  
+  vfs_node_t *cwd = mt_get_current_task()->cwd_node;
+  mt_get_current_task()->cwd_node = vfs_node_from_path(cwd, path);
+
 }

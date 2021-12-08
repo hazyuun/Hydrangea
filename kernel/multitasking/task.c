@@ -30,12 +30,14 @@ task_t *ktask_create(char *name, uint32_t ppid, void (*entry)(void*), void *args
   /* Verify if the parent exists before allocating a task_t structure */
   /* in order to avoid calling kmalloc then kfree shortly after */
 
-  uint32_t pid = gen_pid();    
-  if(pid && !mt_get_task_by_pid(ppid)){
+  uint32_t pid = gen_pid();
+  task_t *parent_task = mt_get_task_by_pid(ppid);
+
+  if(pid && !parent_task){
     log_f(ERROR, "ktask_create", "Parent task (PID %d) doesn't exist", ppid);
     return NULL;
   }
-
+  
   task_t *task = (task_t *) kmalloc(sizeof(task_t));
   strcpy(task->name, name);
   task->pid = pid;
@@ -112,7 +114,10 @@ task_t *ktask_create(char *name, uint32_t ppid, void (*entry)(void*), void *args
   
   /* TODO : Inherit other file descriptors from parent */
   
+  task->cwd_node = parent_task ? parent_task->cwd_node : vfs_get_root();
+
   //log_f(INFO, "ktask_create", "Created kernel task (PID %d) : %s", task->pid, name);
+  log_f(INFO, "ktask_create", "cwd : %s", vfs_abs_path_to(task->cwd_node));
   
   return task;
 }

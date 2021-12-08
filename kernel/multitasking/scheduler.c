@@ -219,7 +219,7 @@ void mt_print_tasks() {
   printk("\n PID | PPID \t| name");
   printk("\n --- + -------- + ----");
   while (t) {
-    printk("\n %d \t | %d \t\t| %s\t\t | %d", t->pid, t->ppid, t->name, t->state);
+    printk("\n %d \t | %d \t\t| %s\t", t->pid, t->ppid, t->name);
     t = t->next;
   }
 }

@@ -26,4 +26,8 @@ void sys_close(syscall_params_t *params);
 
 void sys_getpid(syscall_params_t *params);
 void sys_getppid(syscall_params_t *params);
+
+void sys_getcwd(syscall_params_t *params);
+void sys_setcwd(syscall_params_t *params);
+
 #endif

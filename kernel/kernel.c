@@ -110,7 +110,7 @@ __attribute__((noreturn)) void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
 
   hang();
 }
-
+#include <syscalls/syscall.h>
 /* This is a quick and dirty and temporary cli */
 /* just for the sake of testing ! */
 /* Edit : it is getting messy lol */  
@@ -147,10 +147,13 @@ __attribute__((noreturn)) void quick_and_dirty_kernel_cli(){
   */
   vfs_node_t *cwd = vfs_get_root();
   cwd = vfs_node_from_path(cwd, "initrd/0/initrd");
-  
+  char x[] = "initrd/0/initrd";
+  syscall_params_t p = {.ebx = x};
+  sys_setcwd(&p);
+
   printk("\n");
   uint32_t pid= mt_spawn_utask("hello", mt_get_current_task()->pid, "/initrd/0/initrd/helloworld.elf", 0);
-  //mt_print_tasks();
+  mt_print_tasks();
   //pg_alloc(0x1000000, PG_RW | PG_USER);
   //pg_alloc(0x1001000, PG_RW | PG_USER);
   mt_set_fg_task(mt_get_task_by_pid(pid));
@@ -158,6 +161,8 @@ __attribute__((noreturn)) void quick_and_dirty_kernel_cli(){
   char cmd[100] = "\0";
   
   while (1) {
+    
+
     term_use_color(NICE_CYAN_0);
     printk("\nKernel ");
     term_use_color(NICE_CYAN);
@@ -262,6 +267,9 @@ __attribute__((noreturn)) void quick_and_dirty_kernel_cli(){
         } else {
           printk("Not found");
         }
+        char *cwd_ = vfs_abs_path_to(cwd);
+        syscall_params_t p = {.ebx = cwd_};
+        sys_setcwd(&p);
       }
       else if (!strcmp("sleep", cmd)) {
         uint8_t s = atoi(strtok(NULL, " "));
