@@ -129,7 +129,12 @@ extern void go_usermode(uint32_t);
 void utask_exec(void *args){
   uint32_t entry = elf_load((vfs_node_t *) args);
   if(!entry)
-    asm volatile("1: pause; jmp 1b"); /* Until I implement exit() properly */
+    asm volatile(
+      "mov $1, %eax\n"
+      "mov $1, %ebx\n"
+      "int $0x80\n"
+      "1: pause; jmp 1b");
+
   pg_alloc(0xF000000, PG_RW | PG_USER);
   go_usermode(entry);
 }
