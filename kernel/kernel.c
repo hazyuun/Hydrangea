@@ -51,7 +51,7 @@ static void check_multiboot_info(uint32_t mb_magic, multiboot_info_t *mbi){
 }
 
 __attribute__((noreturn)) void quick_and_dirty_kernel_cli();
-
+void vesa_back_buffer_put_pixel(uint32_t x, uint32_t y, uint32_t color);
 __attribute__((noreturn)) void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
   check_multiboot_info(mb_magic, mbi);
   gdt_init();
@@ -99,15 +99,15 @@ __attribute__((noreturn)) void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
   initrd_init(mbi);
 
   log_result(!PCI_detect(), "Detecting and initializing PCI devices"); 
-
+  mt_init();
+  
   printk("\n\nWelcome to ");
-  term_use_color(NICE_MAGENTA);
-  printk("YuunOS !\n");
+  term_use_color(NICE_CYAN_0);
+  printk("Hydrangea !\n");
   term_use_color(NICE_WHITE);
 
-  mt_init();
   mt_spawn_ktask("cli", 0, &quick_and_dirty_kernel_cli, NULL);
-
+  
   hang();
 }
 #include <syscalls/syscall.h>
@@ -118,6 +118,19 @@ __attribute__((noreturn)) void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
 /* Edit : Usermode works ! I am getting closer and closer to a userland shell */
 /* Edit : I just wrote a (shitty) ELF loader, Now I just need enough syscalls */
 /*        for a userspace shell ! So far so good */
+/* Edit : Yoooooo ! I have sys_run and sys_wait syscalls now !                  */
+/*        which means that I'll make a userspace shell !                        */
+/*        hey "quick_and_dirty_kernel_cli" ! I have a great news !              */
+/*        you won't be quick nor dirty anymore, you deserve better than that !  */
+/*        yes I lied above, you will not be "replaced", you will get upgraded ! */
+/*        did you really think that I can replace a shell that helped me test   */
+/*        pretty much all the way through this journey ? Thank you so much !    */
+/*        you won't have that "strcmp ladder" anymore, everything will have its */
+/*        own userspace program ! you will lose your kernel privilieges after   */
+/*        moving to userspace, but it is worth it, trust me !                   */
+/*        See you in userspace ! in your new form ! and thank you again !       */
+/*        Oh, and I'll give you a name by the way ! I'll tell you more later    */
+/*        See you soon !                                                        */
 __attribute__((noreturn)) void quick_and_dirty_kernel_cli(){
 
   /*
@@ -148,16 +161,16 @@ __attribute__((noreturn)) void quick_and_dirty_kernel_cli(){
   vfs_node_t *cwd = vfs_get_root();
   cwd = vfs_node_from_path(cwd, "initrd/0/initrd");
   char x[] = "initrd/0/initrd";
-  syscall_params_t p = {.ebx = x};
+  syscall_params_t p = {.ebx = (uint32_t) x};
   sys_setcwd(&p);
 
   printk("\n");
-  uint32_t pid= mt_spawn_utask("hello", mt_get_current_task()->pid, "/initrd/0/initrd/helloworld.elf", 0);
-  mt_print_tasks();
+  //uint32_t pid= mt_spawn_utask("hello", mt_get_current_task()->pid, "/initrd/0/initrd/helloworld.elf", 0);
+  //mt_print_tasks();
   //pg_alloc(0x1000000, PG_RW | PG_USER);
   //pg_alloc(0x1001000, PG_RW | PG_USER);
-  mt_set_fg_task(mt_get_task_by_pid(pid));
-  asm volatile("1:hlt;jmp 1b");
+  //mt_set_fg_task(mt_get_task_by_pid(pid));
+  //asm volatile("1:hlt;jmp 1b");
   char cmd[100] = "\0";
   
   while (1) {
@@ -172,7 +185,7 @@ __attribute__((noreturn)) void quick_and_dirty_kernel_cli(){
 
     scank("%s", cmd);
     if (!strcmp("info", cmd)) {
-      term_print("YuunOS kernel "KERNEL_VERSION "\n");
+      term_print(KERNEL_NAME " " KERNEL_VERSION "\n");
     } 
     
     else if (!strcmp("clear", cmd)) {
@@ -181,7 +194,6 @@ __attribute__((noreturn)) void quick_and_dirty_kernel_cli(){
 
     else if (!strcmp("help", cmd)) {
       printk("Too lazy to write help, sorry\n");
-      printk("This shitty \"shell\" will be replaced anyway\n");
     } 
     
     else if (!strcmp("reboot", cmd)) {

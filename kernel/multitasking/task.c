@@ -117,7 +117,7 @@ task_t *ktask_create(char *name, uint32_t ppid, void (*entry)(void*), void *args
   task->cwd_node = parent_task ? parent_task->cwd_node : vfs_get_root();
 
   //log_f(INFO, "ktask_create", "Created kernel task (PID %d) : %s", task->pid, name);
-  log_f(INFO, "ktask_create", "cwd : %s", vfs_abs_path_to(task->cwd_node));
+  //log_f(INFO, "ktask_create", "cwd : %s", vfs_abs_path_to(task->cwd_node));
   
   return task;
 }

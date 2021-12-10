@@ -13,8 +13,8 @@ syscall_t syscall_list[] = {
   &sys_close,
   &sys_getpid,
   &sys_getppid,
-  NULL,
-  NULL,
+  &sys_run,
+  &sys_wait,
   NULL,
   &sys_getcwd,
   &sys_setcwd,
@@ -105,6 +105,35 @@ void sys_getppid(syscall_params_t *params){
   params->eax = mt_get_current_task()->ppid;
 }
 
+void sys_run(syscall_params_t *params){
+  char *path = (char *) params->ebx;
+  //int   argc = (char *) params->ecx;
+  //char *argv = (char *) params->edx;
+  
+  vfs_node_t *cwd = mt_get_current_task()->cwd_node;
+  vfs_node_t *node = vfs_node_from_path(cwd, path);
+  //log_info(NICE_YELLOW_0, "SYSCALL", "run(%s)", vfs_abs_path_to(node));
+  
+  uint32_t ppid = mt_get_current_task()->pid;
+  uint32_t pid = mt_spawn_utask(path, ppid, vfs_abs_path_to(node), NULL);
+  params->eax = pid;
+}
+
+void sys_wait(syscall_params_t *params){
+  uint32_t pid = params->ebx;
+
+  mt_set_fg_task(mt_get_task_by_pid(pid));
+
+  /* TODO : Make a better scheduler, and just block the waiting task */
+  while(mt_get_task_by_pid(pid))
+    asm volatile("hlt");
+  
+  mt_set_fg_task(mt_get_current_task());
+
+  /* TODO : Return the status code */
+  params->eax = 0;
+}
+
 #include <string.h>
 
 void sys_getcwd(syscall_params_t *params){
@@ -120,7 +149,7 @@ void sys_getcwd(syscall_params_t *params){
 
 void sys_setcwd(syscall_params_t *params){
   char *path = (char *) params->ebx;
-  log_info(NICE_YELLOW_0, "SYSCALL", "setcwd(%s)", path);
+  //log_info(NICE_YELLOW_0, "SYSCALL", "setcwd(%s)", path);
   
   vfs_node_t *cwd = mt_get_current_task()->cwd_node;
   vfs_node_t *node = vfs_node_from_path(cwd, path);
