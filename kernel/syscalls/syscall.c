@@ -165,7 +165,7 @@ void sys_getfb(syscall_params_t *params){
   (void) params;
   /* Make the framebuffer accessible from usermode */
   uint32_t pg_dir  = pg_get_current_dir();
-  uint32_t fb_addr = vesa_get_framebuffer();
+  uint32_t fb_addr = (uint32_t) vesa_get_framebuffer();
   /*
     - 1 page is 4 KiB = 4096 Bytes
     - The framebuffer has width*height pixels
@@ -194,5 +194,5 @@ void sys_getfb(syscall_params_t *params){
   /* I hope I got that right */
   /* Hey future me, I am sorry if you came here because of a bug here */
 
-  params->eax = vesa_get_framebuffer();
+  params->eax = (uint32_t) vesa_get_framebuffer();
 }

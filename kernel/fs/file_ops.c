@@ -82,7 +82,7 @@ int write(int fd, const void *buffer, size_t size){
   if(!d->write) goto fail;
   
   vfs_node_t *node = fd_to_node(d);
-  w = vfs_write(node->file, d->offset, size, buffer);
+  w = vfs_write(node->file, d->offset, size, (char*) buffer);
   
 fail:
   set_eflags(ef);

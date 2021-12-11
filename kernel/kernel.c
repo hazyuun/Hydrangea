@@ -280,7 +280,7 @@ __attribute__((noreturn)) void quick_and_dirty_kernel_cli(){
           printk("Not found");
         }
         char *cwd_ = vfs_abs_path_to(cwd);
-        syscall_params_t p = {.ebx = cwd_};
+        syscall_params_t p = {.ebx = (uint32_t) cwd_};
         sys_setcwd(&p);
       }
       else if (!strcmp("sleep", cmd)) {

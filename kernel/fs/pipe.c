@@ -66,13 +66,15 @@ size_t rb_write(ring_buffer_t *rb, uint8_t *buffer, size_t size){
 
 uint32_t rb_vfs_read(vfs_file_t *file, uint32_t offset, uint32_t size,
                    char *buffer){
-  return rb_read((ring_buffer_t *)(file->inode), buffer, size);
+  (void) offset;
+  return rb_read((ring_buffer_t *)(file->inode), (uint8_t *) buffer, size);
   
 }
 
 uint32_t rb_vfs_write(vfs_file_t *file, uint32_t offset, uint32_t size,
                    char *buffer){
-  return rb_write((ring_buffer_t *)(file->inode), buffer, size);
+  (void) offset;
+  return rb_write((ring_buffer_t *)(file->inode), (uint8_t *) buffer, size);
 }
 
 vfs_node_t *rb_node(ring_buffer_t *rb){
@@ -80,7 +82,7 @@ vfs_node_t *rb_node(ring_buffer_t *rb){
   node = vfs_create_node("", VFS_PIPE);
   node->file->read = &rb_vfs_read;
   node->file->write = &rb_vfs_write;
-  node->file->inode = rb;
+  node->file->inode = (uint32_t) rb;
   return node;
 }
 

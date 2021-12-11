@@ -1,6 +1,7 @@
 #include <fs/tmpfs/tmpfs.h>
 #include <util/logger.h>
 #include <string.h>
+#include <mem/heap.h>
 
 vfs_node_t *tmpfs_root = 0;
 /* 
@@ -124,9 +125,9 @@ uint32_t tmpfs_vfs_read(vfs_file_t *node, uint32_t offset, uint32_t size,
 uint32_t tmpfs_vfs_write(vfs_file_t *node, uint32_t offset, uint32_t size,
                         char *buffer) {
   if(!node->inode)
-    node->inode = kmalloc(size);
+    node->inode = (uint32_t) kmalloc(size);
   if(node->size < size)
-    node->inode = krealloc(node->inode, size);
+    node->inode = (uint32_t) krealloc((void*) node->inode, size);
   node->size += size;
   
   memcpy((uint8_t *)node->inode + offset, buffer, size);

@@ -1,10 +1,13 @@
 #include <drivers/console.h>
 #include <fs/devfs/devfs.h>
 #include <term/term.h>
+#include <mem/heap.h>
 
 uint32_t console_write(vfs_file_t *file, uint32_t offset, uint32_t size,
                    char *buffer) {
-                   
+  (void) file;
+  (void) offset;
+
   for(size_t i = 0; i < size; i++){
     term_putchar(buffer[i]);
   }
