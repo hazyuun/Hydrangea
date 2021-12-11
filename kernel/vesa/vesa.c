@@ -67,4 +67,9 @@ void vesa_back_buffer_put_pixel(uint32_t x, uint32_t y, uint32_t color) {
 }
 
 uint32_t *vesa_get_framebuffer() { return (uint32_t *) vesa_fb; }
+uint32_t *vesa_get_framebuffer_width() { return vesa_width; }
+uint32_t *vesa_get_framebuffer_height() { return vesa_height; }
+uint32_t *vesa_get_framebuffer_pitch() { return vesa_pitch; }
+uint32_t *vesa_get_framebuffer_bpp() { return vesa_bpp; }
+
 uint32_t *vesa_get_back_buffer() { return (uint32_t *) vesa_back_buffer; }

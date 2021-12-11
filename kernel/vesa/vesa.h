@@ -19,5 +19,10 @@ void vesa_write(uint32_t offset, uint32_t *buffer, size_t size);
 void vesa_clear();
 void vesa_swap_buffers();
 uint32_t *vesa_get_framebuffer();
+uint32_t *vesa_get_framebuffer_width();
+uint32_t *vesa_get_framebuffer_height();
+uint32_t *vesa_get_framebuffer_pitch();
+uint32_t *vesa_get_framebuffer_bpp();
+
 
 #endif

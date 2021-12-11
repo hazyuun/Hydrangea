@@ -75,11 +75,15 @@ void pg_map_pages(uint32_t dir, uint32_t virt, uint32_t phys, uint32_t num,
   for (uint32_t i = 0; i < num; i++) {
     uint32_t addr = virt + i * PG_SIZE;
     if (pg_is_mapped(dir, addr)){
-      log_f(ERROR, "pg_map_pages", 
-      "Virtual address %d is already mapped to physical address %d ",
-      addr, pg_virt_to_phys(dir, addr));
+      /* if it is already mapped then just change the flags          */
+      /* This is just a workaround for now, I will change this later */
 
-      panic("pg_map_pages: Tried to map an already mapped page");
+      // log_f(ERROR, "pg_map_pages", 
+      // "Virtual address %d is already mapped to physical address %d ",
+      // addr, pg_virt_to_phys(dir, addr));
+      tbl[i] |= flags;
+      ((uint32_t*) dir)[dir_index] |= flags;
+      //panic("pg_map_pages: Tried to map an already mapped page");
     }
     tbl[i] = ((uint32_t)phys + i * PG_SIZE) | PG_PRESENT | flags;
   }
@@ -160,7 +164,8 @@ uint32_t pg_clone_page_dir(uint32_t* dir){
 }
 
 inline uint32_t pg_make_user_page_dir(){
-  return pg_clone_page_dir(ker_page_dir);
+  uint32_t r = pg_clone_page_dir(ker_page_dir);
+  return r;
 }
 
 void pg_switch_page_dir(uint32_t dir) {

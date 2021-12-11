@@ -33,4 +33,6 @@ void sys_wait(syscall_params_t *params);
 void sys_getcwd(syscall_params_t *params);
 void sys_setcwd(syscall_params_t *params);
 
+void sys_getfb(syscall_params_t *params);
+
 #endif

@@ -2,6 +2,11 @@
 #include <drivers/serial.h>
 #include <util/logger.h>
 #include <multitasking/scheduler.h>
+#include <fs/file_ops.h>
+#include <vesa/vesa.h>
+#include <mem/paging.h>
+
+#include <string.h>
 
 syscall_t syscall_list[] = {
   &sys_hello,
@@ -18,7 +23,7 @@ syscall_t syscall_list[] = {
   NULL,
   &sys_getcwd,
   &sys_setcwd,
-  
+  &sys_getfb,
 };
 
 void syscall_handler(registers_t *r){
@@ -62,7 +67,6 @@ void sys_exit(syscall_params_t *params){
   asm volatile("1: hlt; jmp 1b");
 }
 
-#include <fs/file_ops.h>
 void sys_read(syscall_params_t *params){
   
   int fd = (int) params->ebx;
@@ -134,8 +138,6 @@ void sys_wait(syscall_params_t *params){
   params->eax = 0;
 }
 
-#include <string.h>
-
 void sys_getcwd(syscall_params_t *params){
   char *buffer       = (char *) params->ebx;
   size_t buffer_size = (size_t) params->ecx;
@@ -157,4 +159,40 @@ void sys_setcwd(syscall_params_t *params){
   if(!node) return;
 
   mt_get_current_task()->cwd_node = node;
+}
+
+void sys_getfb(syscall_params_t *params){
+  (void) params;
+  /* Make the framebuffer accessible from usermode */
+  uint32_t pg_dir  = pg_get_current_dir();
+  uint32_t fb_addr = vesa_get_framebuffer();
+  /*
+    - 1 page is 4 KiB = 4096 Bytes
+    - The framebuffer has width*height pixels
+    - Each pixel has bpp bytes
+    - So in total we have b = width*height*bpp bytes in the fb
+    - Therefore we need to map (b / 4096) pages
+  */
+  uint32_t w   = vesa_get_framebuffer_width();
+  uint32_t h   = vesa_get_framebuffer_height();
+  uint32_t bpp = vesa_get_framebuffer_bpp();
+  
+  uint32_t pages_count = w * h * bpp / PG_SIZE;
+
+  uint32_t offset = 0;
+  while(pages_count >= 1024){
+    pages_count -= 1024;
+    offset += 4096;
+    pg_map_pages(pg_dir, fb_addr+offset, fb_addr+offset, 1024, PG_PRESENT | PG_USER | PG_RW);
+  }
+  /* I think that this loop thing should actually be inside pg_map_pages */
+  /* TODO : do it */
+
+  if(pages_count)
+    pg_map_pages(pg_dir, fb_addr+offset, fb_addr+offset, pages_count, PG_PRESENT | PG_USER | PG_RW);
+  
+  /* I hope I got that right */
+  /* Hey future me, I am sorry if you came here because of a bug here */
+
+  params->eax = vesa_get_framebuffer();
 }
