@@ -16,7 +16,7 @@
 - [ ] stdalign.h
 - [ ] stdarg.h
 - [ ] stdatomic.h
-- [ ] stdbool.h
+- [x] stdbool.h
 - [ ] stddef.h
 - [ ] stdint.h
 - [ ] stdio.h
