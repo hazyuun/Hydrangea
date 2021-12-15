@@ -18,7 +18,7 @@
 - [ ] stdatomic.h
 - [x] stdbool.h
 - [ ] stddef.h
-- [ ] stdint.h
+- [x] stdint.h
 - [ ] stdio.h
 - [ ] stdlib.h
 - [ ] stdnoreturn.h
