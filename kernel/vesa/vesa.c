@@ -24,7 +24,12 @@ void vesa_init(multiboot_info_t *mbi) {
   vesa_pitch = mbi->framebuffer_pitch;
   
   vesa_bpp = mbi->framebuffer_bpp;
-  vesa_back_buffer = (uint8_t*) kmalloc(vesa_pitch * vesa_bpp);
+  pg_map_pages(pg_get_ker_dir(), 0xE000000, 0xE000000, 1024, PG_PRESENT|PG_RW|PG_USER);
+  pg_map_pages(pg_get_ker_dir(), 0xE001000, 0xE001000, 1024, PG_PRESENT|PG_RW|PG_USER);
+  pg_map_pages(pg_get_ker_dir(), 0xE002000, 0xE002000, 1024, PG_PRESENT|PG_RW|PG_USER);
+  pg_map_pages(pg_get_ker_dir(), 0xE003000, 0xE003000, 1024, PG_PRESENT|PG_RW|PG_USER);
+
+  vesa_back_buffer = (uint8_t*) 0xE000000;//kmalloc(vesa_pitch * vesa_bpp);
 }
 
 void vesa_swap_buffers(){

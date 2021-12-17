@@ -166,6 +166,7 @@ void sys_getfb(syscall_params_t *params){
   /* Make the framebuffer accessible from usermode */
   uint32_t pg_dir  = pg_get_current_dir();
   uint32_t fb_addr = (uint32_t) vesa_get_framebuffer();
+  uint32_t bfb_addr = (uint32_t) vesa_get_back_buffer();
   /*
     - 1 page is 4 KiB = 4096 Bytes
     - The framebuffer has width*height pixels
@@ -178,21 +179,27 @@ void sys_getfb(syscall_params_t *params){
   uint32_t bpp = vesa_get_framebuffer_bpp();
   
   uint32_t pages_count = w * h * bpp / PG_SIZE;
-
+  
   uint32_t offset = 0;
   while(pages_count >= 1024){
     pages_count -= 1024;
     offset += 4096;
     pg_map_pages(pg_dir, fb_addr+offset, fb_addr+offset, 1024, PG_PRESENT | PG_USER | PG_RW);
+    //pg_map_pages(pg_dir, bfb_addr+offset, bfb_addr+offset, 1024, PG_PRESENT | PG_USER | PG_RW);
+  
   }
   /* I think that this loop thing should actually be inside pg_map_pages */
   /* TODO : do it */
+//log_info(INFO, "fb", "%d", bfb_addr);
 
-  if(pages_count)
+  if(pages_count){
     pg_map_pages(pg_dir, fb_addr+offset, fb_addr+offset, pages_count, PG_PRESENT | PG_USER | PG_RW);
+    //pg_map_pages(pg_dir, bfb_addr+offset, bfb_addr+offset, pages_count, PG_PRESENT | PG_USER | PG_RW);
   
+  }
   /* I hope I got that right */
   /* Hey future me, I am sorry if you came here because of a bug here */
-
+  //log_info(INFO, "fb", "%d", bfb_addr);
+  *((uint32_t *)params->ebx) = (uint32_t) vesa_get_back_buffer();
   params->eax = (uint32_t) vesa_get_framebuffer();
 }

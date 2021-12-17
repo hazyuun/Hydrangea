@@ -51,7 +51,7 @@ static void check_multiboot_info(uint32_t mb_magic, multiboot_info_t *mbi){
 }
 
 __attribute__((noreturn)) void quick_and_dirty_kernel_cli();
-void vesa_back_buffer_put_pixel(uint32_t x, uint32_t y, uint32_t color);
+
 __attribute__((noreturn)) void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
   check_multiboot_info(mb_magic, mbi);
   gdt_init();
@@ -165,11 +165,11 @@ __attribute__((noreturn)) void quick_and_dirty_kernel_cli(){
   sys_setcwd(&p);
 
   printk("\n");
-  uint32_t pid= mt_spawn_utask("hello", mt_get_current_task()->pid, "/initrd/0/initrd/helloworld.elf", 0);
+  // uint32_t pid= mt_spawn_utask("hello", mt_get_current_task()->pid, "/initrd/0/initrd/wm", 0);
   //mt_print_tasks();
   //pg_alloc(0x1000000, PG_RW | PG_USER);
   //pg_alloc(0x1001000, PG_RW | PG_USER);
-  mt_set_fg_task(mt_get_task_by_pid(pid));
+  // mt_set_fg_task(mt_get_task_by_pid(pid));
   asm volatile("1:hlt;jmp 1b");
   char cmd[100] = "\0";
   
