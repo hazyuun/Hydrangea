@@ -8,7 +8,7 @@
 #include <string.h>
 
 extern uint32_t end_of_kernel;
-volatile size_t placement_addr = (size_t)&end_of_kernel;
+volatile size_t placement_addr = -0xC0000000 + (size_t)&end_of_kernel;
 
 uint32_t *frames_bmp;
 uint64_t memory_size;
@@ -45,7 +45,6 @@ void *pmalloc_ap(size_t size, size_t align, size_t *physical_addr) {
 }
 
 void pmm_init(multiboot_info_t *mbi) {
-
   memory_size = 0;
 
   multiboot_memory_map_t *mmap;
@@ -75,7 +74,8 @@ void pmm_init(multiboot_info_t *mbi) {
 
   uint32_t kernel_size = (uint32_t)&end_of_kernel;
   kernel_size -= 1024 * 1024; /* because the kernel starts at 1 MiB */
-
+  kernel_size -= 0xC0000000;
+  
   uint32_t kernel_frames = kernel_size / 4096;
 
   /* TODO : Maybe extract this loop in its own function */
