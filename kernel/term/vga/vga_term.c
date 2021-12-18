@@ -10,7 +10,7 @@ void vga_term_init() {
   c_vga_term_state.row = 0;
   c_vga_term_state.column = 0;
   vga_term_use_color(VGA_WHITE, VGA_BLACK);
-  vga_term_frame_buffer = (uint16_t *)0xB8000;
+  vga_term_frame_buffer = (uint16_t *)(0xC0000000 + 0xB8000);
   vga_term_cur_mov(0, 0);
   for (size_t k = 0; k < (size_t)(VGA_WIDTH * VGA_HEIGHT); k++)
     *(vga_term_frame_buffer + k) = vga_char(' ', c_vga_term_state.color);
