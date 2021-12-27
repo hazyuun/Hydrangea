@@ -24,7 +24,9 @@ void vesa_init(multiboot_info_t *mbi) {
   vesa_pitch = mbi->framebuffer_pitch;
 
   vesa_bpp = mbi->framebuffer_bpp;
+
   vesa_back_buffer = (uint8_t *)kmalloc(vesa_pitch * vesa_bpp);
+
 }
 
 void vesa_swap_buffers() {

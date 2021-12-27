@@ -51,7 +51,7 @@ static void check_multiboot_info(uint32_t mb_magic, multiboot_info_t *mbi) {
 }
 
 __attribute__((noreturn)) void kshell();
-void vesa_back_buffer_put_pixel(uint32_t x, uint32_t y, uint32_t color);
+
 __attribute__((noreturn)) void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
   check_multiboot_info(mb_magic, mbi);
   gdt_init();
@@ -103,7 +103,7 @@ __attribute__((noreturn)) void kshell() {
   char x[] = "/";
   syscall_params_t p = {.ebx = (uint32_t)x};
   sys_setcwd(&p);
-
+  
   char cmd[100] = "\0";
 
   while (1) {
