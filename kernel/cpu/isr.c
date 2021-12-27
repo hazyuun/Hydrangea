@@ -1,8 +1,8 @@
 #include <cpu/registers.h>
 
-#include <drivers/pit.h>
-#include <drivers/kbd.h>
 #include <drivers/ata.h>
+#include <drivers/kbd.h>
+#include <drivers/pit.h>
 #include <drivers/serial.h>
 
 #include <mem/paging.h>
@@ -12,11 +12,11 @@
 
 #include <kernel.h>
 
+#include <multitasking/scheduler.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <util/logger.h>
-#include <multitasking/scheduler.h>
 
 void isr_common_handler(registers_t *r) {
   switch (r->int_num) {
@@ -39,9 +39,10 @@ void isr_common_handler(registers_t *r) {
     panic("Out of bounds exception");
     break;
   case 0x6:
-    printk("\n eip : "); term_print_hex(r->eip);
+    printk("\n eip : ");
+    term_print_hex(r->eip);
     panic("Invalid opcode exception");
-    
+
     break;
   case 0x7:
     panic("No coprocessor exception");

@@ -28,8 +28,8 @@ void *pmalloc_a(size_t size, size_t align) {
 
 /* Placement malloc with alignment that also gives physical address of allocated
  * memory
- * 
- * EDIT : Hey me ! Where tf are you gonna use this function ? 
+ *
+ * EDIT : Hey me ! Where tf are you gonna use this function ?
  * TODO : Find useless stuff and delete it
  */
 void *pmalloc_ap(size_t size, size_t align, size_t *physical_addr) {
@@ -46,7 +46,7 @@ void pmm_init(multiboot_info_t *mbi) {
 
   // uint32_t mb_begin_addr;
   // uint32_t mb_end_addr;
-  
+
   // mb_begin_addr = (uint32_t)mbi;
   // mb_end_addr = (uint32_t)(mbi + sizeof(multiboot_info_t));
   memory_size = 0;
@@ -59,7 +59,6 @@ void pmm_init(multiboot_info_t *mbi) {
                                          sizeof(mmap->size))) {
     if (mmap->type & MULTIBOOT_MEMORY_AVAILABLE)
       memory_size += (uint64_t)(mmap->len);
-   
   }
 
   frames_bmp = (uint32_t *)pmalloc(((memory_size / 4096) / 32));
@@ -71,13 +70,10 @@ void pmm_init(multiboot_info_t *mbi) {
                                          sizeof(mmap->size))) {
     if (!(mmap->type & MULTIBOOT_MEMORY_AVAILABLE))
       frame_bmp_set(mmap->addr);
-   
   }
 }
 
-uint32_t pmm_available_memory() {
-  return memory_size / 1024;
-}
+uint32_t pmm_available_memory() { return memory_size / 1024; }
 
 void frame_bmp_set(uint32_t addr) {
   uint32_t frame_nbr = addr / 4096;

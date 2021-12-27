@@ -19,29 +19,28 @@ void vesa_term_use_color(uint32_t color) { c_term.color = color; }
 
 void vesa_term_cur_mov(size_t x, size_t y) {
   uint32_t ef = 0;
-  if(mt_is_initialized())
+  if (mt_is_initialized())
     ef = get_eflags_and_cli();
   c_term.col = x;
   c_term.row = y;
-  if(mt_is_initialized())
+  if (mt_is_initialized())
     set_eflags(ef);
 }
 
 void vesa_term_clear() {
   uint32_t ef = 0;
-  if(mt_is_initialized())
+  if (mt_is_initialized())
     ef = get_eflags_and_cli();
   vesa_clear();
   vesa_term_cur_mov(0, 0);
 
-  if(mt_is_initialized())
+  if (mt_is_initialized())
     set_eflags(ef);
 }
 
-
 void vesa_term_putat(unsigned char c, size_t x, size_t y) {
   uint32_t ef = 0;
-  if(mt_is_initialized())
+  if (mt_is_initialized())
     ef = get_eflags_and_cli();
 
   uint32_t *p = font_getchar(c);
@@ -52,13 +51,13 @@ void vesa_term_putat(unsigned char c, size_t x, size_t y) {
     }
   }
 
-  if(mt_is_initialized())
+  if (mt_is_initialized())
     set_eflags(ef);
 }
 
 void vesa_term_scroll() {
   uint32_t ef = 0;
-  if(mt_is_initialized())
+  if (mt_is_initialized())
     ef = get_eflags_and_cli();
   for (size_t i = 0; i < FB_HEIGHT; i++) {
     for (size_t j = 0; j < FB_WIDTH; j++) {
@@ -68,15 +67,15 @@ void vesa_term_scroll() {
               : c_term.vesa_fb[(i + 16) * FB_WIDTH + j];
     }
   }
-  
-  if(mt_is_initialized())
+
+  if (mt_is_initialized())
     set_eflags(ef);
 }
 
 void vesa_term_cur_step() { vesa_term_cur_mov(c_term.col, c_term.row); }
 
 void vesa_term_putchar(unsigned char c) {
-  
+
   if (c == '\n') {
     vesa_term_putat(' ', c_term.col, c_term.row);
     c_term.col = 0;
@@ -115,16 +114,14 @@ void vesa_term_putchar(unsigned char c) {
   vesa_term_use_color(NICE_CUR);
   vesa_term_putat('_', c_term.col, c_term.row);
   vesa_term_use_color(clr);
-  
 }
 
 void vesa_term_print(const char *string) {
-  
+
   size_t index = 0;
   char c;
   while ((c = *(string + index++)))
     vesa_term_putchar(c);
-  
 }
 
 void vesa_term_print_hex(uint32_t x) {

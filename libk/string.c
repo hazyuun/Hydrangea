@@ -37,7 +37,7 @@ void *memmove(void *dest, const void *src, size_t size) {
 
 #include <stdio.h>
 void memset(void *dest, char value, int n) {
-  char *tmp = (char*) dest;
+  char *tmp = (char *)dest;
   for (int i = 0; i < n; i++) {
     *(tmp + i) = value;
   }
@@ -108,16 +108,17 @@ char *strtok(char *str, const char *delim) {
   return str;
 }
 
-char *strstr(char *str1, const char *str2){
+char *strstr(char *str1, const char *str2) {
   uint32_t N1 = strlen(str1);
   uint32_t N2 = strlen(str2);
-  if(N1 < N2) return NULL;
-  
-  for(uint32_t i = 0; i < N1 - N2 + 1; i++){
-    if(!memcmp(str1 + i, str2, N2))
+  if (N1 < N2)
+    return NULL;
+
+  for (uint32_t i = 0; i < N1 - N2 + 1; i++) {
+    if (!memcmp(str1 + i, str2, N2))
       return str1 + i;
   }
-  
+
   return NULL;
 }
 
@@ -161,4 +162,3 @@ int atoi(char *str) {
 
   return negative ? -result : result;
 }
-

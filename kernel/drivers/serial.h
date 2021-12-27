@@ -10,8 +10,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <io/io.h>
 #include <fs/devfs/devfs.h>
+#include <io/io.h>
 
 /* Serial ports */
 #define SERIAL_COM1_IO 0x3F8
@@ -44,8 +44,8 @@ uint8_t serial_read_byte(uint16_t p);
 void serial_write_byte(uint16_t p, uint8_t data);
 
 uint32_t serial_read(vfs_file_t *node, uint32_t offset, uint32_t size,
-                  char *buffer);
+                     char *buffer);
 
 uint32_t serial_write(vfs_file_t *node, uint32_t offset, uint32_t size,
-                   char *buffer);
+                      char *buffer);
 #endif

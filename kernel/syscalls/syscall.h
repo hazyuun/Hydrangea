@@ -1,14 +1,13 @@
 #ifndef _SYSCALL_H_
 #define _SYSCALL_H_
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 
 #include <cpu/registers.h>
 
-
-typedef struct { 
+typedef struct {
   uint32_t eax, ebx, ecx, edx, esi, edi, ebp;
 } syscall_params_t;
 

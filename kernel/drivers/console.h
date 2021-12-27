@@ -6,4 +6,3 @@
 void console_init();
 
 #endif
-

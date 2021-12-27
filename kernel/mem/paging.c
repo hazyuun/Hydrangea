@@ -15,7 +15,7 @@ extern heap_t *kheap;
 uint32_t cur_page_dir;
 uint32_t ker_page_dir[1024] __attribute__((aligned(4096)));
 
-uint32_t pg_get_ker_dir() { return (uint32_t) ker_page_dir; }
+uint32_t pg_get_ker_dir() { return (uint32_t)ker_page_dir; }
 
 uint32_t pg_get_current_dir() { return cur_page_dir; }
 
@@ -24,15 +24,15 @@ static uint32_t pg_mk_pgtbl(uint32_t dir, uint32_t dir_index, uint32_t flags) {
   for (int i = 0; i < 1024; i++) {
     new_table[i] = 0;
   }
-  ((uint32_t*) dir)[dir_index] = (uint32_t)new_table | PG_PRESENT | flags;
-  return (uint32_t) new_table;
+  ((uint32_t *)dir)[dir_index] = (uint32_t)new_table | PG_PRESENT | flags;
+  return (uint32_t)new_table;
 }
 
 static uint8_t pg_tbl_exists(uint32_t dir, uint32_t virt) {
   if (!IS_ALIGNED((uint32_t)virt))
     panic("pg_tbl_exists: Unaligned page address");
   uint32_t dir_index = (uint32_t)virt >> 22;
-  return ((((uint32_t*) dir)[dir_index] & PG_PRESENT));
+  return ((((uint32_t *)dir)[dir_index] & PG_PRESENT));
 }
 
 uint8_t pg_is_mapped(uint32_t dir, uint32_t virt) {
@@ -41,49 +41,49 @@ uint8_t pg_is_mapped(uint32_t dir, uint32_t virt) {
 
   uint32_t dir_index = (uint32_t)virt >> 22;
   uint32_t table_index = ((uint32_t)virt >> 12) & 0x3FF;
-  uint32_t *tbl = (uint32_t *)(((uint32_t*) dir)[dir_index] & PG_FRAME);
+  uint32_t *tbl = (uint32_t *)(((uint32_t *)dir)[dir_index] & PG_FRAME);
   return (pg_tbl_exists(dir, virt) && (tbl[table_index] & PG_PRESENT));
 }
 
-uint32_t pg_virt_to_phys(uint32_t dir, uint32_t virt){
+uint32_t pg_virt_to_phys(uint32_t dir, uint32_t virt) {
   if (!IS_ALIGNED((uint32_t)virt))
     panic("pg_is_mapped: Unaligned page address");
 
   uint32_t dir_index = (uint32_t)virt >> 22;
   uint32_t table_index = ((uint32_t)virt >> 12) & 0x3FF;
-  uint32_t *tbl = (uint32_t *)(((uint32_t*) dir)[dir_index] & PG_FRAME);
+  uint32_t *tbl = (uint32_t *)(((uint32_t *)dir)[dir_index] & PG_FRAME);
   return (uint32_t)(tbl[table_index] & PG_FRAME);
 }
 
-
 void pg_map_pages(uint32_t dir, uint32_t virt, uint32_t phys, uint32_t num,
                   uint32_t flags) {
-  
+
   if (!IS_ALIGNED((uint32_t)virt))
     panic("pg_map_pages: Unaligned page address (virt)");
   if (!IS_ALIGNED((uint32_t)phys))
     panic("pg_map_pages: Unaligned page address (phys)");
-  //log_info(NICE_RED, "MEM", "dir:%d virt:%d phys:%d num:%d flahs:%d", dir, virt, phys, num, flags);
+  // log_info(NICE_RED, "MEM", "dir:%d virt:%d phys:%d num:%d flahs:%d", dir,
+  // virt, phys, num, flags);
   uint32_t dir_index = (uint32_t)virt >> 22;
 
   if (!pg_tbl_exists(dir, virt)) {
     pg_mk_pgtbl(dir, dir_index, flags);
   }
 
-  uint32_t *tbl = (uint32_t *)(((uint32_t*) dir)[dir_index] & PG_FRAME);
+  uint32_t *tbl = (uint32_t *)(((uint32_t *)dir)[dir_index] & PG_FRAME);
 
   for (uint32_t i = 0; i < num; i++) {
     uint32_t addr = virt + i * PG_SIZE;
-    if (pg_is_mapped(dir, addr)){
+    if (pg_is_mapped(dir, addr)) {
       /* if it is already mapped then just change the flags          */
       /* This is just a workaround for now, I will change this later */
 
-      // log_f(ERROR, "pg_map_pages", 
+      // log_f(ERROR, "pg_map_pages",
       // "Virtual address %d is already mapped to physical address %d ",
       // addr, pg_virt_to_phys(dir, addr));
       tbl[i] |= flags;
-      ((uint32_t*) dir)[dir_index] |= flags;
-      //panic("pg_map_pages: Tried to map an already mapped page");
+      ((uint32_t *)dir)[dir_index] |= flags;
+      // panic("pg_map_pages: Tried to map an already mapped page");
     }
     tbl[i] = ((uint32_t)phys + i * PG_SIZE) | PG_PRESENT | flags;
   }
@@ -96,7 +96,7 @@ void pg_unmap_pages(uint32_t dir, uint32_t virt, uint32_t num) {
     return;
   }
 
-  uint32_t *tbl = (uint32_t *)(((uint32_t*) dir)[dir_index] & PG_FRAME);
+  uint32_t *tbl = (uint32_t *)(((uint32_t *)dir)[dir_index] & PG_FRAME);
 
   for (uint32_t i = 0; i < num; i++) {
     if (tbl[i] | PG_PRESENT) {
@@ -106,16 +106,13 @@ void pg_unmap_pages(uint32_t dir, uint32_t virt, uint32_t num) {
   }
 }
 
-uint32_t pg_alloc(uint32_t virt, uint32_t flags){
+uint32_t pg_alloc(uint32_t virt, uint32_t flags) {
   uint32_t phys = frame_alloc();
   pg_map_pages(pg_get_current_dir(), virt, phys, 1, flags);
   return phys;
 }
 
-void pg_free(uint32_t virt){
-  pg_unmap_pages(pg_get_current_dir(), virt, 1);
-}
-
+void pg_free(uint32_t virt) { pg_unmap_pages(pg_get_current_dir(), virt, 1); }
 
 void pg_init(multiboot_info_t *mbi) {
   for (int i = 0; i < 1024; i++) {
@@ -124,14 +121,15 @@ void pg_init(multiboot_info_t *mbi) {
 
   pg_map_pages(pg_get_ker_dir(), 0x00000000, 0x00000000, 1024, PG_RW);
   // pg_map_pages(pg_get_ker_dir(),   0x400000,   0x400000, 1024, PG_RW);
-  
+
   /* Map the page of the VESA framebuffer */
-  if(term_get_type() != VESA_TERM){
+  if (term_get_type() != VESA_TERM) {
     uint32_t page = mbi->framebuffer_addr & 0xFFF00000;
-    pg_map_pages(pg_get_ker_dir(), page, page, 2*1024, PG_RW);
+    pg_map_pages(pg_get_ker_dir(), page, page, 2 * 1024, PG_RW);
   }
-  
-  pg_map_pages(pg_get_ker_dir(), (uint32_t) HEAP_START, (uint32_t) HEAP_START, 1024, PG_RW);
+
+  pg_map_pages(pg_get_ker_dir(), (uint32_t)HEAP_START, (uint32_t)HEAP_START,
+               1024, PG_RW);
 
   kheap = heap_create(HEAP_START, HEAP_INITIAL_SIZE, HEAP_MAX_SIZE, 0);
   pg_switch_page_dir(pg_get_ker_dir());
@@ -139,31 +137,32 @@ void pg_init(multiboot_info_t *mbi) {
   uint32_t cr0;
   __asm__ __volatile__("mov %%cr0, %0" : "=r"(cr0));
   cr0 |= 0x80000000;
-  cr0 &= ~((1<<29) | (1<<30));
-  
+  cr0 &= ~((1 << 29) | (1 << 30));
+
   __asm__ __volatile__("mov %0, %%cr0" ::"r"(cr0));
 }
 
-static uint32_t *pg_clone_page_table(uint32_t* tbl){
-  uint32_t *new_tbl = (uint32_t*) frame_alloc();
-  memcpy(new_tbl, (uint32_t *)((uint32_t)tbl & PG_FRAME), 1024*sizeof(uint32_t));
-  return (uint32_t *)((uint32_t) new_tbl | ((uint32_t)tbl & PG_FLAGS));
+static uint32_t *pg_clone_page_table(uint32_t *tbl) {
+  uint32_t *new_tbl = (uint32_t *)frame_alloc();
+  memcpy(new_tbl, (uint32_t *)((uint32_t)tbl & PG_FRAME),
+         1024 * sizeof(uint32_t));
+  return (uint32_t *)((uint32_t)new_tbl | ((uint32_t)tbl & PG_FLAGS));
 }
 
-uint32_t pg_clone_page_dir(uint32_t* dir){
-  uint32_t *new_dir = (uint32_t*) frame_alloc();
-  memset(new_dir, 0, 1024*sizeof(uint32_t));
+uint32_t pg_clone_page_dir(uint32_t *dir) {
+  uint32_t *new_dir = (uint32_t *)frame_alloc();
+  memset(new_dir, 0, 1024 * sizeof(uint32_t));
 
-  for(int i = 0; i < 1024; i++){
-    if(dir[i] & PG_PRESENT){
-      new_dir[i] = (uint32_t) pg_clone_page_table((uint32_t*)dir[i]);
-      new_dir[i] |= (dir[i]&PG_FLAGS);
-    }  
+  for (int i = 0; i < 1024; i++) {
+    if (dir[i] & PG_PRESENT) {
+      new_dir[i] = (uint32_t)pg_clone_page_table((uint32_t *)dir[i]);
+      new_dir[i] |= (dir[i] & PG_FLAGS);
+    }
   }
-  return (uint32_t) new_dir;
+  return (uint32_t)new_dir;
 }
 
-inline uint32_t pg_make_user_page_dir(){
+inline uint32_t pg_make_user_page_dir() {
   uint32_t r = pg_clone_page_dir(ker_page_dir);
   return r;
 }

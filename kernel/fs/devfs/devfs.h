@@ -17,9 +17,9 @@ uint8_t devfs_init(char *path);
 uint8_t devfs_register_dev(devfs_node_t *dev);
 
 uint32_t devfs_vfs_read(vfs_file_t *node, uint32_t offset, uint32_t size,
-                       char *buffer);
-uint32_t devfs_vfs_write(vfs_file_t *node, uint32_t offset, uint32_t size,
                         char *buffer);
+uint32_t devfs_vfs_write(vfs_file_t *node, uint32_t offset, uint32_t size,
+                         char *buffer);
 uint8_t devfs_vfs_open(vfs_file_t *node, uint8_t read, uint8_t write);
 uint8_t devfs_vfs_close(vfs_file_t *node);
 vfs_dirent_t *devfs_vfs_readdir(vfs_file_t *node, uint32_t index);

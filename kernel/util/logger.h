@@ -8,7 +8,6 @@
 
 #include <vesa/nice_colors.h>
 
-
 #include <stdint.h>
 void log_f(int64_t lvl, const char *who, char *format, ...);
 void log_info(uint32_t color, const char *who, char *format, ...);

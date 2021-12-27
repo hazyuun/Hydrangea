@@ -10,4 +10,3 @@ int write(int fd, const void *buffer, size_t size);
 int close(int fd);
 
 #endif
-

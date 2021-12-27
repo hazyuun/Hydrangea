@@ -7,7 +7,7 @@
   TODO : Optimize these functions ?
 */
 
-void *memcpy(void *restrict s1, const void *restrict s2, size_t n){
+void *memcpy(void *restrict s1, const void *restrict s2, size_t n) {
   const char *s = s2;
   char *d = s1;
   char *result = s1;
@@ -16,21 +16,21 @@ void *memcpy(void *restrict s1, const void *restrict s2, size_t n){
   return result;
 }
 
-void *memmove(void *s1, const void *s2, size_t n){
+void *memmove(void *s1, const void *s2, size_t n) {
   char tmp[n];
   memcpy(tmp, s2, n);
   memcpy(s1, tmp, n);
   return s1;
 }
 
-char *strcpy(char *restrict s1, const char *restrict s2){
+char *strcpy(char *restrict s1, const char *restrict s2) {
   char *save = s1;
   while ((*s1++ = *s2++))
     ;
   return save;
 }
 
-char *strncpy(char *restrict s1, const char *restrict s2, size_t n){
+char *strncpy(char *restrict s1, const char *restrict s2, size_t n) {
   char *d = s1;
   const char *s = s2;
   do {
@@ -43,30 +43,30 @@ char *strncpy(char *restrict s1, const char *restrict s2, size_t n){
   return s1;
 }
 
-char *strcat(char *restrict s1, const char *restrict s2){
+char *strcat(char *restrict s1, const char *restrict s2) {
   strcpy(s1 + strlen(s1), s2);
   return s1;
 }
 
-char *strncat(char *restrict s1, const char *restrict s2, size_t n){
+char *strncat(char *restrict s1, const char *restrict s2, size_t n) {
   char *d = s1;
   const char *s = s2;
 
   while (*d != 0)
     d++;
-  
+
   do {
-    if ((*d = *s++) == 0) break;
+    if ((*d = *s++) == 0)
+      break;
     d++;
   } while (--n);
-  
+
   *d = 0;
-	
-  
+
   return s1;
 }
 
-int memcmp(const void *s1, const void *s2, size_t n){
+int memcmp(const void *s1, const void *s2, size_t n) {
   const char *p1 = (const char *)s1;
   const char *p2 = (const char *)s2;
   for (size_t i = 0; i < n; i++) {
@@ -78,7 +78,7 @@ int memcmp(const void *s1, const void *s2, size_t n){
   return 0;
 }
 
-int strcmp(const char *s1, const char *s2){
+int strcmp(const char *s1, const char *s2) {
   int i = 0;
   while (s1[i] == s2[i]) {
     if (!s2[i++])
@@ -87,16 +87,16 @@ int strcmp(const char *s1, const char *s2){
   return 1;
 }
 
-int strcoll(const char *s1, const char *s2){
+int strcoll(const char *s1, const char *s2) {
   /* TODO : implement this properly */
   return strcmp(s1, s2);
 }
 
-int strncmp(const char *s1, const char *s2, size_t n){
+int strncmp(const char *s1, const char *s2, size_t n) {
   int i = 0;
 
   while (n-- && s1[i] && s2[i]) {
-    if(s1[i] != s2[i])
+    if (s1[i] != s2[i])
       return 1;
     ++i;
   }
@@ -104,20 +104,20 @@ int strncmp(const char *s1, const char *s2, size_t n){
   return 0;
 }
 
-size_t strxfrm(char *restrict s1, const char *restrict s2, size_t n){
+size_t strxfrm(char *restrict s1, const char *restrict s2, size_t n) {
   /* locale is supposed to be "C" */
   /* TODO : Implement this properly */
   size_t s2_len = strlen(s2) + 1;
   size_t to_copy = s2_len > n ? n : s2_len;
 
   memcpy(s1, s2, to_copy);
-  
+
   return s2_len - 1;
 }
 
-void *memchr(const void *s, int c, size_t n){
+void *memchr(const void *s, int c, size_t n) {
   const char *p = s;
-  while (*p != c){
+  while (*p != c) {
     ++p;
     if (!--n)
       return 0;
@@ -125,14 +125,14 @@ void *memchr(const void *s, int c, size_t n){
   return (char *)p;
 }
 
-char *strchr(const char *s, int c){
+char *strchr(const char *s, int c) {
   while (*s != c)
     if (!*s++)
       return 0;
   return (char *)s;
 }
 
-size_t strcspn(const char *s1, const char *s2){
+size_t strcspn(const char *s1, const char *s2) {
   size_t ret = 0;
   while (*s1)
     if (strchr(s2, *s1))
@@ -142,22 +142,23 @@ size_t strcspn(const char *s1, const char *s2){
   return ret;
 }
 
-char *strpbrk(const char *s1, const char *s2){
- 
-  while(*s1){
+char *strpbrk(const char *s1, const char *s2) {
 
-    for(const char *p = s2; *p; p++){
-      if(*p == *s1) return s1; 
+  while (*s1) {
+
+    for (const char *p = s2; *p; p++) {
+      if (*p == *s1)
+        return s1;
     }
     ++s1;
   }
   return NULL;
 }
 
-char *strrchr(const char *s, int c){
+char *strrchr(const char *s, int c) {
   const char *ret = 0;
   size_t i = 0;
-  while (s[i]){
+  while (s[i]) {
     if (s[i] == c)
       ret = s + i;
     ++i;
@@ -165,27 +166,28 @@ char *strrchr(const char *s, int c){
   return ret;
 }
 
-size_t strspn(const char *s1, const char *s2){
+size_t strspn(const char *s1, const char *s2) {
   size_t ret = 0;
   while (*s1 && strchr(s2, *s1++))
     ret++;
   return ret;
 }
 
-char *strstr(const char *s1, const char *s2){
+char *strstr(const char *s1, const char *s2) {
   size_t N1 = strlen(s1);
   size_t N2 = strlen(s2);
-  if(N1 < N2) return NULL;
-  
-  for(size_t i = 0; i < N1 - N2 + 1; i++){
-    if(!memcmp(s1 + i, s2, N2))
+  if (N1 < N2)
+    return NULL;
+
+  for (size_t i = 0; i < N1 - N2 + 1; i++) {
+    if (!memcmp(s1 + i, s2, N2))
       return s1 + i;
   }
-  
+
   return NULL;
 }
 
-char *strtok(char *restrict s1, const char *restrict s2){
+char *strtok(char *restrict s1, const char *restrict s2) {
   static char *i = 0;
   if (s1)
     i = s1;
@@ -200,21 +202,21 @@ char *strtok(char *restrict s1, const char *restrict s2){
   return s1;
 }
 
-void *memset(void *s, int c, size_t n){
-  char *tmp = (char*) s;
+void *memset(void *s, int c, size_t n) {
+  char *tmp = (char *)s;
   for (size_t i = 0; i < n; i++) {
     *(tmp + i) = c;
   }
   return s;
 }
 
-char *strerror(int errnum){
+char *strerror(int errnum) {
   /* TODO: Implement this */
-  (void) errnum;
+  (void)errnum;
   return 0;
 }
 
-size_t strlen(const char *s){
+size_t strlen(const char *s) {
   int len = 0;
   while (*s++)
     len++;
