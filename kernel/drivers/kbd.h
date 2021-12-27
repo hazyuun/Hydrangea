@@ -6,9 +6,9 @@
 #ifndef _KBD_H_
 #define _KBD_H_
 
+#include <cpu/registers.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <cpu/registers.h>
 
 void kbd_init(uint8_t ch);
 uint8_t kbd_switch_layout(char *layout_name);

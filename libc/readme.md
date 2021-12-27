@@ -1,0 +1,31 @@
+# Hydrangea LibC
+## Standard headers
+- [x] assert.h
+- [ ] complex.h
+- [ ] ctype.h
+- [x] errno.h
+- [ ] fenv.h
+- [ ] float.h
+- [ ] inttypes.h
+- [ ] iso646.h
+- [ ] limits.h
+- [ ] locale.h
+- [ ] math.h
+- [ ] setjmp.h
+- [ ] signal.h
+- [ ] stdalign.h
+- [ ] stdarg.h
+- [ ] stdatomic.h
+- [x] stdbool.h
+- [ ] stddef.h
+- [x] stdint.h
+- [ ] stdio.h
+- [ ] stdlib.h
+- [ ] stdnoreturn.h
+- [x] string.h
+- [ ] tgmath.h
+- [ ] threads.h
+- [ ] time.h
+- [ ] uchar.h
+- [ ] wchar.h
+- [ ] wctype.h

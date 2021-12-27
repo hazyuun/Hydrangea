@@ -1,9 +1,9 @@
 #ifndef _TASK_H_
 #define _TASK_H_
 
-#include <stdint.h>
 #include <ds/list.h>
 #include <fs/vfs.h>
+#include <stdint.h>
 
 /* Task states */
 #define TS_SUS 0
@@ -33,9 +33,9 @@ typedef struct task {
   uint32_t ppid;
   struct task *next;
   struct task *prev;
-  
+
   list_t *file_descriptors;
-  
+
   vfs_node_t *cwd_node;
 
   uint8_t state;

@@ -1,9 +1,7 @@
 #ifndef _FS_GENERIC_H_
 #define _FS_GENERIC_H_
 
-typedef enum {
-  FS_EXT2
-} fs_name_t;
+typedef enum { FS_EXT2 } fs_name_t;
 
 #include <fs/dirent.h>
 
@@ -17,13 +15,13 @@ typedef struct dirent *(*fs_readdir)(DIR *dir);
 #include <drivers/ata.h>
 #include <misc/mbr.h>
 
-struct fs{
+struct fs {
 
-  fs_name_t* type;
+  fs_name_t *type;
 
   /* Physical location */
-  /* 
-    TODO: It might be on a non ATA support, so.. 
+  /*
+    TODO: It might be on a non ATA support, so..
     it is a good idea to generalize this
   */
   ATA_drive_t *drv;
@@ -33,10 +31,9 @@ struct fs{
   /* Depends of the filesystem type */
   void *fs_specific;
 
-  fs_opendir   opendir;
-  fs_closedir  closedir;
-  fs_readdir   readdir;
+  fs_opendir opendir;
+  fs_closedir closedir;
+  fs_readdir readdir;
 };
-
 
 #endif

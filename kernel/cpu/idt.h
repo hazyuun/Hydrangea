@@ -18,16 +18,15 @@ typedef struct {
   uint16_t base_hi;
 } __attribute__((packed)) IDT_entry;
 
-
 #define I_GATETYPE_TASK32 0x5
-#define I_GATETYPE_INT16  0x6
+#define I_GATETYPE_INT16 0x6
 #define I_GATETYPE_TRAP16 0x7
-#define I_GATETYPE_INT32  0xE
+#define I_GATETYPE_INT32 0xE
 #define I_GATETYPE_TRAP32 0xF
 
-#define I_SEG             (1 << 4)
-#define I_DPL(r)          (r << 5)
-#define I_PRESENT         (1 << 7)
+#define I_SEG (1 << 4)
+#define I_DPL(r) (r << 5)
+#define I_PRESENT (1 << 7)
 
 /* ISR Handlers */
 extern void isr0();
@@ -38,7 +37,7 @@ extern void isr4();
 extern void isr5();
 extern void isr6();
 extern void isr7();
-/* Sigh.. A lot of handlers ! 
+/* Sigh.. A lot of handlers !
  *
  * EDIT : haha, yes but copy paste exists
  */
@@ -50,7 +49,7 @@ extern void isr12();
 extern void isr13();
 extern void isr14();
 extern void isr15();
-/* This is boring ... 
+/* This is boring ...
  *
  * EDIT: Yeaah it is
  * */
@@ -72,7 +71,7 @@ extern void isr29();
 extern void isr30();
 extern void isr31();
 
-/* isr32 : Hello there fellow ISRs ! I am the syscall handler 
+/* isr32 : Hello there fellow ISRs ! I am the syscall handler
  *      Nice to meet you !
  */
 extern void isr32();
@@ -81,10 +80,9 @@ extern void isr32();
  * Me           : Sigh.. Finally !
  * IRQ handlers : Allow us to introduce ourselves
  * Me           : *Surprised Pikachu*
- * 
+ *
  * EDIT: Yo ! wtf ? Why do I write memes in my code
  */
-
 
 extern void irq0();
 extern void irq1();
@@ -94,7 +92,7 @@ extern void irq4();
 extern void irq5();
 extern void irq6();
 extern void irq7();
-/* Sigh.. I feel sleepy.. 
+/* Sigh.. I feel sleepy..
  *
  * EDIT : Hey, go take a rest, I am from the future
  *     and I confirm that your current bugs will be solved,
@@ -108,7 +106,7 @@ extern void irq12();
 extern void irq13();
 extern void irq14();
 extern void irq15();
-/* .. and lonely.. 
+/* .. and lonely..
  *
  * EDIT : Hey, I am you from the future !
  *    No you are not lonely, I am with you

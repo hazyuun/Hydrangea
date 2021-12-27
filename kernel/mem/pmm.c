@@ -63,6 +63,7 @@ void pmm_init(multiboot_info_t *mbi) {
     if (mmap->addr_hi)
       continue;
 
+
     if (mmap->type == MULTIBOOT_MEMORY_AVAILABLE) {
       memory_size += mmap->len_lo;
     } else {
@@ -71,6 +72,7 @@ void pmm_init(multiboot_info_t *mbi) {
       for (uint32_t frame = 0; frame < frames; frame++)
         frame_bmp_set(mmap->addr_lo + frame * 4096);
     }
+
   }
 
   uint32_t kernel_size = (uint32_t)&end_of_kernel;
@@ -84,9 +86,15 @@ void pmm_init(multiboot_info_t *mbi) {
 
   frame_alloc();
 
-  // log_f(INFO, "mem", "Kernel size : %d", kernel_size);
-  // log_f(INFO, "mem", "Frames %d", kernel_frames);
+  for (mmap = (multiboot_memory_map_t *)mbi->mmap_addr;
+       (unsigned long)mmap < mbi->mmap_addr + mbi->mmap_length;
+       mmap = (multiboot_memory_map_t *)((unsigned long)mmap + mmap->size +
+                                         sizeof(mmap->size))) {
+    if (!(mmap->type & MULTIBOOT_MEMORY_AVAILABLE))
+      frame_bmp_set(mmap->addr);
+  }
 }
+
 
 uint32_t pmm_available_memory() { return memory_size / 1024; }
 

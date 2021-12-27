@@ -6,8 +6,8 @@
 
 #include <fs/file_descriptor.h>
 
-#include <util/logger.h>
 #include <term/term.h>
+#include <util/logger.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -28,19 +28,15 @@ task_t *fg_task;
 task_t *terminated_tasks = NULL;
 
 inline uint8_t mt_is_initialized() { return _mt_enabled; }
-inline void mt_set_fg_task(task_t *task) { 
-  fg_task = task;
-}
-inline task_t *mt_get_fg_task() { 
-  return fg_task;
-}
+inline void mt_set_fg_task(task_t *task) { fg_task = task; }
+inline task_t *mt_get_fg_task() { return fg_task; }
 
 static void mt_push_task(task_t *new_task) {
   if (!tasks) {
     tasks = new_task;
     return;
   }
-  
+
 #if 0
   new_task->next = tasks;
   tasks->prev = new_task;
@@ -57,13 +53,13 @@ static void mt_push_task(task_t *new_task) {
 }
 
 void ker_idle(void *args);
-void cleaner(void*);
+void cleaner(void *);
 
 void mt_init() {
   log_info(NICE_MAGENTA, "SCHED", "Initializing multitasking");
-  
+
   gft_init();
-  
+
   task_t *kernel_idle = ktask_create("kernel_idle", 0, &ker_idle, NULL);
   mt_push_task(kernel_idle);
 
@@ -85,7 +81,8 @@ uint32_t mt_spawn_ktask(char *name, uint32_t ppid, void (*entry)(void *),
 
 uint32_t mt_spawn_utask(char *name, uint32_t ppid, char *path, void *args) {
   task_t *t = utask_create(name, ppid, path, args);
-  if(!t) return 0;
+  if (!t)
+    return 0;
   mt_push_task(t);
   return t->pid;
 }
@@ -105,15 +102,15 @@ task_t *mt_get_task_by_pid(uint32_t pid) {
 static task_t *mt_pick_next_task() {
   task_t *next_task = cur_task->next;
   if (!next_task)
-    return tasks;  
-  
-  if(next_task->state != TS_FIN)
+    return tasks;
+
+  if (next_task->state != TS_FIN)
     return next_task;
 
   next_task = next_task->next;
 
   while (next_task) {
-    if(next_task->state != TS_FIN)
+    if (next_task->state != TS_FIN)
       return next_task;
     next_task = next_task->next;
   }
@@ -121,23 +118,22 @@ static task_t *mt_pick_next_task() {
   return tasks;
 }
 
-
 #include <drivers/serial.h>
-void cleaner(void *args){
+void cleaner(void *args) {
   (void)args;
   while (1) {
     uint32_t ef = get_eflags_and_cli();
 
     task_t *t = terminated_tasks;
-    if(!t){
+    if (!t) {
       set_eflags(ef);
       continue;
     }
 
     while (t) {
       task_t *next = t->next;
-      
-      //log_info(NICE_CYAN, "cleaner", "removing PID %d", t->pid);
+
+      // log_info(NICE_CYAN, "cleaner", "removing PID %d", t->pid);
       task_destroy(t);
       t = next;
     }
@@ -146,19 +142,18 @@ void cleaner(void *args){
 
     set_eflags(ef);
   }
-} 
+}
 
 void mt_task_terminate(task_t *t) {
-  if(t->pid == 0)
+  if (t->pid == 0)
     return log_f(ERROR, "mt_task_terminate", "PID 0 can't be terminated");
 
-  if(t->prev)
+  if (t->prev)
     t->prev->next = t->next;
-  
-  if(t->next)
+
+  if (t->next)
     t->next->prev = t->prev;
 
-  
   if (!terminated_tasks) {
     terminated_tasks = t;
     t->next = NULL;
@@ -168,19 +163,20 @@ void mt_task_terminate(task_t *t) {
     terminated_tasks->prev = t;
     terminated_tasks = t;
   }
-  
+
   task_t *i = tasks;
   while (i) {
     if (i->ppid == t->pid)
       mt_task_terminate(i);
-    
+
     i = i->next;
   }
 }
 
 void mt_task_terminate_pid(uint32_t pid) {
   task_t *t = mt_get_task_by_pid(pid);
-  if(!t) return log_f(ERROR, "mt_task_terminate_pid", "PID %d does not exist", pid);
+  if (!t)
+    return log_f(ERROR, "mt_task_terminate_pid", "PID %d does not exist", pid);
   mt_task_terminate(t);
 }
 
@@ -193,23 +189,23 @@ void mt_schedule(void) {
     return;
 
   cur_task->time_remaining -= 1;
-  if(cur_task->state == TS_RUN && cur_task->time_remaining > 0){ 
+  if (cur_task->state == TS_RUN && cur_task->time_remaining > 0) {
     return;
   }
   cur_task->time_remaining = cur_task->time_slice;
-  
+
   task_t *next_task = mt_pick_next_task();
-  
+
   tss_set_esp0(next_task->allocated_stack + DEFAULT_STACK_SIZE);
-  if(cur_task->cr3 != next_task->cr3){
+  if (cur_task->cr3 != next_task->cr3) {
     pg_switch_page_dir(next_task->cr3);
     pg_invalidate_cache();
   }
-  
+
   next_task->state = TS_RUN;
-  if(cur_task->state != TS_FIN)
+  if (cur_task->state != TS_FIN)
     cur_task->state = TS_SUS;
-  
+
   mt_switch_task(next_task);
 }
 
@@ -228,7 +224,8 @@ void mt_print_terminated_tasks() {
   printk("\n PID | PPID \t| name");
   printk("\n --- + -------- + ----");
   while (t) {
-    printk("\n %d \t | %d \t\t| %s\t\t | %d", t->pid, t->ppid, t->name, t->state);
+    printk("\n %d \t | %d \t\t| %s\t\t | %d", t->pid, t->ppid, t->name,
+           t->state);
     t = t->next;
   }
 }

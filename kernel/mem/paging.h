@@ -1,8 +1,8 @@
 #ifndef _PAGING_H_
 #define _PAGING_H_
 
-#include <stdint.h>
 #include <boot/multiboot.h>
+#include <stdint.h>
 
 #define PG_SIZE 0x1000
 
@@ -36,14 +36,12 @@ void pg_unmap_pages(uint32_t dir, uint32_t virt, uint32_t num);
 uint32_t pg_alloc(uint32_t virt, uint32_t flags);
 void pg_free(uint32_t virt);
 
-uint32_t pg_clone_page_dir(uint32_t* dir);
+uint32_t pg_clone_page_dir(uint32_t *dir);
 uint32_t pg_make_user_page_dir();
-
 
 void pg_invalidate_cache();
 void pg_invalidate_page(uint32_t virt);
 
 void pg_page_fault(uint32_t code);
-
 
 #endif

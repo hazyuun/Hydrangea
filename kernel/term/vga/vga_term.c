@@ -24,7 +24,7 @@ void vga_term_use_vesa_color(uint32_t color) {
   case NICE_BG:
     vga_term_use_color(VGA_BLACK, VGA_BLACK);
     break;
-  
+
   case NICE_BLACK_0:
     vga_term_use_color(VGA_BLACK, VGA_BLACK);
     break;

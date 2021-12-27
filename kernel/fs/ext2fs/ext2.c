@@ -3,9 +3,9 @@
 
 #include <kernel.h>
 #include <mem/heap.h>
-#include <util/logger.h>
 #include <stdio.h>
 #include <string.h>
+#include <util/logger.h>
 
 /* Returns the offset (bytes) of an inode, given its number */
 uint64_t ext2_get_inode_offset(ext2_t *ext2_infos, uint32_t inode_number) {

@@ -80,10 +80,11 @@ void idt_init() {
   /* Finally ! 2.0 */
 
   /* syscalls : int $0x80 */
-  idt_set_entry(128, (uint32_t)isr32, 0x08, I_PRESENT | I_DPL(3) | I_GATETYPE_TRAP32);
-  
+  idt_set_entry(128, (uint32_t)isr32, 0x08,
+                I_PRESENT | I_DPL(3) | I_GATETYPE_TRAP32);
+
   __asm__ __volatile__("lidt %0" ::"m"(idt));
-  __asm__ __volatile__("sti");  
+  __asm__ __volatile__("sti");
 }
 
 void idt_set_entry(uint8_t index, uint32_t base, uint16_t segsel,
@@ -95,4 +96,3 @@ void idt_set_entry(uint8_t index, uint32_t base, uint16_t segsel,
   idt_entries[index].zero = 0;
   idt_entries[index].flags = flags;
 }
-

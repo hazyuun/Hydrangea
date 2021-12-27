@@ -1,8 +1,8 @@
 #ifndef _PIT_H_
 #define _PIT_H_
 
-#include <stdint.h>
 #include <cpu/registers.h>
+#include <stdint.h>
 
 typedef struct {
   uint64_t timer_value;

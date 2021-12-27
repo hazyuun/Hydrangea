@@ -4,16 +4,16 @@
 #include <fs/vfs.h>
 
 /*
-  Note : gft = global file table 
+  Note : gft = global file table
 */
 
 typedef struct {
   vfs_node_t *node;
   uint32_t locked_by;
-  /* 
-    locked_by = pid of the process that locked the file 
+  /*
+    locked_by = pid of the process that locked the file
                 or 0 if the file is not locked.
-                (PID 0 is guarenteed not to lock the file) 
+                (PID 0 is guarenteed not to lock the file)
   */
   uint32_t ref_count;
 } gft_entry_t;
@@ -31,11 +31,10 @@ uint8_t gft_delete(uint32_t index);
 uint8_t gft_lock(uint32_t index);
 uint8_t gft_unlock(uint32_t index);
 
-
 /* TODO: I might move those defines somewhere else */
 #define O_RDONLY (1 << 0)
 #define O_WRONLY (1 << 1)
-#define O_RDWR   (1 << 2)
+#define O_RDWR (1 << 2)
 
 file_descriptor_t *fd_open(vfs_node_t *node, uint32_t flags);
 uint8_t fd_close(file_descriptor_t *fd);
@@ -46,4 +45,3 @@ uint32_t fd_locked_by(file_descriptor_t *fd);
 vfs_node_t *fd_to_node(file_descriptor_t *fd);
 
 #endif
-

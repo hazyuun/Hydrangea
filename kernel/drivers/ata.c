@@ -1,5 +1,5 @@
-#include <drivers/pit.h>
 #include <drivers/ata.h>
+#include <drivers/pit.h>
 #include <io/io.h>
 #include <mem/heap.h>
 #include <stdio.h>
@@ -60,7 +60,7 @@ void ATA_print_infos() {
 
       uint8_t p = ATA_drives[drive_num].present;
       log_info(NICE_WHITE, "ATA", " %s %s : ", ps ? "SECONDARY" : "PRIMARY",
-             ms ? "MASTER" : "SLAVE");
+               ms ? "MASTER" : "SLAVE");
       if (p)
         printk("%s", ATA_drives[drive_num].name);
       else {
@@ -118,9 +118,10 @@ static void ATA_PIO_prepare(ATA_drive_t *drv, uint64_t block, uint64_t size) {
 
   ATA_400_nano_sec(base);
 
-  do{
+  do {
     status = io_inb(base + ATA_REG_STATUS);
-  } while ((status & ATA_STATUS_BUSY) || (status & ATA_STATUS_DATA_REQUEST_READY));
+  } while ((status & ATA_STATUS_BUSY) ||
+           (status & ATA_STATUS_DATA_REQUEST_READY));
 
   io_outb(base + ATA_REG_ERROR, 0x00);
   io_outb(base + ATA_REG_SECCOUNT0, size);
@@ -134,14 +135,17 @@ static void ATA_PIO_prepare(ATA_drive_t *drv, uint64_t block, uint64_t size) {
   io_outb(base + ATA_REG_LBA5, (unsigned char)0);
 }
 
-inline size_t ATA_read(ATA_drive_t *drv, uint64_t block, uint64_t size, unsigned char *buf){
+inline size_t ATA_read(ATA_drive_t *drv, uint64_t block, uint64_t size,
+                       unsigned char *buf) {
   return ATA_PIO_read(drv, block, size, buf);
 }
-inline size_t ATA_write(ATA_drive_t *drv, uint64_t block, uint64_t size, unsigned char *buf){
+inline size_t ATA_write(ATA_drive_t *drv, uint64_t block, uint64_t size,
+                        unsigned char *buf) {
   return ATA_PIO_write(drv, block, size, buf);
 }
 
-inline size_t ATA_read_b(ATA_drive_t *drv, uint64_t offset, uint64_t size, unsigned char *buf){
+inline size_t ATA_read_b(ATA_drive_t *drv, uint64_t offset, uint64_t size,
+                         unsigned char *buf) {
 
   uint64_t start = offset / 512;
   uint64_t end = (offset + size) / 512;
@@ -151,11 +155,12 @@ inline size_t ATA_read_b(ATA_drive_t *drv, uint64_t offset, uint64_t size, unsig
 
   ATA_read(drv, start, N, (uint8_t *)whole_sector);
 
-  memcpy(buf, (char *) (whole_sector + offset % 512), size);
+  memcpy(buf, (char *)(whole_sector + offset % 512), size);
   return size;
 }
 
-size_t ATA_PIO_read(ATA_drive_t *drv, uint64_t block, uint64_t size, unsigned char *buf) {
+size_t ATA_PIO_read(ATA_drive_t *drv, uint64_t block, uint64_t size,
+                    unsigned char *buf) {
   uint16_t base = ch_regs[drv->ps].base;
 
   ATA_PIO_prepare(drv, block, size);
@@ -163,7 +168,7 @@ size_t ATA_PIO_read(ATA_drive_t *drv, uint64_t block, uint64_t size, unsigned ch
   io_outb(base + ATA_REG_COMMAND, ATA_CMD_READ_PIO);
 
   uint8_t err = ATA_check_for_errors(base);
-  if(err == ATA_ERR_CMD_ABORTED){
+  if (err == ATA_ERR_CMD_ABORTED) {
     return 0;
   }
 
@@ -173,9 +178,10 @@ size_t ATA_PIO_read(ATA_drive_t *drv, uint64_t block, uint64_t size, unsigned ch
   for (uint64_t i = 0; i < 256 * size; i++) {
     io_inb(base + ATA_REG_ALTSTATUS); /* ignored */
 
-    do{
+    do {
       status = io_inb(base + ATA_REG_STATUS);
-    } while ((status & ATA_STATUS_BUSY) || (!(status & ATA_STATUS_DATA_REQUEST_READY)));
+    } while ((status & ATA_STATUS_BUSY) ||
+             (!(status & ATA_STATUS_DATA_REQUEST_READY)));
 
     word = io_inw(base);
     buf[i * 2] = (unsigned char)word;
@@ -188,35 +194,38 @@ size_t ATA_PIO_read(ATA_drive_t *drv, uint64_t block, uint64_t size, unsigned ch
   return size;
 }
 
-size_t ATA_PIO_write(ATA_drive_t *drv, uint64_t block, uint64_t size, unsigned char *buf) {
+size_t ATA_PIO_write(ATA_drive_t *drv, uint64_t block, uint64_t size,
+                     unsigned char *buf) {
   uint16_t base = ch_regs[drv->ps].base;
 
   ATA_PIO_prepare(drv, block, size);
 
   uint8_t status;
-  do{
+  do {
     status = io_inb(base + ATA_REG_STATUS);
-  } while ((status & ATA_STATUS_BUSY) || (status & ATA_STATUS_DATA_REQUEST_READY));
+  } while ((status & ATA_STATUS_BUSY) ||
+           (status & ATA_STATUS_DATA_REQUEST_READY));
 
   io_outb(base + ATA_REG_COMMAND, ATA_CMD_WRITE_PIO);
 
   uint8_t err = ATA_check_for_errors(base);
-  if(err == ATA_ERR_CMD_ABORTED){
+  if (err == ATA_ERR_CMD_ABORTED) {
     return 0;
   }
 
   uint16_t word;
-  
+
   for (uint64_t i = 0; i < 256 * size; i++) {
     io_inb(base + ATA_REG_ALTSTATUS); /* ignored */
-    do{
+    do {
       status = io_inb(base + ATA_REG_STATUS);
-    } while ((status & ATA_STATUS_BUSY) || (!(status & ATA_STATUS_DATA_REQUEST_READY)));
+    } while ((status & ATA_STATUS_BUSY) ||
+             (!(status & ATA_STATUS_DATA_REQUEST_READY)));
 
     word = (buf[i * 2 + 1] << 8) | buf[i * 2];
     io_outw(base, word);
   }
-  
+
   io_inb(base + ATA_REG_ALTSTATUS); /* ignored */
   io_inb(base + ATA_REG_STATUS);
   return size;
@@ -249,7 +258,7 @@ uint8_t ATA_init(PCI_device_t *dev) {
 
       /* Default values */
       uint8_t drive_num = 2 * ps + ms;
-      for(uint8_t p = 0; p < 4; p++)
+      for (uint8_t p = 0; p < 4; p++)
         ATA_drives[drive_num].mtpts[p] = 0;
       ATA_drives[drive_num].present = 0;
       ATA_drives[drive_num].ps = ps;
@@ -307,8 +316,8 @@ uint8_t ATA_init(PCI_device_t *dev) {
         pit_sleep(100);
 
         if (timeout == 10) { /* BSY never clears maybe ? */
-          log_f(WARN, "ATA", "%s %s : First timeout", ps ? "SEONDARY" : "PRIMARY",
-                 ms ? "MASTER" : "SLAVE");
+          log_f(WARN, "ATA", "%s %s : First timeout",
+                ps ? "SEONDARY" : "PRIMARY", ms ? "MASTER" : "SLAVE");
           log_f(INFO, "ATA", "Trying soft reset ..");
 
           timeout = 10;
@@ -334,20 +343,22 @@ uint8_t ATA_init(PCI_device_t *dev) {
         uint16_t type = (hi << 8) | lo;
 
         switch (type) {
-        case ATA_TYPE_PATA: break;
+        case ATA_TYPE_PATA:
+          break;
         case ATA_TYPE_PATAPI:
         case ATA_TYPE_SATA:
         case ATA_TYPE_SATAPI:
           log_f(INFO, "ATA", "%s device detected at %s %s",
-                 ATA_TYPE_in_english_please(type), ps ? "SEONDARY" : "PRIMARY",
-                 ms ? "MASTER" : "SLAVE");
+                ATA_TYPE_in_english_please(type), ps ? "SEONDARY" : "PRIMARY",
+                ms ? "MASTER" : "SLAVE");
           log_f(WARN, "ATA", "%s devices are not supported (yet ?)",
-                 ATA_TYPE_in_english_please(type));
+                ATA_TYPE_in_english_please(type));
           break;
-        // default:
-        //   log_f(WARN, "ATA", "Unkonwn device (type : %d) detected at %s %s", type,
-        //          ATA_TYPE_in_english_please(type), ps ? "SEONDARY" : "PRIMARY",
-        //          ms ? "MASTER" : "SLAVE");
+          // default:
+          //   log_f(WARN, "ATA", "Unkonwn device (type : %d) detected at %s
+          //   %s", type,
+          //          ATA_TYPE_in_english_please(type), ps ? "SEONDARY" :
+          //          "PRIMARY", ms ? "MASTER" : "SLAVE");
         }
 
         /* TODO : Wait bsy */

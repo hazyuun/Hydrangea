@@ -23,6 +23,6 @@ uint32_t vesa_get_framebuffer_width();
 uint32_t vesa_get_framebuffer_height();
 uint32_t vesa_get_framebuffer_pitch();
 uint32_t vesa_get_framebuffer_bpp();
-uint32_t *vesa_get_back_buffer();
+
 
 #endif

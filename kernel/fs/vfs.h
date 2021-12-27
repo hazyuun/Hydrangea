@@ -18,7 +18,6 @@
 #define VFS_MTPT 0x6
 #define VFS_SOCKET 0x7
 
-
 #define VFS_PERMISSIONS_OTHER_X 0x001
 #define VFS_PERMISSIONS_OTHER_W 0x002
 #define VFS_PERMISSIONS_OTHER_R 0x004
@@ -78,7 +77,6 @@ typedef struct vfs_file {
 
 vfs_node_t *vfs_get_root();
 
-
 vfs_node_t *vfs_create_node(char *name, uint8_t type);
 void vfs_free_node(vfs_node_t *node);
 void vfs_free_child_nodes(vfs_node_t *node);
@@ -114,7 +112,8 @@ vfs_file_t *vfs_finddir(vfs_file_t *file, char *name);
 void vfs_drwxrwxrwx(char *out, uint16_t permissions);
 
 #include <drivers/ata.h>
-uint8_t vfs_mount_partition(ATA_drive_t *drv, uint8_t partition_num, char *path, vfs_node_t *rel);
+uint8_t vfs_mount_partition(ATA_drive_t *drv, uint8_t partition_num, char *path,
+                            vfs_node_t *rel);
 uint8_t vfs_umount_partition(ATA_drive_t *drv, uint8_t partition_num);
 
 #endif

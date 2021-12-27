@@ -6,10 +6,10 @@
 #ifndef _PMM_H_
 #define _PMM_H_
 
+#include <boot/multiboot.h>
 #include <mem/paging.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <boot/multiboot.h>
 
 /* Placement malloc */
 void *pmalloc(size_t size);

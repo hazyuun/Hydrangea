@@ -3,8 +3,8 @@
  *	Description : TODO
  * */
 
-#include <fs/vfs.h>
 #include <fs/devfs/devfs.h>
+#include <fs/vfs.h>
 #include <mem/heap.h>
 #include <stdio.h>
 #include <string.h>
@@ -20,8 +20,8 @@ uint32_t vfs_read(vfs_file_t *file, uint32_t offset, uint32_t size,
 }
 uint32_t vfs_write(vfs_file_t *file, uint32_t offset, uint32_t size,
                    char *buffer) {
-  if(file->write)
-    return file->write(file, offset, size, buffer);  
+  if (file->write)
+    return file->write(file, offset, size, buffer);
   return 0;
 }
 
@@ -187,9 +187,9 @@ void vfs_dummy() {
   vfs_node_t *home = vfs_add_child(vfs_root, "home", VFS_DIR);
   vfs_add_child(vfs_root, "dev", VFS_DIR);
   vfs_add_child(vfs_root, "tmp", VFS_DIR);
-  
+
   vfs_node_t *ys = vfs_add_child(home, "yuun", VFS_DIR);
-  //vfs_add_child(home, "yuusuf", VFS_DIR);
+  // vfs_add_child(home, "yuusuf", VFS_DIR);
 
   vfs_add_child(ys, "document.txt", VFS_FILE);
   vfs_add_child(ys, "program.c", VFS_FILE);
@@ -287,7 +287,7 @@ static void vfs_ext2_populate(vfs_node_t *root, DIR *dir) {
     n->file->inode = entry->inode_number;
     n->file->read = &ext2_vfs_read;
     n->file->size = entry->size;
-    
+
     /* Recursively populate every sub-directory */
     if (type == VFS_DIR) {
       DIR *sub_dir = ext2_opendir(dir->fs, entry->inode_number);
@@ -345,7 +345,7 @@ uint8_t vfs_umount_partition(ATA_drive_t *drv, uint8_t partition_num) {
   if (!drv->mtpts[partition_num])
     return 1;
 
-  vfs_node_t *mtpt = (vfs_node_t*) (drv->mtpts[partition_num]);
+  vfs_node_t *mtpt = (vfs_node_t *)(drv->mtpts[partition_num]);
   vfs_free_child_nodes(mtpt);
   mtpt->file->type = VFS_DIR;
   drv->mtpts[partition_num] = 0;

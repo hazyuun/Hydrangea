@@ -4,8 +4,8 @@
  *
  * */
 
-#include <drivers/pci.h>
 #include <drivers/ata.h>
+#include <drivers/pci.h>
 #include <io/io.h>
 #include <mem/heap.h>
 #include <mem/pmm.h>
@@ -54,8 +54,8 @@ static uint16_t PCI_get_base_address(uint16_t bus, uint16_t device,
                                      uint16_t function, int address) {
   uint32_t ba =
       ((uint32_t)PCI_read_word(bus, device, function, 0xf + address * 4)) << 16;
-  ba |= (uint32_t)(
-      (uint16_t)PCI_read_word(bus, device, function, 0xf + address * 4 + 2));
+  ba |= (uint32_t)((uint16_t)PCI_read_word(bus, device, function,
+                                           0xf + address * 4 + 2));
   return ba;
 }
 
@@ -70,25 +70,25 @@ static void PCI_parse_header0(PCI_device_t *dev, uint16_t bus, uint16_t slot,
   dev->header = (void *)header;
 }
 
-driver_init_t PCI_is_known(PCI_device_t *dev){
+driver_init_t PCI_is_known(PCI_device_t *dev) {
   /* TODO: more devices */
-  if(dev->class_code == 0x1 && dev->subclass == 0x1){
+  if (dev->class_code == 0x1 && dev->subclass == 0x1) {
     return &ATA_init;
   }
   return NULL;
 }
 
-void PCI_list(){
+void PCI_list() {
   PCI_device_t *dev = PCI_devices;
-  while(dev){
+  while (dev) {
     log_info(NICE_BLUE, "PCI", "(%d:%d:%d) %s", dev->bus, dev->device,
-               dev->function, class_names[dev->class_code]);
+             dev->function, class_names[dev->class_code]);
     dev = dev->next;
   }
   printk("\n");
 }
 
-#include<string.h>
+#include <string.h>
 uint8_t PCI_detect() {
   PCI_devices = (PCI_device_t *)kmalloc(sizeof(PCI_device_t));
   PCI_device_t *dev = PCI_devices;
@@ -103,8 +103,7 @@ uint8_t PCI_detect() {
 
         dev->next = (PCI_device_t *)kmalloc(sizeof(PCI_device_t));
         dev = dev->next;
-        memset(dev,0,sizeof(PCI_device_t));
-
+        memset(dev, 0, sizeof(PCI_device_t));
 
         dev->bus = bus;
         dev->device = slot;
@@ -123,13 +122,12 @@ uint8_t PCI_detect() {
         dev->name = "PCI device";
 
         driver_init_t init = PCI_is_known(dev);
-        if(init){
-          log_info(NICE_BLUE, "PCI", "Initializing %s (0x%x:0x%x:0x%x)", class_names[dev->class_code], dev->bus, dev->device,
-               dev->function);
+        if (init) {
+          log_info(NICE_BLUE, "PCI", "Initializing %s (0x%x:0x%x:0x%x)",
+                   class_names[dev->class_code], dev->bus, dev->device,
+                   dev->function);
           init(dev);
         }
-
-        
 
       } /* function loop */
     }   /* slot loop */

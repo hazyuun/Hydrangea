@@ -26,7 +26,6 @@ typedef struct {
   uint8_t max_latency;
 } PCI_header0_t;
 
-
 typedef struct PCI_device {
   uint16_t bus;
   uint16_t device;
