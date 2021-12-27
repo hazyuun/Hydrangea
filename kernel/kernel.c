@@ -55,16 +55,13 @@ __attribute__((noreturn)) void quick_and_dirty_kernel_cli();
 __attribute__((noreturn)) void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
   check_multiboot_info(mb_magic, mbi);
   gdt_init();
-  // pmm_init(mbi);
+  pmm_init(mbi);
   interrupts_init();
-  // pg_init(mbi);
+  pg_init(mbi);
   
-  if(term_init(VGA_TERM, mbi))
+  if(term_init(VESA_TERM, mbi))
     hang();
   
-  log_info(INFO, "INFO", "Kernel loaded !");
-  hang();
-
   vfs_dummy();
   devfs_init("/dev");
   tmpfs_init("/tmp");
