@@ -91,7 +91,7 @@ void pmm_init(multiboot_info_t *mbi) {
        mmap = (multiboot_memory_map_t *)((unsigned long)mmap + mmap->size +
                                          sizeof(mmap->size))) {
     if (!(mmap->type & MULTIBOOT_MEMORY_AVAILABLE))
-      frame_bmp_set(mmap->addr);
+      frame_bmp_set(mmap->addr_lo);
   }
 }
 
