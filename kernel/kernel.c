@@ -58,12 +58,12 @@ __attribute__((noreturn)) void kmain(uint32_t mb_magic, multiboot_info_t *mbi) {
   
   pmm_init(mbi);
   interrupts_init();
-  pg_init(mbi);
+  // pg_init(mbi);
+  
   if(term_init(VGA_TERM, mbi))
     hang();
-    
-  log_info(INFO, "INFO", "Kernel loaded !");
   
+  log_info(INFO, "INFO", "Kernel loaded !");
   hang();
 
   vfs_dummy();

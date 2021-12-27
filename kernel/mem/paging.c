@@ -122,36 +122,26 @@ void pg_init(multiboot_info_t *mbi) {
     ker_page_dir[i] = PG_RW;
   }
 
-  pg_map_pages(pg_get_ker_dir(), 0xC0000000, 0x00000000, 1024, PG_RW);
-  // pg_map_pages(pg_get_ker_dir(), 0x00000000, 0x00000000, 1024, PG_RW);
-  
+  pg_map_pages(pg_get_ker_dir(), 0x00000000, 0x00000000, 1024, PG_RW);
   // pg_map_pages(pg_get_ker_dir(),   0x400000,   0x400000, 1024, PG_RW);
   
   /* Map the page of the VESA framebuffer */
-  // if(term_get_type() != VESA_TERM){
-  //   uint32_t page = mbi->framebuffer_addr & 0xFFF00000;
-  //   pg_map_pages(pg_get_ker_dir(), page, page, 2*1024, PG_RW);
-  // }
+  if(term_get_type() != VESA_TERM){
+    uint32_t page = mbi->framebuffer_addr & 0xFFF00000;
+    pg_map_pages(pg_get_ker_dir(), page, page, 2*1024, PG_RW);
+  }
   
-  // pg_map_pages(pg_get_ker_dir(), (uint32_t) HEAP_START, (uint32_t) HEAP_START, 1024, PG_RW);
+  pg_map_pages(pg_get_ker_dir(), (uint32_t) HEAP_START, (uint32_t) HEAP_START, 1024, PG_RW);
 
-  // kheap = heap_create(HEAP_START, HEAP_INITIAL_SIZE, HEAP_MAX_SIZE, 0);
+  kheap = heap_create(HEAP_START, HEAP_INITIAL_SIZE, HEAP_MAX_SIZE, 0);
+  pg_switch_page_dir(pg_get_ker_dir());
+
+  uint32_t cr0;
+  __asm__ __volatile__("mov %%cr0, %0" : "=r"(cr0));
+  cr0 |= 0x80000000;
+  cr0 &= ~((1<<29) | (1<<30));
   
-
-  pg_switch_page_dir(pg_get_ker_dir() - 0xC0000000);
-
-  /* Disable Page Size Extension */
-  /* Note : it was previously enabled in boot.s */
-  __asm__ __volatile__( "mov %cr4, %edx\n"
-	                      "and $0x11111101, %edx\n"
-	                      "mov %edx, %cr4\n");
-
-  // uint32_t cr0;
-  // __asm__ __volatile__("mov %%cr0, %0" : "=r"(cr0));
-  // cr0 |= 0x80000000;
-  // cr0 &= ~((1<<29) | (1<<30));
-  
-  // __asm__ __volatile__("mov %0, %%cr0" ::"r"(cr0));
+  __asm__ __volatile__("mov %0, %%cr0" ::"r"(cr0));
 }
 
 static uint32_t *pg_clone_page_table(uint32_t* tbl){
