@@ -1,6 +1,9 @@
 # Hydrangea (YuunOS)
 An (almost) operating system for x86, written from scratch in C and assembly.
 > This is my first take on making a kernel from scratch, it's not the best, but I think it's not bad for a first try. The kernel runs in the lower half, and has a weired and inefficient memory layout, it has some syscalls even though not enough to make a usable user shell.
+
+![](screenshots/first.png)
+
 ## Disclaimer
 I tested it in
 - Bochs
@@ -33,8 +36,6 @@ And whatever you do : *I am NOT responsible for your acts, do whatever you do at
 ![](screenshots/syscalls.png)
 
 ## Screenshots
-### Start
-![](screenshots/first.png)
 ### Navigating the vfs
 ![](screenshots/vfs.png)
 ### Reading files in the initrd
