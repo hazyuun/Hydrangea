@@ -30,6 +30,7 @@ And whatever you do : *I am NOT responsible for your acts, do whatever you do at
 - tmpfs
 ### Processes
 - Preemptive multitasking
+- ELF loading
 - Pipes
 - Spinlocks
 ### Syscalls
@@ -40,6 +41,8 @@ And whatever you do : *I am NOT responsible for your acts, do whatever you do at
 ![](screenshots/vfs.png)
 ### Reading files in the initrd
 ![](screenshots/initrd.png)
+### Running a usermode program
+![](screenshots/usermode.png)
 ### PCI enumeration
 ![](screenshots/pci.png)
 ### Parsing the MBR of a PATA drive
